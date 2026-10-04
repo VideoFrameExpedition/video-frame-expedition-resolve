@@ -101,15 +101,15 @@ uv run --frozen --no-dev --project backend python scripts\copy_frontend_build.py
 exit /b 0
 
 :install_ui
-rem pnpm is an executable since its version 11, which Smart App Control blocks on some PCs. Its
-rem version 10, written in JavaScript, runs through Node (npx) and reads the same lockfile; an
-rem exact version, so that every PC runs the same installer.
+rem An installed pnpm is tried first. Otherwise (a new PC), pnpm runs through Node (npx), in the
+rem version pinned by frontend\package.json: its lockfile, written as two documents, can only be
+rem read by pnpm 12 (pnpm 10 refuses it).
 echo Installation des dépendances de l'interface web...
 where pnpm.cmd >nul 2>nul
 if not errorlevel 1 (
     call pnpm.cmd --dir frontend install --frozen-lockfile
     if not errorlevel 1 exit /b 0
-    echo [ATTENTION] pnpm a échoué ^(Windows l'a peut-être bloqué^) : essai avec pnpm 10, par Node.
+    echo [ATTENTION] pnpm a échoué ^(Windows l'a peut-être bloqué^) : nouvel essai par Node.
 )
 where npx.cmd >nul 2>nul
 if errorlevel 1 (
@@ -117,10 +117,7 @@ if errorlevel 1 (
     echo          Installez Node.js avec : winget install OpenJS.NodeJS.LTS
     exit /b 1
 )
-rem Without these two settings, pnpm 10 would fetch the version pinned in package.json.
-set "npm_config_manage_package_manager_versions=false"
-set "npm_config_package_manager_strict=false"
-call npx.cmd --yes pnpm@10.34.6 --dir frontend install --frozen-lockfile
+call npx.cmd --yes pnpm@12.6.0 --dir frontend install --frozen-lockfile
 if errorlevel 1 (
     echo [ERREUR] Les dépendances de l'interface web n'ont pas pu être installées.
     exit /b 1
