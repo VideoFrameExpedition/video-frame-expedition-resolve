@@ -24,6 +24,12 @@ def test_what_the_browser_plays() -> None:
 @pytest.fixture(scope="module", params=["apv", "prores"])
 def pro_clip(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory) -> Path:
     """Like an S26 Ultra APV rush: 4:2:2 10-bit intra codec, PCM sound, filmed in portrait."""
+    if request.param == "apv":
+        encoders = subprocess.run(
+            ["ffmpeg", "-hide_banner", "-encoders"], capture_output=True, text=True, check=True
+        ).stdout
+        if "liboapv" not in encoders:  # FFmpeg reads APV on its own, but writes it with liboapv
+            pytest.skip("this FFmpeg has no APV encoder (liboapv) to make the test clip")
     codec = (
         ["-c:v", "liboapv"] if request.param == "apv" else ["-c:v", "prores_ks", "-profile:v", "2"]
     )

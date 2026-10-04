@@ -138,11 +138,14 @@ def test_a_gpu_failing_midway_is_finished_by_the_cpu(
     real = tools._stream_frames
 
     def flaky(args: list[str], *rest: Any) -> Any:
-        frames = real(args, *rest)
         if "-hwaccel" not in args:
-            yield from frames
+            yield from real(args, *rest)
             return
-        for count, frame in enumerate(frames):
+        # A GPU that decodes three frames, then fails. The CPU decodes them in its place (same
+        # pixels), so no graphics card is needed.
+        at = args.index("-hwaccel")
+        assert args[at : at + 4] == ["-hwaccel", "cuda", "-hwaccel_device", "0"]
+        for count, frame in enumerate(real(args[:at] + args[at + 4 :], *rest)):
             if count == 3:
                 raise ExternalToolError("NVDEC error", tool="ffmpeg")
             yield frame

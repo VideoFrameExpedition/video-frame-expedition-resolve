@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-import os
+import ctypes
+import re
 import socket
 import subprocess
 import sys
@@ -93,12 +94,31 @@ class TestToken:
     def test_only_the_user_may_read_it(self, tmp_path: Path) -> None:
         settings = Settings(data_dir=tmp_path)
         current_token(settings, create=True)
-        acl = subprocess.run(
-            ["icacls", str(settings.api_token_path)], capture_output=True, text=True, check=True
-        ).stdout
-        assert os.environ["USERNAME"].lower() in acl.lower()
-        assert "Administrators" not in acl
-        assert "(I)" not in acl  # nothing inherited
+        # Account SIDs, not names: names change with the language of Windows.
+        saved = tmp_path / "acl.txt"
+        subprocess.run(
+            ["icacls", str(settings.api_token_path), "/save", str(saved)],
+            capture_output=True,
+            check=True,
+        )
+        sddl = saved.read_text(encoding="utf-16-le").splitlines()[1]
+        user = (
+            subprocess.run(
+                ["whoami", "/user", "/fo", "csv", "/nh"], capture_output=True, text=True, check=True
+            )
+            .stdout.strip()
+            .split(",")[-1]
+            .strip('"')
+        )
+        aces = [ace.split(";") for ace in re.findall(r"\(([^)]*)\)", sddl)]
+        assert sddl.startswith("D:P")  # protected: the folder's permissions do not flow in
+        assert all("ID" not in ace[1] for ace in aces)  # nothing inherited
+        trustees = {ace[5] for ace in aces}
+        assert user in trustees
+        # A process run as administrator may leave Administrators, SYSTEM and the owner in:
+        # they can read any file anyway. No other account, ever.
+        admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
+        assert trustees <= {user} | ({"BA", "SY", "OW"} if admin else set())
 
     def test_cli_shows_then_rotates(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         from vfe_vision.core.config import get_settings
