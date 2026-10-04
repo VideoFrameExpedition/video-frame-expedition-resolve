@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import io
 import json
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
@@ -642,10 +644,20 @@ def openapi(
 
 def main() -> None:
     """Console-script entry point."""
+    _never_fail_on_a_character()
     try:
         app()
     except ImportError as error:
         raise SystemExit(_start_again_without(error)) from None
+
+
+def _never_fail_on_a_character() -> None:
+    """Redirected to a file or a pipe on Windows, the output takes the system's code page, which
+    has no « → » nor « ✓ »: such a character is written « ? » rather than ending the command
+    (``vfe doctor > diagnostic.txt``)."""
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(errors="replace")
 
 
 def _start_again_without(error: ImportError) -> int:
