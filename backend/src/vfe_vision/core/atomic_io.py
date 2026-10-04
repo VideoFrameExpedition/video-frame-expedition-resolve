@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 import shutil
 import tempfile
@@ -11,10 +12,15 @@ from pathlib import Path
 _RETRY_DELAYS_S = (0.05, 0.1, 0.25, 0.5, 1.0)
 
 
-def atomic_write_bytes(path: Path, data: bytes, *, create_parents: bool = True) -> None:
+def atomic_write_bytes(
+    path: Path, data: bytes, *, create_parents: bool = True, in_place_fallback: bool = False
+) -> None:
     """Write ``data`` to ``path`` so readers never observe a partially written file.
 
     ``create_parents=False``: the folder must exist (a user's folder is never created).
+    ``in_place_fallback``: a folder that refuses to rename the written file even after the
+    retries gets it written in place (the shared folders of Windows Sandbox refuse every rename,
+    measured): for a user's folder, where a file at all matters more than its atomicity.
     """
     if create_parents:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -25,9 +31,17 @@ def atomic_write_bytes(path: Path, data: bytes, *, create_parents: bool = True) 
             handle.write(data)
             handle.flush()
             os.fsync(handle.fileno())
-        replace_with_retry(tmp, path)
+        try:
+            replace_with_retry(tmp, path)
+        except PermissionError:
+            if not in_place_fallback:
+                raise
+            path.write_bytes(data)
+            with contextlib.suppress(OSError):
+                tmp.unlink(missing_ok=True)
     except BaseException:
-        tmp.unlink(missing_ok=True)
+        with contextlib.suppress(OSError):
+            tmp.unlink(missing_ok=True)
         raise
 
 

@@ -8,8 +8,10 @@ language by earlier versions are removed when replaced, if they still hold what 
 
 A file of that name is replaced only when the application wrote it and it still holds what was
 written (``subtitle_files`` keeps its SHA-256): any other is left as it is, and said. Written
-atomically, no folder ever created; a read-only folder, a refused access or a full disk is a
-result to report, never an exception for the caller.
+atomically (in place in a folder that refuses renames), no folder ever created; a read-only
+folder, a refused access or a full disk is a result to report, never an exception for the
+caller. The same goes for the timeline's own tracks when Resolve runs on another computer
+(``timeline_build``): they are written next to its first video.
 """
 
 from __future__ import annotations
@@ -69,7 +71,17 @@ def write_subtitles(
 ) -> WrittenSubtitles:
     """Write (or refresh) one subtitle file of a video, its cues in the video's own time."""
     target = subtitle_path(video, track.part, track.language)
-    data = to_srt(track.cues).encode("utf-8")
+    done = write_file(db, video_id, track.part, target, to_srt(track.cues).encode("utf-8"))
+    if done.status == WriteStatus.WRITTEN:
+        _remove_unnamed(db, video, track.part, target)
+    return done
+
+
+def write_file(
+    db: Database, video_id: str, part: str, target: Path, data: bytes
+) -> WrittenSubtitles:
+    """Write (or refresh) a subtitle file in a user's folder, for ``video_id``: replaced only
+    while it holds what the application wrote there."""
     digest = hashlib.sha256(data).hexdigest()
     key = path_key(target)
     with db.read() as session:
@@ -79,14 +91,13 @@ def write_subtitles(
         if target.exists():
             if written is None or _digest(target) != written:
                 return WrittenSubtitles(
-                    video_id, track.part, target, WriteStatus.CONFLICT, CONFLICT_DETAIL
+                    video_id, part, target, WriteStatus.CONFLICT, CONFLICT_DETAIL
                 )
             if written == digest:  # holds what it would be written with
-                _remove_unnamed(db, video, track.part, target)
-                return WrittenSubtitles(video_id, track.part, target, WriteStatus.WRITTEN)
-        atomic_write_bytes(target, data, create_parents=False)
+                return WrittenSubtitles(video_id, part, target, WriteStatus.WRITTEN)
+        atomic_write_bytes(target, data, create_parents=False, in_place_fallback=True)
     except OSError as exc:
-        return WrittenSubtitles(video_id, track.part, target, WriteStatus.FAILED, failure(exc))
+        return WrittenSubtitles(video_id, part, target, WriteStatus.FAILED, failure(exc))
     with db.write() as session:
         session.merge(
             SubtitleFile(
@@ -94,8 +105,7 @@ def write_subtitles(
                 written_at=utcnow(),
             )
         )  # fmt: skip
-    _remove_unnamed(db, video, track.part, target)
-    return WrittenSubtitles(video_id, track.part, target, WriteStatus.WRITTEN)
+    return WrittenSubtitles(video_id, part, target, WriteStatus.WRITTEN)
 
 
 def _remove_unnamed(db: Database, video: Path, part: str, written: Path) -> None:

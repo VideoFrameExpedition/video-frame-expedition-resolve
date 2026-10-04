@@ -255,7 +255,7 @@ describe("TimelineBuildDialog", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("leaves the subtitles in the bin for Resolve on another computer", async () => {
+  it("lays the tracks from next to the first video for Resolve on another computer, else leaves the files in the bin", async () => {
     const user = userEvent.setup();
     plan = reading({ ...PLAN, resolve_host: "mac-studio" });
     build.mockResolvedValue({
@@ -275,8 +275,9 @@ describe("TimelineBuildDialog", () => {
       dialog.getByRole("checkbox", { name: "Description des plans en sous-titres" }),
     );
     expect(dialog.getByText(/Les marqueurs sont posés sur les clips/)).toHaveTextContent(
-      /importés dans le chutier, à glisser ensuite sur la timeline/,
+      /écrits à côté de sa première vidéo \(<timeline>_TIMELINE_FR\.srt\), que l'ordinateur de DaVinci Resolve lit/,
     );
+    // No folder of the videos took the tracks: their own files are in the bin.
     await user.click(dialog.getByRole("button", { name: "Ajouter au projet en cours" }));
     await waitFor(() => {
       expect(toast.info).toHaveBeenCalledWith(

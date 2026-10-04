@@ -722,8 +722,11 @@ def test_a_folder_that_cannot_be_written_is_reported(
     first, _ = two_copies
     _analysed(db, first)
 
-    def refuse(path: Path, data: bytes, *, create_parents: bool = True) -> None:
+    def refuse(
+        path: Path, data: bytes, *, create_parents: bool = True, in_place_fallback: bool = False
+    ) -> None:
         assert not create_parents  # never a folder created in the user's space
+        assert in_place_fallback  # a folder that refuses renames still gets its file
         raise error
 
     monkeypatch.setattr(writer, "atomic_write_bytes", refuse)
@@ -779,7 +782,9 @@ async def test_a_file_that_cannot_be_written_never_fails_the_analysis(
     fake_lmstudio: FakeLmStudio,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def refuse(path: Path, data: bytes, *, create_parents: bool = True) -> None:
+    def refuse(
+        path: Path, data: bytes, *, create_parents: bool = True, in_place_fallback: bool = False
+    ) -> None:
         raise PermissionError(errno.EACCES, "Accès refusé")
 
     monkeypatch.setattr(writer, "atomic_write_bytes", refuse)

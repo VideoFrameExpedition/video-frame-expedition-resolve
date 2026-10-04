@@ -5,9 +5,10 @@ and the other once they are translated, each with every text in its language. Th
 of earlier versions (``<stem>.txt``) is removed once they are written, when it is ours.
 
 A file is replaced atomically (a temporary file in the same folder, then a rename that waits
-out an antivirus lock). A file of that name that the application did not write is never
-replaced, and no folder is ever created. A read-only folder, a refused access or a full disk
-is a result to report, never an exception for the caller.
+out an antivirus lock; written in place in a folder that refuses renames). A file of that name
+that the application did not write is never replaced, and no folder is ever created. A
+read-only folder, a refused access or a full disk is a result to report, never an exception for
+the caller.
 """
 
 from __future__ import annotations
@@ -159,7 +160,9 @@ def write_sidecar(db: Database, video_id: str) -> SidecarResult:
                 conflict = conflict or target
                 continue
             text = render(localized(document, dictionaries[language]))
-            atomic_write_bytes(target, text.encode("utf-8"), create_parents=False)
+            atomic_write_bytes(
+                target, text.encode("utf-8"), create_parents=False, in_place_fallback=True
+            )
             done.append(target)
     except OSError as exc:
         return SidecarResult(video_id, SidecarStatus.FAILED, target, failure(exc), tuple(done))

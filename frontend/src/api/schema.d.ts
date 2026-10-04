@@ -4136,12 +4136,12 @@ export interface components {
             skipped: components["schemas"]["TimelineSkippedOut"][];
             /**
              * Subtitle Files
-             * @description Subtitle files of the videos, written next to them.
+             * @description Subtitle files of the videos, written next to them, and, when Resolve runs on another computer, those of the timeline's tracks.
              */
             subtitle_files: components["schemas"]["SubtitleFileOut"][];
             /**
              * Subtitles
-             * @description Subtitle clips imported into the ``folder`` bin: those of the laid tracks or, when Resolve runs on another computer, the files of the videos (``subtitle_files``), each to be dragged to the start of its video.
+             * @description Subtitle clips imported into the ``folder`` bin: those of the laid tracks or, when Resolve runs on another computer and no folder of the videos could take the tracks, the files of the videos (``subtitle_files``), each to be dragged to the start of its video.
              */
             subtitles: string[];
             /**
@@ -5032,7 +5032,8 @@ export interface components {
         };
         /**
          * SubtitleFileOut
-         * @description A subtitle file of a video, written next to it.
+         * @description A subtitle file of a video, written next to it, or, when DaVinci Resolve runs on another
+         *     computer, of a timeline track, written next to its first video (``<name>_TIMELINE_EN.srt``).
          */
         SubtitleFileOut: {
             /** Detail */

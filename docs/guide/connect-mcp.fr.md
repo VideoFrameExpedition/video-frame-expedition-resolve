@@ -153,8 +153,17 @@ les rushs par un partage réseau de ce PC). « Tester la connexion » lit le pro
 Resolve.
 
 Sur le Mac, dans Resolve Studio : **Préférences › Système › Général › Script externe : Réseau**,
-et le pare-feu du Mac laisse entrer ce PC (port 1144). Ce PC garde DaVinci Resolve installé (sans
-le lancer) : l'application utilise sa bibliothèque de scripts pour lire le Resolve du Mac.
+et le pare-feu du Mac laisse entrer ce PC : le serveur de scripts de Resolve (port 1144) **et**
+DaVinci Resolve lui-même, qui choisit un autre port à chaque lancement. Si l'ordinateur de
+Resolve est un PC Windows, les règles que Resolve installe dans le pare-feu ne valent que pour un
+réseau « privé » : sur un réseau classé « public », autorisez `fuscript.exe` et `Resolve.exe`
+(dossier de DaVinci Resolve) pour ce réseau. Ce PC garde DaVinci Resolve installé (sans le
+lancer) : l'application utilise sa bibliothèque de scripts pour lire le Resolve du Mac.
+
+Pour les sous-titres, le partage des rushs doit être **en lecture et écriture** : l'application
+écrit les pistes de la timeline à côté de sa première vidéo (`<timeline>_TIMELINE_FR.srt`), où
+Resolve les lit pour les poser, et les sous-titres de chaque vidéo à côté d'elle. Sur un partage
+en lecture seule, la timeline arrive sans ses pistes de sous-titres, et l'application le dit.
 
 ## Accès via Tailscale
 

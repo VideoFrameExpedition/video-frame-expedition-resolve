@@ -198,7 +198,8 @@ function BuildForm({
             { description: t("timelineBuild.subtitlesLaidHint") },
           );
         } else if (result.subtitles.length > 0) {
-          // Resolve elsewhere gets the videos' own files; here, it did not lay the timeline's.
+          // Resolve elsewhere gets the videos' own files when no folder took the timeline's
+          // tracks; here, it did not lay them.
           const remote = Boolean(plan.data?.resolve_host);
           toast.info(
             t(remote ? "timelineBuild.subtitlesInBin" : "timelineBuild.subtitlesNotLaid", {
@@ -472,7 +473,7 @@ function SkippedVideos({ skipped }: { skipped: Plan["skipped"] }) {
 
 /** Whether DaVinci Resolve is open, and in which project; else why not, and the files instead.
  * ``markers``: markers go on the media pool clips; ``subtitles``: tracks laid on the timeline
- * (``remote``: Resolve on another computer, files put in the bin). */
+ * (``remote``: Resolve on another computer, the tracks' files next to the first video). */
 function ResolveState({
   project,
   markers,

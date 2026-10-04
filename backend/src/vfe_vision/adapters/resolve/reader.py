@@ -72,15 +72,20 @@ READING = "La lecture de DaVinci Resolve"
 # Resolve on another computer: its scripting server listens there on this port.
 SCRIPT_PORT = 1144
 REACH_TIMEOUT_S = 2.0
+# Its firewall must let in the scripting server (fuscript, port 1144) and Resolve itself (a port
+# it picks at each start); on Windows, the rules Resolve installs hold for private networks only.
 NOT_REACHABLE = (
     "DaVinci Resolve est réglé sur l'ordinateur « {host} », qui ne répond pas : vérifiez qu'il "
     "est allumé et joignable (même réseau ou Tailscale), que Resolve y est lancé et que son "
-    "pare-feu laisse passer le port 1144."
+    "pare-feu laisse passer le port 1144 (sous Windows, les règles que Resolve installe ne "
+    "valent que pour un réseau « privé »)."
 )
 REMOTE_REFUSED = (
     "DaVinci Resolve sur « {host} » refuse la connexion : dans Resolve Studio sur cet "
     "ordinateur, Préférences › Système › Général › « Script externe » (External scripting "
-    "using) sur « Réseau » (Network), puis relancez Resolve."
+    "using) sur « Réseau » (Network), puis relancez Resolve. Si c'est déjà le cas, son pare-feu "
+    "doit laisser entrer aussi DaVinci Resolve lui-même, pas seulement le port 1144 (sous "
+    "Windows, les règles que Resolve installe ne valent que pour un réseau « privé »)."
 )
 NOT_INSTALLED_HERE = (
     "Pour lire le DaVinci Resolve de « {host} », cet ordinateur a besoin de la bibliothèque de "

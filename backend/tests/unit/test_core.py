@@ -8,7 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from vfe_vision.core.atomic_io import atomic_write_text
+from vfe_vision.core import atomic_io
+from vfe_vision.core.atomic_io import atomic_write_bytes, atomic_write_text
 from vfe_vision.core.cancel import CancelToken
 from vfe_vision.core.config import Settings, is_loopback
 from vfe_vision.core.errors import CancelledError, ExternalToolError
@@ -68,6 +69,26 @@ def test_atomic_write_replaces_content(tmp_path: Path) -> None:
     atomic_write_text(target, "deux")
     assert target.read_text(encoding="utf-8") == "deux"
     assert list(target.parent.iterdir()) == [target]  # no temp file left behind
+
+
+def test_a_folder_that_refuses_renames(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """As the shared folders of Windows Sandbox: every rename refused, even once the file is
+    closed. A user's folder gets the file written in place; the data folder never does."""
+
+    def refused(self: Path, target: Path) -> Path:
+        raise PermissionError(32, "used by another process")
+
+    monkeypatch.setattr(Path, "replace", refused)
+    monkeypatch.setattr(atomic_io, "_RETRY_DELAYS_S", ())
+    target = tmp_path / "clip_FR.srt"
+    target.write_bytes(b"avant")
+    atomic_write_bytes(target, b"apres", create_parents=False, in_place_fallback=True)
+    assert target.read_bytes() == b"apres"
+    assert list(tmp_path.iterdir()) == [target]  # no temp file left behind
+    with pytest.raises(PermissionError):
+        atomic_write_bytes(target, b"jamais")
+    assert target.read_bytes() == b"apres"
+    assert list(tmp_path.iterdir()) == [target]
 
 
 class TestProcesses:

@@ -1367,7 +1367,7 @@
       "what": "It will be created there and opened. Files missing from the media pool are imported into the “Video Frame Expedition” bin, with the timeline.",
       "whatMarkers": "Markers are placed on the media pool clips, which the timeline takes on; yours are left alone.",
       "whatSubtitles": "Subtitles are laid on the timeline, one track per kind, and also written next to each video (<name>_FR.srt for the speech, in the language spoken; <name>_SHOTS_EN.srt for the shots, in the interface's language).",
-      "whatSubtitlesRemote": "Subtitles are written next to each video (<name>_FR.srt for the speech, in the language spoken; <name>_SHOTS_EN.srt for the shots, in the interface's language) and imported into the bin, to drag onto the timeline afterwards.",
+      "whatSubtitlesRemote": "Subtitles are laid on the timeline, one track per kind, from files written next to its first video (<timeline>_TIMELINE_EN.srt), which DaVinci Resolve's computer reads through the folder pairs; they are also written next to each video (<name>_FR.srt for the speech, in the language spoken; <name>_SHOTS_EN.srt for the shots, in the interface's language).",
       "fileInstead": "You can download the FCPXML file and import it in Resolve: File › Import › Timeline…"
     },
     "download": "Download the files",
@@ -1382,7 +1382,7 @@
     "markersMissed_other": "{{count}} markers could not be placed (past the end of the clip, or no free frame nearby)",
     "subtitlesInBin_one": "A subtitle file, written next to its video, in the “Video Frame Expedition” bin",
     "subtitlesInBin_other": "{{count}} subtitle files, written next to their videos, in the “Video Frame Expedition” bin",
-    "subtitlesHint": "Drag each one ({{names}}) to the very start of its video on the timeline: the transcript's on one subtitle track, the shots' (_SHOTS) on another. DaVinci Resolve runs on another computer: the application cannot lay them itself.",
+    "subtitlesHint": "Drag each one ({{names}}) to the very start of its video on the timeline: the transcript's on one subtitle track, the shots' (_SHOTS) on another. DaVinci Resolve runs on another computer and no folder of the videos could take the timeline's tracks: the application cannot lay them itself.",
     "subtitlesLaid": "Subtitles laid on the timeline: {{tracks}}",
     "subtitlesNotLaid_one": "DaVinci Resolve did not lay the subtitles: a file in the “Video Frame Expedition” bin",
     "subtitlesNotLaid_other": "DaVinci Resolve did not lay the subtitles: {{count}} files in the “Video Frame Expedition” bin",

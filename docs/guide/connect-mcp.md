@@ -152,9 +152,17 @@ reads the rushes through a network share of this PC). "Test the connection" read
 open in Resolve.
 
 On the Mac, in Resolve Studio: **Preferences › System › General › External scripting using:
-Network**, and the Mac's firewall lets this PC in (port 1144). This PC keeps DaVinci Resolve
-installed (without starting it): the application uses its scripting library to read the Mac's
-Resolve.
+Network**, and the Mac's firewall lets this PC in: Resolve's scripting server (port 1144) **and**
+DaVinci Resolve itself, which picks another port each time it starts. If Resolve's computer is a
+Windows PC, the firewall rules Resolve installs only hold for a "private" network: on a network
+classed as "public", allow `fuscript.exe` and `Resolve.exe` (DaVinci Resolve's folder) for that
+network. This PC keeps DaVinci Resolve installed (without starting it): the application uses its
+scripting library to read the Mac's Resolve.
+
+For the subtitles, the share of the rushes must be **read and write**: the application writes
+the timeline's tracks next to its first video (`<timeline>_TIMELINE_EN.srt`), where Resolve reads
+them to lay them, and each video's subtitles next to it. On a read-only share, the timeline
+arrives without its subtitle tracks, and the application says so.
 
 ## Access through Tailscale
 

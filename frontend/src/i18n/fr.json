@@ -1367,7 +1367,7 @@
       "what": "Elle y sera créée puis ouverte. Les fichiers absents du media pool sont importés dans le chutier « Video Frame Expedition », avec la timeline.",
       "whatMarkers": "Les marqueurs sont posés sur les clips du media pool, que la timeline reprend ; les vôtres ne sont pas touchés.",
       "whatSubtitles": "Les sous-titres sont posés sur la timeline, une piste par sorte, et écrits aussi à côté de chaque vidéo (<nom>_FR.srt pour la parole, dans la langue parlée ; <nom>_SHOTS_FR.srt pour les plans, dans la langue de l'interface).",
-      "whatSubtitlesRemote": "Les sous-titres sont écrits à côté de chaque vidéo (<nom>_FR.srt pour la parole, dans la langue parlée ; <nom>_SHOTS_FR.srt pour les plans, dans la langue de l'interface) et importés dans le chutier, à glisser ensuite sur la timeline.",
+      "whatSubtitlesRemote": "Les sous-titres sont posés sur la timeline, une piste par sorte, depuis des fichiers écrits à côté de sa première vidéo (<timeline>_TIMELINE_FR.srt), que l'ordinateur de DaVinci Resolve lit par les correspondances de dossiers ; ils sont écrits aussi à côté de chaque vidéo (<nom>_FR.srt pour la parole, dans la langue parlée ; <nom>_SHOTS_FR.srt pour les plans, dans la langue de l'interface).",
       "fileInstead": "Vous pouvez télécharger le fichier FCPXML et l'importer dans Resolve : Fichier › Importer › Timeline…"
     },
     "download": "Télécharger les fichiers",
@@ -1382,7 +1382,7 @@
     "markersMissed_other": "{{count}} marqueurs n'ont pas pu être posés (après la fin du clip, ou aucune image libre à côté)",
     "subtitlesInBin_one": "Un fichier de sous-titres, écrit à côté de sa vidéo, dans le chutier « Video Frame Expedition »",
     "subtitlesInBin_other": "{{count}} fichiers de sous-titres, écrits à côté de leurs vidéos, dans le chutier « Video Frame Expedition »",
-    "subtitlesHint": "Faites glisser chacun ({{names}}) au tout début de sa vidéo sur la timeline : ceux de la transcription sur une piste de sous-titres, ceux des plans (_SHOTS) sur une autre. DaVinci Resolve tourne sur un autre ordinateur : l'application ne peut pas les y poser elle-même.",
+    "subtitlesHint": "Faites glisser chacun ({{names}}) au tout début de sa vidéo sur la timeline : ceux de la transcription sur une piste de sous-titres, ceux des plans (_SHOTS) sur une autre. DaVinci Resolve tourne sur un autre ordinateur et aucun dossier des vidéos n'a pu recevoir les pistes de la timeline : l'application ne peut pas les y poser elle-même.",
     "subtitlesLaid": "Sous-titres posés sur la timeline : {{tracks}}",
     "subtitlesNotLaid_one": "DaVinci Resolve n'a pas posé les sous-titres : un fichier dans le chutier « Video Frame Expedition »",
     "subtitlesNotLaid_other": "DaVinci Resolve n'a pas posé les sous-titres : {{count}} fichiers dans le chutier « Video Frame Expedition »",

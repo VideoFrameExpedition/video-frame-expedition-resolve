@@ -5,7 +5,8 @@ markers where their chapters start and over the stretches the application sugges
 what is said and of what each shot shows (for Resolve, written next to each video).
 
 Paths are those of the computer Resolve runs on: this one's, or, when Resolve is set on
-another computer, the same files through the folder pairs (a video no pair holds is left out).
+another computer, the same files through the folder pairs (a video no pair holds is left out; the
+subtitle tracks are then written next to the first video, for that computer to read them).
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ from vfe_vision.db.models import Transcript, Video
 from vfe_vision.db.preferences import load_preferences
 from vfe_vision.domain.enums import VideoStatus
 from vfe_vision.domain.markers import Marker, chapter_start, highlight_marker, role_marker
-from vfe_vision.domain.path_map import to_resolve
+from vfe_vision.domain.path_map import FolderPair, to_resolve
 from vfe_vision.domain.preferences import folder_pairs
 from vfe_vision.domain.timeline_build import (
     DEFAULT_PARTS,
@@ -65,13 +66,21 @@ from vfe_vision.services.container import AppContainer
 from vfe_vision.services.editing_data import load_editing_data
 from vfe_vision.services.exports import ExportFile
 from vfe_vision.services.reading import language_of, texts_in
-from vfe_vision.services.subtitle_files import WriteStatus, WrittenSubtitles, write_subtitles
+from vfe_vision.services.subtitle_files import (
+    WriteStatus,
+    WrittenSubtitles,
+    write_file,
+    write_subtitles,
+)
 
 # The media pool bin of the files and the timeline added to Resolve (« VFE Vision » before the
 # application was renamed: a project that has that bin keeps it; its clips are still found and
 # reused).
 MEDIA_BIN = "Video Frame Expedition"
 SUBTITLES_DIR = "timelines"  # in the data folder: the subtitle tracks laid in Resolve
+# After the timeline's name, in the files of its tracks written next to its first video for
+# Resolve on another computer, apart from the videos' own files (« Été_TIMELINE_FR.srt »).
+TRACK_FILE_TAG = "_TIMELINE"
 SUGGESTION_KINDS = ("highlight", "establishing", "b_roll", "avoid")
 NOTHING_TO_PLACE = (
     "Aucune des vidéos choisies ne peut entrer dans une timeline (fichiers introuvables ou pas "
@@ -296,8 +305,9 @@ def build_in_resolve(c: AppContainer, plan: TimelinePlan) -> ResolveBuild:
     subtitles asked for are written next to each video and laid on the timeline, one
     track per kind (« Transcription », then « Plans »; « Transcript », « Shots » in English),
     from files in the timeline's time in the data folder. Resolve on another
-    computer does not see that folder: it gets the videos' own files in the bin (through the
-    folder pairs, as the videos), to lay by hand."""
+    computer does not see that folder: those files go next to the timeline's first video, which
+    it opens through the folder pairs, as the videos; when no folder of the videos takes them, it
+    gets the videos' own files in the bin, to lay by hand."""
     if not plan.videos:
         raise InvalidInputError(NOTHING_TO_PLACE)
     results = _write_subtitles(c, plan)
@@ -307,11 +317,15 @@ def build_in_resolve(c: AppContainer, plan: TimelinePlan) -> ResolveBuild:
         tracks = _track_files(c, plan)
     else:
         pairs = folder_pairs(load_preferences(c.db))
-        loose = tuple(
-            path
-            for done in results
-            if done.status == WriteStatus.WRITTEN and (path := to_resolve(str(done.path), pairs))
-        )
+        written, tracks = _tracks_beside_videos(c, plan, pairs)
+        results += written
+        if not tracks:
+            loose = tuple(
+                path
+                for done in results
+                if done.status == WriteStatus.WRITTEN
+                and (path := to_resolve(str(done.path), pairs))
+            )
     request = TimelineRequest(
         name=plan.name,
         format=plan.format,
@@ -345,17 +359,54 @@ def _track_files(c: AppContainer, plan: TimelinePlan) -> tuple[tuple[str, str], 
     return tuple(files)
 
 
+def _tracks_beside_videos(
+    c: AppContainer, plan: TimelinePlan, pairs: Sequence[FolderPair]
+) -> tuple[list[WrittenSubtitles], tuple[tuple[str, str], ...]]:
+    """Each subtitle track as a SubRip file in the timeline's time, next to the timeline's first
+    video (``<name>_TIMELINE_FR.srt``…; the next folder of its videos when one cannot take it),
+    for Resolve on another computer: what was written, or why not, and ``(track name, path as
+    Resolve sees it)`` of each track written."""
+    tracks = plan.subtitle_tracks
+    if not tracks:
+        return [], ()
+    local = _local_paths(c, plan)
+    folders: dict[Path, str] = {}  # the videos' folders, in the timeline's order
+    for video in plan.videos:
+        if video.video_id in local:
+            folders.setdefault(Path(local[video.video_id]).parent, video.video_id)
+    base = file_base(plan.name) + TRACK_FILE_TAG
+    results: list[WrittenSubtitles] = []
+    laid: list[tuple[str, str]] = []
+    for track in tracks:
+        data = to_srt(track.cues).encode("utf-8")
+        done: WrittenSubtitles | None = None
+        for folder, video_id in folders.items():
+            done = write_file(c.db, video_id, track.part, folder / track.file_name(base), data)
+            there = to_resolve(str(done.path), pairs)
+            if done.status == WriteStatus.WRITTEN and there:
+                laid.append((track.label, there))
+                break
+        if done is not None:  # the file written, else why the last folder did not take it
+            results.append(done)
+    return results, tuple(laid)
+
+
 def _write_subtitles(c: AppContainer, plan: TimelinePlan) -> list[WrittenSubtitles]:
     """The subtitle files asked for, next to each video (its own time), in the timeline's order."""
     if not (plan.parts.transcript or plan.parts.shots):
         return []
-    ids = [video.video_id for video in plan.videos]
-    with c.db.read() as session:  # the videos' paths on this computer
-        rows = session.execute(sa.select(Video.id, Video.path).where(Video.id.in_(ids)))
-        local = {row.id: row.path for row in rows}
+    local = _local_paths(c, plan)
     return [
         write_subtitles(c.db, video.video_id, Path(local[video.video_id]), track)
         for video in plan.videos
         if video.video_id in local
         for track in subtitle_tracks([video], plan.format, plan.parts, plan.language)
     ]
+
+
+def _local_paths(c: AppContainer, plan: TimelinePlan) -> dict[str, str]:
+    """The paths of the timeline's videos on this computer."""
+    ids = [video.video_id for video in plan.videos]
+    with c.db.read() as session:
+        rows = session.execute(sa.select(Video.id, Video.path).where(Video.id.in_(ids)))
+        return {row.id: row.path for row in rows}

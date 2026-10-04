@@ -927,7 +927,8 @@ class TimelineSkippedOut(ApiModel):
 
 
 class SubtitleFileOut(ApiModel):
-    """A subtitle file of a video, written next to it."""
+    """A subtitle file of a video, written next to it, or, when DaVinci Resolve runs on another
+    computer, of a timeline track, written next to its first video (``<name>_TIMELINE_EN.srt``)."""
 
     video_id: str
     part: str = Field(
@@ -1044,15 +1045,17 @@ class ResolveTimelineBuiltOut(ApiModel):
     subtitles: list[str] = Field(
         description=(
             "Subtitle clips imported into the ``folder`` bin: those of the laid tracks or, "
-            "when Resolve runs on another computer, the files of the videos "
-            "(``subtitle_files``), each to be dragged to the start of its video."
+            "when Resolve runs on another computer and no folder of the videos could take the "
+            "tracks, the files of the videos (``subtitle_files``), each to be dragged to the "
+            "start of its video."
         )
     )
     subtitles_laid: list[str] = Field(
         description="Subtitle tracks laid on the timeline (« Transcript », « Shots »)."
     )
     subtitle_files: list[SubtitleFileOut] = Field(
-        description="Subtitle files of the videos, written next to them."
+        description="Subtitle files of the videos, written next to them, and, when Resolve runs "
+        "on another computer, those of the timeline's tracks."
     )
     skipped: list[TimelineSkippedOut] = Field(description="Videos left out before Resolve.")
 

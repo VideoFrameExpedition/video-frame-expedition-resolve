@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import io
 import json
+import shutil
 import xml.etree.ElementTree as ET
 import zipfile
 from collections.abc import Iterator
@@ -460,29 +461,79 @@ def test_no_subtitles_asked_none_written(
     ]  # fmt: skip
 
 
+def _on_another_computer(client: TestClient, tmp_path: Path) -> None:
+    update_preferences(
+        _container(client).db,
+        {"resolve_host": "mac-studio",
+         "resolve_folders": [{"here": str(tmp_path / "Rushs"), "there": "/Volumes/Rushs"}]},
+    )  # fmt: skip
+
+
 def test_subtitles_for_resolve_on_another_computer(
     client: TestClient, builder: FakeBuilder, tmp_path: Path
 ) -> None:
     ids = _analysed(client, tmp_path)
-    _, holiday = _on_disk(tmp_path)
-    update_preferences(
-        _container(client).db,
-        {"resolve_host": "mac-studio",
-         "resolve_folders": [{"here": str(holiday.parent), "there": "/Volumes/Rushs"}]},
-    )  # fmt: skip
-    body = {"video_ids": ids, "shots": True}
+    mountain, holiday = _on_disk(tmp_path)
+    _on_another_computer(client, tmp_path)
+    body = {"video_ids": ids, "shots": True, "name": "Été"}
     built = client.post("/api/v1/resolve/timelines", json=body, headers=HEADERS).json()
-    # Its computer does not see the data folder: the videos' own files, written here, opened
-    # through the folder pair as the videos, into the bin (to lay by hand).
-    assert builder.requests[0].subtitle_tracks == ()
-    assert builder.requests[0].subtitle_files == (
-        "/Volumes/Rushs/Sommets/montagne_SHOTS_FR.srt",
-        "/Volumes/Rushs/vacances_FR.srt",
-        "/Volumes/Rushs/vacances_SHOTS_FR.srt",
+    # Its computer does not see the data folder: the tracks are written next to the timeline's
+    # first video, opened through the folder pair as the videos, and laid as here.
+    (request,) = builder.requests
+    assert request.subtitle_tracks == (
+        ("Transcription", "/Volumes/Rushs/Sommets/Été_TIMELINE_FR.srt"),
+        ("Plans", "/Volumes/Rushs/Sommets/Été_TIMELINE_SHOTS_FR.srt"),
     )
+    assert request.subtitle_files == ()
+    assert built["subtitles_laid"] == ["Transcription", "Plans"]
+    laid = mountain.with_name("Été_TIMELINE_FR.srt")
+    assert laid.read_text(encoding="utf-8").startswith("1\n00:01:25,")  # after 40 s of mountain
+    assert holiday.with_name("vacances_FR.srt").is_file()  # each video's own, as here
+    assert [(f["file"], f["status"]) for f in built["subtitle_files"]] == [
+        ("montagne_SHOTS_FR.srt", "written"), ("vacances_FR.srt", "written"),
+        ("vacances_SHOTS_FR.srt", "written"), ("Été_TIMELINE_FR.srt", "written"),
+        ("Été_TIMELINE_SHOTS_FR.srt", "written"),
+    ]  # fmt: skip
+    # Built again, its files are written again; one the user changed is left, and the track goes
+    # to the next folder of the videos.
+    shots = mountain.with_name("Été_TIMELINE_SHOTS_FR.srt")
+    shots.write_text("1\n00:00:01,000 --> 00:00:02,000\nÀ moi\n", encoding="utf-8")
+    again = client.post("/api/v1/resolve/timelines", json=body, headers=HEADERS).json()
+    assert builder.requests[-1].subtitle_tracks == (
+        ("Transcription", "/Volumes/Rushs/Sommets/Été_TIMELINE_FR.srt"),
+        ("Plans", "/Volumes/Rushs/Été_TIMELINE_SHOTS_FR.srt"),
+    )
+    assert shots.read_text(encoding="utf-8").endswith("À moi\n")
+    assert [f["status"] for f in again["subtitle_files"]] == ["written"] * 5
+
+
+def test_tracks_no_folder_takes_on_another_computer(
+    client: TestClient, builder: FakeBuilder, tmp_path: Path
+) -> None:
+    ids = _analysed(client, tmp_path)
+    mountain, holiday = _on_disk(tmp_path)
+    for folder in (mountain.parent, holiday.parent):  # a file of the user's of that name in each
+        folder.joinpath("Été_TIMELINE_FR.srt").write_text("À moi\n", encoding="utf-8")
+    _on_another_computer(client, tmp_path)
+    body = {"video_ids": ids, "name": "Été"}
+    built = client.post("/api/v1/resolve/timelines", json=body, headers=HEADERS).json()
+    # The videos' own files go into the bin instead, to lay by hand.
+    (request,) = builder.requests
+    assert request.subtitle_tracks == ()
+    assert request.subtitle_files == ("/Volumes/Rushs/vacances_FR.srt",)
     assert built["subtitles_laid"] == []
-    assert holiday.with_name("vacances_FR.srt").is_file()
-    assert [f["status"] for f in built["subtitle_files"]] == ["written"] * 3
+    assert [(f["file"], f["status"], f["folder"]) for f in built["subtitle_files"]] == [
+        ("vacances_FR.srt", "written", str(holiday.parent)),
+        ("Été_TIMELINE_FR.srt", "conflict", str(holiday.parent)),
+    ]
+    # Their disk gone, nothing is written, and all is said.
+    shutil.rmtree(holiday.parent)
+    built = client.post("/api/v1/resolve/timelines", json=body, headers=HEADERS).json()
+    gone = builder.requests[-1]
+    assert (gone.subtitle_tracks, gone.subtitle_files) == ((), ())
+    assert [(f["file"], f["status"]) for f in built["subtitle_files"]] == [
+        ("vacances_FR.srt", "failed"), ("Été_TIMELINE_FR.srt", "failed"),
+    ]  # fmt: skip
 
 
 def test_a_folder_that_cannot_be_written(
