@@ -22,8 +22,8 @@ fait sur le processeur, et le modèle de vision tourne sur ce que LM Studio pren
 votre ordinateur ; cela n'a pas été testé sur d'autres cartes. Une version macOS est prévue
 dans un dépôt à part.
 
-> Présentation en vidéo, huit minutes : [youtu.be/2-FhcJFjw9M](https://youtu.be/2-FhcJFjw9M) ;
-> en anglais : [youtu.be/mG6ZqM0IKm4](https://youtu.be/mG6ZqM0IKm4).
+> Présentation en vidéo, huit minutes : [youtu.be/1EI36bRbdWo](https://youtu.be/1EI36bRbdWo) ;
+> en anglais : [youtu.be/G0WT96QsGsU](https://youtu.be/G0WT96QsGsU).
 >
 > C'est la nouvelle version de *Video Frame Expedition* ; elle remplace l'ancienne.
 
@@ -184,8 +184,8 @@ en français et en anglais. C'est le fichier
 http://127.0.0.1:8765/help/index.html ; le dossier peut aussi être hébergé tel quel ailleurs.
 
 **La vidéo de présentation** (huit minutes, dix chapitres) est en ligne sur
-[YouTube](https://youtu.be/2-FhcJFjw9M) et dans la page d'aide ; sa version anglaise (neuf
-minutes) aussi, sur [YouTube](https://youtu.be/mG6ZqM0IKm4) et dans la page d'aide en anglais.
+[YouTube](https://youtu.be/1EI36bRbdWo) et dans la page d'aide ; sa version anglaise (neuf
+minutes) aussi, sur [YouTube](https://youtu.be/G0WT96QsGsU) et dans la page d'aide en anglais.
 
 Assistants (Claude Code, Claude Desktop, Cursor, VS Code, Codex) et accès depuis vos autres
 appareils par Tailscale : page « Connexions » de l'interface et

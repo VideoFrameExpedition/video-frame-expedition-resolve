@@ -20,8 +20,8 @@ memory (video decoding, and optionally speech recognition). Without one, that wo
 processor, and the vision model runs on whatever LM Studio supports on your computer; other
 graphics cards have not been tested. A macOS version is planned as a separate repository.
 
-> Video presentation, nine minutes: [youtu.be/mG6ZqM0IKm4](https://youtu.be/mG6ZqM0IKm4);
-> in French: [youtu.be/2-FhcJFjw9M](https://youtu.be/2-FhcJFjw9M).
+> Video presentation, nine minutes: [youtu.be/G0WT96QsGsU](https://youtu.be/G0WT96QsGsU);
+> in French: [youtu.be/1EI36bRbdWo](https://youtu.be/1EI36bRbdWo).
 >
 > This is the new version of *Video Frame Expedition*; it replaces the earlier one.
 
@@ -181,8 +181,8 @@ English. It is the file
 http://127.0.0.1:8765/help/index.html; the folder can also be hosted elsewhere as it is.
 
 **The presentation video** (nine minutes, ten chapters) is on
-[YouTube](https://youtu.be/mG6ZqM0IKm4) and in the help page; so is its French version (eight
-minutes), on [YouTube](https://youtu.be/2-FhcJFjw9M) and in the French help page.
+[YouTube](https://youtu.be/G0WT96QsGsU) and in the help page; so is its French version (eight
+minutes), on [YouTube](https://youtu.be/1EI36bRbdWo) and in the French help page.
 
 Connecting assistants (Claude Code, Claude Desktop, Cursor, VS Code, Codex) and using the
 application from your other devices through Tailscale: "Connections" page of the interface and
