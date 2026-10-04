@@ -114,11 +114,12 @@ class TestToken:
         assert sddl.startswith("D:P")  # protected: the folder's permissions do not flow in
         assert all("ID" not in ace[1] for ace in aces)  # nothing inherited
         trustees = {ace[5] for ace in aces}
-        assert user in trustees
+        me = {user, "LA"} if user.endswith("-500") else {user}  # built-in Administrator: "LA"
+        assert trustees & me
         # A process run as administrator may leave Administrators, SYSTEM and the owner in:
         # they can read any file anyway. No other account, ever.
         admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
-        assert trustees <= {user} | ({"BA", "SY", "OW"} if admin else set())
+        assert trustees <= me | ({"BA", "SY", "OW"} if admin else set())
 
     def test_cli_shows_then_rotates(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         from vfe_vision.core.config import get_settings
