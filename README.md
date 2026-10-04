@@ -5,6 +5,8 @@
 
 **English** · [Français](README.fr.md)
 
+[![Checks](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml/badge.svg)](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml)
+
 **Your rushes, readable at last.** A folder of videos is a list of file names and thumbnails:
 nothing tells you what is in them, what is said, or when the light was good. Video Frame
 Expedition analyses every video **on your own machine**: the file's metadata, the place, the
@@ -258,3 +260,9 @@ You may use, modify, integrate and share it, including for paid work, as long as
 author. It may not be sold, even modified, and a modified version you share stays under the same
 license, free of charge, with its source code. Military use, violence and the surveillance of
 people are forbidden. Provided as is, without warranty or support.
+
+## Contributions
+
+This repository does not take contributions: issues are closed and pull requests are not merged.
+It is published so that the application can be installed and its code read. To report a
+security flaw, see [SECURITY.md](SECURITY.md).

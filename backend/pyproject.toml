@@ -1,6 +1,6 @@
 [project]
 name = "vfe-vision"
-version = "0.1.0"
+version = "1.0.0"
 description = "Video Frame Expedition for DaVinci Resolve — local-first video analysis with a local vision model (LM Studio), web UI and MCP server."
 readme = "README.md"
 license = "LicenseRef-VFE-1.0"

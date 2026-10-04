@@ -5,6 +5,8 @@
 
 [English](README.md) · **Français**
 
+[![Checks](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml/badge.svg)](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml)
+
 **Vos rushs, enfin lisibles.** Un dossier de vidéos, ce sont des noms de fichiers et des
 vignettes : rien qui dise ce qu'on y voit, ce qu'on y dit, ni quand la lumière était bonne.
 Video Frame Expedition produit, **sur votre machine**, une analyse complète de chaque vidéo — les
@@ -262,3 +264,9 @@ compris pour votre travail rémunéré, en citant l'auteur. Il ne peut pas être
 et une version modifiée que vous partagez reste sous la même licence, gratuite, avec son code
 source. L'usage militaire, la violence et la surveillance de personnes sont interdits. Fourni tel
 quel, sans garantie ni support.
+
+## Contributions
+
+Ce dépôt ne prend pas de contributions : les issues sont fermées et les demandes de fusion (pull
+requests) ne sont pas intégrées. Il est publié pour que l'application puisse être installée et
+son code lu. Pour signaler une faille de sécurité, voir [SECURITY.fr.md](SECURITY.fr.md).
