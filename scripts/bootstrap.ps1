@@ -22,7 +22,10 @@ function Install-IfMissing([string]$Name, [scriptblock]$IsThere, [string]$Winget
         return
     }
     Write-Host "[..] Installation de $Name ($WingetId)"
-    winget install --id $WingetId -e --accept-package-agreements --accept-source-agreements --silent
+    # winget's own catalogue only: the Microsoft Store one may be missing (Store blocked in a
+    # company, Windows Sandbox) and make the search fail before anything is installed.
+    winget install --id $WingetId -e --source winget `
+        --accept-package-agreements --accept-source-agreements --silent
     if ($LASTEXITCODE -ne 0) {
         throw "winget n'a pas pu installer $Name (code $LASTEXITCODE)."
     }
