@@ -1,0 +1,3 @@
+# Build scripts of dependencies are denied unless explicitly allowed (pnpm supply-chain policy).
+allowBuilds:
+  msw: false

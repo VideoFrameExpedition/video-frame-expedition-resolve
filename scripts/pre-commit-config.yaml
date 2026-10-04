@@ -1,0 +1,38 @@
+# Local hooks only (language: system): they reuse the project's environments and go through
+# `python -m`, which Windows Smart App Control accepts.
+# Installed by `just setup` (pre-commit install -c scripts/pre-commit-config.yaml).
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --project backend python -m ruff check --fix --force-exclude
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --project backend python -m ruff format --force-exclude
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy (strict)
+        entry: uv run --project backend python -m mypy --config-file backend/pyproject.toml backend/src backend/tests
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: prettier
+        name: prettier
+        entry: uv run --project backend python scripts/run_in_frontend.py prettier --write --ignore-unknown --
+        language: system
+        files: ^frontend/
+        types_or: [ts, tsx, javascript, json, css, html, markdown]
+      - id: eslint
+        name: eslint
+        entry: uv run --project backend python scripts/run_in_frontend.py eslint --max-warnings=0 --no-warn-ignored --
+        language: system
+        files: ^frontend/src/.*\.(ts|tsx)$
+      - id: no-large-files
+        name: no file over 1 MiB
+        entry: uv run --project backend python scripts/check_large_files.py
+        language: system

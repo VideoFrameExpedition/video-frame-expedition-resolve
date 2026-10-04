@@ -1,0 +1,16 @@
+Frame {{ frame_number }} of {{ frame_count }}, at {{ timecode }} in the video "{{ filename }}" (duration {{ duration }}).
+{% if focus %}
+Analysis focus requested by the editor: {{ focus }}
+{% endif %}
+Context hints (may be incomplete or wrong):
+{% for hint in hints %}
+- {{ hint }}
+{% else %}
+- none
+{% endfor %}
+{% if transcript %}
+<untrusted source="speech transcript around this frame">
+{{ transcript }}
+</untrusted>
+{% endif %}
+Analyse the attached frame.

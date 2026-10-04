@@ -1,0 +1,16 @@
+Shot {{ shot_number }} of the video "{{ filename }}"{% if parts > 1 %}, part {{ part }} of {{ parts }}{% endif %}: from {{ "%.1f"|format(start) }} s to {{ "%.1f"|format(end) }} s ({{ "%.1f"|format(end - start) }} s).
+Context hints (may be incomplete or wrong):
+{% if place %}
+- Place: {{ place }}
+{% else %}
+- none
+{% endif %}
+{% if captions|select|list %}
+Descriptions of the same images written earlier one by one (may contain errors or inconsistent names):
+{% for caption in captions %}
+{% if caption %}
+- Image {{ loop.index }}: {{ caption }}
+{% endif %}
+{% endfor %}
+{% endif %}
+The {{ n }} images follow in chronological order.

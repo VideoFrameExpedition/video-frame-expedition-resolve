@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Video Frame Expedition design tokens.
+ * Dark first (video work happens in dim rooms), coral and teal inherited from the mockups of the
+ * legacy Video Frame Expedition app, glass-like cards. Light theme available. These are not the
+ * colors of the logo (docs/brand/README.md), which carries its own and is embedded as an image.
+ */
+:root {
+  --radius: 0.75rem;
+  --brand-coral: #ff3366;
+  --brand-teal: #4ecdc4;
+  --brand-azure: #4aa3e8;
+
+  --background: #f7f8fb;
+  --foreground: #121620;
+  --card: #ffffff;
+  --card-foreground: #121620;
+  --popover: #ffffff;
+  --popover-foreground: #121620;
+  --primary: #e0284f;
+  --primary-foreground: #ffffff;
+  --secondary: #eef1f6;
+  --secondary-foreground: #1b2130;
+  --muted: #eef1f6;
+  --muted-foreground: #5b6474;
+  --accent: #e3f7f5;
+  --accent-foreground: #0d4d49;
+  --destructive: #d92d20;
+  --border: #dde2ea;
+  --input: #dde2ea;
+  --ring: #2bb3a9;
+  --success: #12805c;
+  --success-ink: #0b5c42; /* on its own 15 % tint: 4.5:1 */
+  --warning: #b54708;
+  --warning-ink: #8e3706;
+
+  /*
+   * Chart palette (dataviz method, validated with validate_palette.js on the card surface):
+   * slots 1-3 pass the all-pairs CVD check (timeline segments can sit next to any other);
+   * slot 3 is below 3:1 on white, so segments carry direct labels and a table view exists.
+   */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-neutral: #898781;
+  --chart-ink: #0b0e14; /* label ink inside filled marks (≥ 4.4:1 on every slot) */
+  --chart-grid: #eceef2;
+  --chart-axis: #c9ced8;
+  /* Light phases (ordinal ramp night → day; golden breaks the hue on purpose). Adjacent pairs
+     validated for colour-vision deficiencies (ΔE ≥ 16); a frame and a legend give the relief. */
+  --phase-night: #141b2e;
+  --phase-astronomical: #2d4274;
+  --phase-nautical: #4d72b8;
+  --phase-blue: #86aef0;
+  --phase-golden: #f2b44b;
+  --phase-day: #dcecfb;
+}
+
+.dark {
+  --background: #0b0e14;
+  --foreground: #e7eaf0;
+  --card: #121722;
+  --card-foreground: #e7eaf0;
+  --popover: #141a26;
+  --popover-foreground: #e7eaf0;
+  --primary: #ff3366;
+  --primary-foreground: #ffffff;
+  --secondary: #1b2230;
+  --secondary-foreground: #e7eaf0;
+  --muted: #171d29;
+  --muted-foreground: #97a1b1;
+  --accent: #173532;
+  --accent-foreground: #7fe3db;
+  --destructive: #f04438;
+  --border: rgb(255 255 255 / 0.08);
+  --input: rgb(255 255 255 / 0.12);
+  --ring: #4ecdc4;
+  --success: #32d583;
+  --success-ink: #32d583;
+  --warning: #fdb022;
+  --warning-ink: #fdb022;
+
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-neutral: #898781;
+  --chart-grid: #1d2431;
+  --chart-axis: #343c4b;
+  --phase-night: #1a2238;
+  --phase-astronomical: #34497d;
+  --phase-nautical: #5379bd;
+  --phase-blue: #8bb1ef;
+  --phase-golden: #e3a53c;
+  --phase-day: #c3dbf4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-success-ink: var(--success-ink);
+  --color-warning-ink: var(--warning-ink);
+  --color-brand-coral: var(--brand-coral);
+  --color-brand-teal: var(--brand-teal);
+  --color-brand-azure: var(--brand-azure);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-neutral: var(--chart-neutral);
+  --color-chart-ink: var(--chart-ink);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-axis: var(--chart-axis);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: "Inter", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    color-scheme: dark;
+  }
+  html:not(.dark) {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+@utility glass {
+  background-color: color-mix(in oklab, var(--card) 82%, transparent);
+  backdrop-filter: blur(10px);
+}

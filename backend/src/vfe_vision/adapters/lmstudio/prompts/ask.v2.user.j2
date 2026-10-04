@@ -1,0 +1,8 @@
+Passages from the video library ({{ passages|length }}), each with its video, the kind of passage and when it happens:
+<untrusted>
+{% for line in passages %}
+[{{ loop.index }}] {{ line }}
+{% endfor %}
+</untrusted>
+
+Question: {{ question }}

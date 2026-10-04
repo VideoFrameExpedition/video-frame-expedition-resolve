@@ -1,0 +1,91 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (lint, types, architecture, tests)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install FFmpeg and ExifTool (used by the tests)
+        run: choco install ffmpeg exiftool --no-progress -y
+
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install the dependencies
+        run: uv sync --locked
+
+      - name: Ruff
+        run: uv run python -m ruff check .
+
+      - name: Ruff format
+        run: uv run python -m ruff format --check .
+
+      - name: Mypy (strict)
+        run: uv run python -m mypy
+
+      - name: Architecture contracts
+        run: uv run python -c "from importlinter.cli import lint_imports_command; lint_imports_command()"
+
+      - name: Tests
+        run: uv run python -m pytest -q
+
+  frontend:
+    name: Frontend (types, lint, format, tests, build)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install the dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript
+        run: pnpm run typecheck
+
+      - name: ESLint
+        run: pnpm run lint
+
+      - name: Prettier
+        run: pnpm run format:check
+
+      - name: Tests
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build

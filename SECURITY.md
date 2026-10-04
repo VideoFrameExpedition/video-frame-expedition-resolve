@@ -1,0 +1,88 @@
+# Security
+
+**English** · [Français](SECURITY.fr.md)
+
+Video Frame Expedition for DaVinci Resolve is a **local** application: the server listens on
+`127.0.0.1` by default. It can also listen on the computer's Tailscale address
+(`VFE_TAILSCALE=true`); it never listens on `0.0.0.0` of its own accord.
+
+## Threat model
+
+- **Malicious web pages** that would try to call the local API (CSRF, DNS rebinding): `Origin`
+  header check, custom `X-VFE-Client` header mandatory on every write, host allowlist
+  (`TrustedHost`). No page of the application can be shown inside another site's frame
+  (`X-Frame-Options`, `frame-ancestors`). A file path taken from an address is checked on its
+  text before any disk access: a network path (`\\host\share`) is never opened, so Windows
+  never sends the user's credentials to a host named by a web page.
+- **Untrusted content in the videos** (transcriptions, on-screen text) that could contain
+  instructions aimed at an LLM: this content is always framed as "untrusted" in the prompts and
+  the MCP responses, and by default the MCP server cannot add a folder to the library.
+- **File access**: the API only reads files located under the declared library roots. There it
+  only writes the analysis file of each video, one per language (`<name>_FR.txt`,
+  `<name>_EN.txt`; can be turned off) and, when you create a timeline with subtitles,
+  its `.srt` files: atomic write, never in place of a file it did not write, never a
+  folder created. When read back, an analysis file is only taken over if it carries the
+  application's format and the video's fingerprint and size.
+- **Code execution**: no `shell=True` call; no code is generated from AI output. The DaVinci
+  Resolve markers script is fixed and only reads a JSON file; the child processes that talk to
+  Resolve only run their fixed commands: an assistant only sends them data.
+- **Writing to DaVinci Resolve**: the application adds to the open project; it replaces nothing
+  and never saves it. "Create a timeline" acts at the user's request. The assistant's
+  Resolve tools are **off by default** (Connections page): they create new timelines
+  "… - vfe vN" and put markers and metadata on the media pool clips, replacing only those they
+  put there. `build_timeline` also accepts a file path as Resolve sees it: Resolve then imports
+  that file into the "Video Frame Expedition" bin, without the application reading it or
+  checking that it lies under a library root.
+- **Loading models in LM Studio**: the "Model bench" page asks LM Studio, through its
+  local API, to load and unload the vision models the user has ticked, among those LM Studio
+  already has; nothing is downloaded. This request is a write like any other (`Origin` checked,
+  `X-VFE-Client` header, token when remote). No analysis and no MCP tool loads a model.
+- **LM Studio on another computer**: by default, the frames of the videos do not
+  leave the computer (`http://127.0.0.1:1234`). The user can designate another LM Studio on the
+  System page: the frames and the texts of the analyses are then sent to it, unencrypted on a
+  local network (http), encrypted on Tailscale. The card says so before saving and the
+  diagnostics show it as a warning. The accepted address is a host and a port, with no path and
+  no credentials; the connection test only makes a `GET /api/v1/models` and returns only counts
+  from it. The API token of an LM Studio is sent only to its address, is never returned by the
+  API, and is stored in clear text in the local database. No MCP tool changes this address.
+- **Compiled extension refused by Windows**: when Smart App Control refuses an
+  extension of a Python package that also exists in pure Python, the application renames that
+  file in its own environment (`….pyd.refused`) and restarts. It never runs a refused file and
+  changes no Windows setting.
+- **Network calls**: once installed, the analyses make only two. Nominatim (OpenStreetMap)
+  receives a position rounded to three decimal places (within about 70 metres), to name the
+  place; Open-Meteo receives a position rounded to two decimal places (within about
+  700 metres) and a date, for the weather. One switch on the System page turns both off, and
+  also hides the map of the Context tab, whose tiles come from OpenStreetMap. The help page
+  loads its fonts from Google Fonts and its presentation videos from youtube-nocookie.com, only
+  when the reader reaches them. The models are downloaded at installation, or when you ask for
+  one (Hugging Face, PyPI, GitHub, GeoNames). The application sends no telemetry.
+
+## Access from other devices
+
+- **Local** means: arriving from a loopback address **and** with a loopback host (`127.0.0.1`,
+  `localhost`, `::1`). These requests never need a token. A request relayed by a proxy on the
+  computer (different host) is treated as remote.
+- **Every remote request** presents the token: `Authorization: Bearer` header, `access_token`
+  parameter (media, SSE), or the session cookie of the sign-in page. `/mcp` only accepts the
+  `Authorization` header.
+- **Token**: `VFE_API_TOKEN`, otherwise generated (256 bits) at the first start with remote
+  access, in `api-token.txt` of the data folder, readable by the user only; `vfe token` shows
+  it, `vfe token --rotate` replaces it (`vfe` as defined under "Command line" in the
+  [README](README.md#installation)). The "Connections" page only shows it to a browser open
+  on the application's computer. If `VFE_HOST` is not a loopback address, `VFE_API_TOKEN`
+  remains mandatory.
+- **Wrong tokens**: constant-time comparison, a 0.5 s wait per failure, address blocked for one
+  minute after 10 failures in 5 minutes.
+- **Session**: `HttpOnly`, `SameSite=Strict` cookie (`Secure` over HTTPS), 30 days, signed with
+  the token (changing the token closes every session). With this cookie, every write requires
+  an allowed `Origin` in addition to `X-VFE-Client`.
+- **Allowlists** of hosts and origins extended only to the Tailscale address listened on and to
+  the computer's MagicDNS names.
+- Tailnet traffic is encrypted (WireGuard) and stays between the user's devices; never use
+  `tailscale funnel` (publication on the internet).
+
+## Reporting a problem
+
+Report it privately, through the "Security" tab of the GitHub repository ("Report a
+vulnerability"): do not open a public issue.

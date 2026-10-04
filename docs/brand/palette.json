@@ -1,0 +1,38 @@
+{
+  "name": "Video Frame Expedition for DaVinci Resolve",
+  "version": 1,
+  "note": "Palette du logo. Deux thèmes : Nuit (fond sombre, référence) et Papier (fond clair). Les couleurs sans alias (night-900, gold-500…) sont les teintes ; bg, text, frame et mark-* disent le rôle d'une teinte dans chaque thème.",
+  "themes": [
+    { "id": "dark", "name": "Nuit" },
+    { "id": "light", "name": "Papier" }
+  ],
+  "colors": [
+    { "name": "night-900", "value": "#0a101b", "usage": "Fond du thème Nuit (`bg`) et tuile du favicon. Encre des versions monochromes sur fond clair ou ambre." },
+    { "name": "night-800", "value": "#121b2c", "usage": "Haut du dégradé de l'icône d'application." },
+    { "name": "night-500", "value": "#46577a", "usage": "Ligne « for DaVinci Resolve » sur Papier (`text-muted`, 6,5:1 sur `paper`)." },
+    { "name": "night-300", "value": "#98a7c2", "usage": "Ligne « for DaVinci Resolve » sur Nuit (`text-muted`, 7,8:1 sur `night-900`)." },
+    { "name": "mist", "value": "#eaf0fa", "usage": "Texte et coins de visée sur Nuit (16,6:1 sur `night-900`). Encre des versions monochromes sur fond sombre." },
+    { "name": "paper", "value": "#f6f2ea", "usage": "Fond du thème Papier (`bg`) : un blanc chaud, jamais du blanc pur." },
+
+    { "name": "gold-300", "value": "#ffd98a", "usage": "Facette nord-est du symbole sur Nuit, la plus claire." },
+    { "name": "gold-400", "value": "#ffc25a", "usage": "Facette nord-est du symbole sur Papier." },
+    { "name": "gold-500", "value": "#ffab2e", "usage": "Couleur d'accent : facette sud-est du symbole et ligne « EXPEDITION » sur Nuit (10,1:1 sur `night-900`), halo doré de l'icône." },
+    { "name": "gold-600", "value": "#f08a00", "usage": "Facette sud-est du symbole sur Papier. Aplat décoratif : en texte sur `paper` il n'atteint que 2,3:1." },
+    { "name": "gold-700", "value": "#a85a00", "usage": "« EXPEDITION » sur Papier (`accent-text`, 4,6:1 sur `paper`)." },
+
+    { "name": "blue-400", "value": "#7f90ff", "usage": "Facette nord-ouest du symbole sur Nuit." },
+    { "name": "blue-500", "value": "#5b6ef5", "usage": "Facette nord-ouest du symbole sur Papier." },
+    { "name": "blue-600", "value": "#3f52d9", "usage": "Facette sud-ouest du symbole sur Nuit, halo bleu de l'icône. Décoratif sur `night-900` (3,1:1) : jamais un texte." },
+    { "name": "blue-700", "value": "#2e3dae", "usage": "Facette sud-ouest du symbole sur Papier." },
+
+    { "name": "bg", "value": { "dark": "{night-900}", "light": "{paper}" }, "usage": "Fond sur lequel le logo est posé." },
+    { "name": "text", "value": { "dark": "{mist}", "light": "{night-900}" }, "usage": "Ligne « VIDEO FRAME » : 16,6:1 sur Nuit, 17,1:1 sur Papier." },
+    { "name": "text-muted", "value": { "dark": "{night-300}", "light": "{night-500}" }, "usage": "Ligne « FOR DAVINCI RESOLVE » : 7,8:1 sur Nuit, 6,5:1 sur Papier." },
+    { "name": "accent-text", "value": { "dark": "{gold-500}", "light": "{gold-700}" }, "usage": "Ligne « EXPEDITION » : 10,1:1 sur Nuit, 4,6:1 sur Papier." },
+    { "name": "frame", "value": { "dark": "{mist}", "light": "{night-900}" }, "usage": "Coins de visée du symbole : `mist` sur Nuit, `night-900` sur Papier (16,6:1 et 17,1:1)." },
+    { "name": "mark-gold-light", "value": { "dark": "{gold-300}", "light": "{gold-400}" }, "usage": "Facette nord-est du symbole, la plus claire : la lumière vient du haut à droite. Aplat, pas un texte." },
+    { "name": "mark-gold", "value": { "dark": "{gold-500}", "light": "{gold-600}" }, "usage": "Facette sud-est du symbole. Aplat, pas un texte." },
+    { "name": "mark-blue", "value": { "dark": "{blue-600}", "light": "{blue-700}" }, "usage": "Facette sud-ouest du symbole, la plus sombre. Aplat, pas un texte." },
+    { "name": "mark-blue-light", "value": { "dark": "{blue-400}", "light": "{blue-500}" }, "usage": "Facette nord-ouest du symbole. Aplat, pas un texte." }
+  ]
+}

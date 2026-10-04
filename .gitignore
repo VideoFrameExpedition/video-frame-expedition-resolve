@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.egg-info/
+
+# The built web interface, copied into the backend package by scripts/copy_frontend_build.py
+backend/src/vfe_vision/web/dist/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/coverage/
+*.tsbuildinfo
+
+# Local settings and data
+.env
+.env.*
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.log
+
+# Model weights, downloaded by `vfe models`
+*.onnx
+!backend/tests/fixtures/**/*.onnx
+
+# Operating system and editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+# Test videos made by the tests themselves (backend/tests/conftest.py)
+backend/tests/fixtures/generated/
