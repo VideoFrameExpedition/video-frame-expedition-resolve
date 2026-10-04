@@ -139,6 +139,7 @@ them).
   start), FFmpeg and ExifTool: `scripts/bootstrap.ps1` installs them.
 - LM Studio with the local server enabled and a vision model loaded (e.g. `qwen/qwen3-vl-8b`),
   on this computer or on another computer of your network (System page, "LM Studio" card).
+- DaVinci Resolve Studio 21.1 or later, for the link with Resolve.
 
 ## Installation
 

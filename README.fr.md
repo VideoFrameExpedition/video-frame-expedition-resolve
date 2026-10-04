@@ -143,6 +143,7 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
   lancement), FFmpeg et ExifTool : `scripts/bootstrap.ps1` les installe.
 - LM Studio avec le serveur local activé et un modèle de vision chargé (ex. `qwen/qwen3-vl-8b`),
   sur cet ordinateur ou sur un autre de votre réseau (page Système, carte « LM Studio »).
+- DaVinci Resolve Studio 21.1 ou plus récent, pour le lien avec Resolve.
 
 ## Installation
 
