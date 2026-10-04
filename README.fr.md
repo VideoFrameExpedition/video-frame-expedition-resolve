@@ -267,6 +267,8 @@ quel, sans garantie ni support.
 
 ## Contributions
 
-Ce dépôt ne prend pas de contributions : les issues sont fermées et les demandes de fusion (pull
-requests) ne sont pas intégrées. Il est publié pour que l'application puisse être installée et
-son code lu. Pour signaler une faille de sécurité, voir [SECURITY.fr.md](SECURITY.fr.md).
+Ce dépôt est publié pour que l'application puisse être installée et son code lu. Il ne prend pas
+de contributions de code : les demandes de fusion (pull requests) ne sont pas intégrées. Pour
+signaler un bug, [ouvrez une issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/issues/new/choose) : le formulaire demande la version de Windows, la
+carte graphique, le modèle chargé dans LM Studio et le message d'erreur. Pour signaler une faille
+de sécurité, voir [SECURITY.fr.md](SECURITY.fr.md).

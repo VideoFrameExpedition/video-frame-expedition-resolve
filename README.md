@@ -263,6 +263,7 @@ people are forbidden. Provided as is, without warranty or support.
 
 ## Contributions
 
-This repository does not take contributions: issues are closed and pull requests are not merged.
-It is published so that the application can be installed and its code read. To report a
-security flaw, see [SECURITY.md](SECURITY.md).
+This repository is published so that the application can be installed and its code read. It does
+not take code contributions: pull requests are not merged. To report a bug, [open an
+issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/issues/new/choose): the form asks for the Windows version, the graphics card, the model loaded in
+LM Studio and the error message. To report a security flaw, see [SECURITY.md](SECURITY.md).

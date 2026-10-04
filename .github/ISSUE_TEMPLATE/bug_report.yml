@@ -1,0 +1,46 @@
+name: Bug report · Signaler un bug
+description: Something does not work as described in the README. · Quelque chose ne marche pas comme le décrit le README.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Issues are public: remove any personal information (names, paths containing your user name) before sending. A security flaw is reported privately, from the "Security" tab.
+
+        Les issues sont publiques : retirez toute information personnelle (noms, chemins contenant votre nom d'utilisateur) avant d'envoyer. Une faille de sécurité se signale en privé, depuis l'onglet « Security ».
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened? · Que s'est-il passé ?
+      description: What you were doing, what you expected, what you got. · Ce que vous faisiez, ce que vous attendiez, ce que vous avez obtenu.
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version · Version de Windows
+      description: Settings > System > About. · Paramètres > Système > Informations système.
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+  - type: input
+    id: gpu
+    attributes:
+      label: Graphics card · Carte graphique
+      description: Its name and its video memory. · Son nom et sa mémoire vidéo.
+      placeholder: NVIDIA GeForce RTX 4070, 12 GB
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model loaded in LM Studio · Modèle chargé dans LM Studio
+      placeholder: qwen/qwen3-vl-8b
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Error message · Message d'erreur
+      description: The message shown, if any. The output of `vfe doctor` helps too. · Le message affiché, s'il y en a un. La sortie de `vfe doctor` aide aussi.
+      render: text
