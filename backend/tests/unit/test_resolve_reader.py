@@ -559,6 +559,7 @@ def test_snapshots_are_kept_a_little_while() -> None:
 
 # ---------------------------------------------------------------- source ranges (Resolve)
 source_range: Callable[..., tuple[float, float]] = timeline_reader.source_range
+clip_frames: Callable[..., int | None] = timeline_reader.clip_frames
 timecode_seconds: Callable[[str, float], float] = timeline_reader.timecode_seconds
 nested: Callable[..., Iterator[dict[str, Any]]] = timeline_reader.nested
 
@@ -591,10 +592,28 @@ def test_a_source_range_is_the_cut_not_the_transition_handles() -> None:
     assert (start, end) == pytest.approx((3.733, 10.240), abs=1e-3)
 
 
-def test_a_source_range_at_mixed_rates() -> None:
-    # A 25 fps clip on a 29.97 fps timeline plays at real speed: 90 timeline frames are 3.003 s.
-    start, end = source_range(_Item(50, 0, 90, (0, 0)), {"fps": 25.0}, 29.97, 90)
-    assert (start, end) == pytest.approx((2.0, 2.0 + 90 / 29.97))
+@pytest.mark.parametrize(
+    ("left", "clip_fps", "seconds", "frame"),
+    [
+        (108, 30.0, 4.5, 135),  # placed from its frame 135 (4.5 s)
+        (1193, 29.97, 49.708, 1490),  # placed from its frame 1491: Resolve truncates the offset
+    ],
+)
+def test_a_source_range_at_mixed_rates(
+    left: int, clip_fps: float, seconds: float, frame: int
+) -> None:
+    # As Resolve 21.1.1 answered on 2026-10-06 for phone clips in a 24 fps timeline: the left
+    # offset counts TIMELINE frames, like the duration (120 frames = 5 s at real speed).
+    info = {"fps": clip_fps, "start_tc_s": 0.0}
+    start, end = source_range(_Item(left, 86400, 86520, (0, 0)), info, 24.0, 120)
+    assert (start, end) == pytest.approx((seconds, seconds + 5.0), abs=1e-3)
+    assert clip_frames(left, clip_fps, 24.0) == frame
+
+
+def test_clip_frames_without_rates_keep_the_offset() -> None:
+    assert clip_frames(120, 29.97, 29.97) == 120
+    assert clip_frames(50, None, 25.0) == 50
+    assert clip_frames(None, 30.0, 24.0) is None
 
 
 @pytest.mark.parametrize(

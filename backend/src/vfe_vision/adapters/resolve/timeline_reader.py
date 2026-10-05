@@ -263,18 +263,25 @@ def kind_of(item, info):
 
 def source_range(item, info, timeline_fps, record_frames):
     """Seconds of the file the clip shows between its cuts, from its first frame. The left
-    offset is in clip frames and the duration in timeline frames (mixed rates play at real
-    speed). GetSourceStartTime/EndTime also count the handles a transition blends in, and
-    GetSourceStartFrame/EndFrame can be a frame off: they are only a fallback."""
-    fps = info["fps"] if info else None
+    offset and the duration both count timeline frames, whatever the clip's rate (mixed rates
+    play at real speed: a 30 fps clip placed from its frame 135 in a 24 fps timeline has a left
+    offset of 108, Resolve 21.1.1). GetSourceStartTime/EndTime also count the handles a
+    transition blends in, and GetSourceStartFrame/EndFrame can be a frame off: they are only a
+    fallback."""
     left = integer(call(item, "GetLeftOffset"))
-    rate = fps or timeline_fps
-    if left is not None and rate and timeline_fps:
-        start = left / rate
+    if left is not None and timeline_fps:
+        start = left / timeline_fps
         return start, start + record_frames / timeline_fps
     start_tc_s = info["start_tc_s"] if info else 0.0
     start = max(0.0, number(call(item, "GetSourceStartTime"), 0.0) - start_tc_s)
     return start, max(start, number(call(item, "GetSourceEndTime"), 0.0) - start_tc_s)
+
+
+def clip_frames(left, clip_fps, timeline_fps):
+    """A left offset (timeline frames) in the clip's own frames, within a frame at mixed rates."""
+    if left is None or not clip_fps or not timeline_fps:
+        return left
+    return round(left * clip_fps / timeline_fps)
 
 
 def use_of(item, info, *, timeline_fps, track_type, track, track_name, track_enabled):
@@ -296,7 +303,7 @@ def use_of(item, info, *, timeline_fps, track_type, track, track_name, track_ena
         "record_end_frame": record_end,
         "source_start_s": source_start,
         "source_end_s": source_end,
-        "source_start_frame": integer(call(item, "GetLeftOffset")),
+        "source_start_frame": clip_frames(integer(call(item, "GetLeftOffset")), fps, timeline_fps),
         "clip_fps": fps,
         "nested_in": None,
     }

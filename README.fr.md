@@ -242,6 +242,12 @@ Studio (`match_clips`, `get_reframe`, `get_resolve_payload` fournissent les donn
 `plan_edit` décrit cette démarche et lui fait travailler dans une copie de la timeline), avec des
 coupes franches et des fondus enchaînés seulement.
 
+Un plugin Claude Code connecte Claude Code à ce serveur et ajoute un skill qui contient la méthode
+de montage :
+[video-frame-expedition-claude-plugin](https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin).
+Installation : `/plugin marketplace add VideoFrameExpedition/video-frame-expedition-claude-plugin`,
+puis `/plugin install video-frame-expedition@video-frame-expedition`.
+
 Claude n'ajoute un nouveau dossier à la bibliothèque (`analyze_folder`) que si la page Système
 l'autorise. Tous les outils : [docs/mcp-tools.fr.md](docs/mcp-tools.fr.md).
 
@@ -271,3 +277,6 @@ de contributions de code : les demandes de fusion (pull requests) ne sont pas in
 signaler un bug, [ouvrez une issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/issues/new/choose) : le formulaire demande la version de Windows, la
 carte graphique, le modèle chargé dans LM Studio et le message d'erreur. Pour signaler une faille
 de sécurité, voir [SECURITY.fr.md](SECURITY.fr.md).
+
+Projet indépendant, ni affilié à Blackmagic Design ou à Anthropic, ni approuvé par eux ; DaVinci
+Resolve, Claude et les autres produits cités sont des marques de leurs propriétaires respectifs.

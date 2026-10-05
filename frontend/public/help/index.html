@@ -5871,6 +5871,10 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <pre><code><span class="fr-only"># Sur l'ordinateur de l'application</span><span class="en-only"># On the application's own machine</span>
 claude mcp add --scope user --transport http vfe-vision http://127.0.0.1:8765/mcp
 
+<span class="fr-only"># Ou le plugin Claude Code (la même connexion et un skill de montage), dans Claude Code</span><span class="en-only"># Or the Claude Code plugin (the same connection and an editing skill), inside Claude Code</span>
+/plugin marketplace add VideoFrameExpedition/video-frame-expedition-claude-plugin
+/plugin install video-frame-expedition@video-frame-expedition
+
 <span class="fr-only"># Depuis un autre appareil, avec le jeton</span><span class="en-only"># From another device, with the token</span>
 claude mcp add --scope user --transport http vfe-vision http://100.x.y.z:8765/mcp --header "Authorization: Bearer <span class="fr-only">&lt;JETON&gt;</span><span class="en-only">&lt;TOKEN&gt;</span>"
 

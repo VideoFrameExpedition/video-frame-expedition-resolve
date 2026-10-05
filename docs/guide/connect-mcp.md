@@ -22,6 +22,19 @@ for on this computer.
 claude mcp add --scope user --transport http vfe-vision http://127.0.0.1:8765/mcp
 ```
 
+Or the Claude Code plugin, which makes the same connection and adds a skill with the editing
+method
+([video-frame-expedition-claude-plugin](https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin)).
+In Claude Code:
+
+```text
+/plugin marketplace add VideoFrameExpedition/video-frame-expedition-claude-plugin
+/plugin install video-frame-expedition@video-frame-expedition
+```
+
+Use one or the other: with both, Claude Code keeps the entry added by `claude mcp add` and
+leaves the plugin's aside.
+
 ### Claude Desktop
 
 Claude Desktop's configuration file only launches **local commands** ("stdio" servers). Video

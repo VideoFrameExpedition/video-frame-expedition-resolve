@@ -2777,7 +2777,7 @@ export interface components {
             source_start_frame?: number | null;
             /**
              * Source Start S
-             * @description GetLeftOffset() ÷ FPS of the clip (s).
+             * @description GetLeftOffset() ÷ fps of the timeline (s).
              */
             source_start_s?: number | null;
         };

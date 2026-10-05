@@ -1567,7 +1567,7 @@ class ClipQueryIn(BaseModel):
         "video even if its path has changed, through the library's timelines.",
     )
     source_start_s: float | None = Field(
-        default=None, ge=0, description="GetLeftOffset() ÷ FPS of the clip (s)."
+        default=None, ge=0, description="GetLeftOffset() ÷ fps of the timeline (s)."
     )
     source_end_s: float | None = Field(
         default=None, ge=0, description="source_start_s + GetDuration() ÷ fps of the timeline (s)."

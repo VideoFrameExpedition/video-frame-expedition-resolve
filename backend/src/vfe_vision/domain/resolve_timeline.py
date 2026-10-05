@@ -80,7 +80,7 @@ class ClipUse:
     record_end_frame: int
     source_start_s: float  # seconds in the file (its start timecode removed), end exclusive
     source_end_s: float
-    source_start_frame: int | None = None  # GetLeftOffset(), in the clip's frames
+    source_start_frame: int | None = None  # GetLeftOffset() turned into the clip's frames
     clip_fps: float | None = None
     track_enabled: bool = True
     nested_in: str | None = None  # the timeline or compound clip it was read from, if nested

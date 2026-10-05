@@ -347,8 +347,8 @@ async def test_editing_tools(container: AppContainer, tmp_path: Path) -> None:
         matched = await client.call_tool("match_clips", {"items": [
             {"file_path": holiday.path, "source_start_frame": 1000, "source_end_frame": 1210,
              "fps": 25}]})  # fmt: skip
-        # The same range in seconds of the file (GetLeftOffset / clip fps + GetDuration / timeline
-        # TC), as Claude reads it whatever the timeline's frame rate, with the media pool uid.
+        # The same range in seconds of the file (GetLeftOffset and GetDuration / the timeline's
+        # fps), as Claude reads it whatever the timeline's frame rate, with the media pool uid.
         in_seconds = await client.call_tool("match_clips", {"items": [
             {"file_path": holiday.path, "clip_uid": "72234098-3d88-4f48-aec1-cdaf3f79f5df",
              "source_start_s": 40.0, "source_end_s": 48.4}]})  # fmt: skip

@@ -38,8 +38,8 @@ ExportName = Literal["srt", "vtt", "csv", "chapters", "edl", "json", "md", "reso
 SubjectName = Literal["person", "body_part", "mammal", "bird", "insect", "other_animal", "face"]
 CUT_CONVENTION = (
     "Seconds of the source file (0 = its first frame). in_frame/out_frame = seconds x the "
-    "video's fps (frames from the file's first frame, as Resolve's GetLeftOffset counts "
-    "them); timecode_in/out = the file's own start timecode plus that frame (00:00:00:00 "
+    "video's fps (frames from the file's first frame, as AppendToTimeline's startFrame/endFrame "
+    "count them); timecode_in/out = the file's own start timecode plus that frame (00:00:00:00 "
     "without one; drop-frame when the file's is). The picture stays within the range's shots; "
     "sound_in_s/sound_out_s are set when the sound should start earlier (J-cut) or end later "
     "(L-cut) so that no word is cut."
@@ -51,12 +51,13 @@ MATCH_CONVENTION = (
     "size and 3 x 4 MiB, 0.99), name (same name only, 0.5: to confirm), none. "
     "status: ready (analysed), offline (file out of reach for the library), not_analysed, "
     "ambiguous (candidates), unknown. A range is best given in SECONDS OF THE FILE (from its "
-    "first frame): source_start_s = TimelineItem.GetLeftOffset() / the clip's 'FPS', "
-    "source_end_s = source_start_s + GetDuration() / the timeline's fps (GetLeftOffset counts "
-    "clip frames, GetDuration TIMELINE frames: a clip at another rate plays at real speed). "
-    "In SOURCE FRAMES (at the clip's fps): in = GetLeftOffset(), out = in + "
-    "round(GetDuration() x clip_fps / timeline_fps). Never GetSourceStartTime/EndTime (they add "
-    "the handles a transition blends in, and count the start timecode) nor "
+    "first frame): source_start_s = TimelineItem.GetLeftOffset() / the timeline's fps, "
+    "source_end_s = source_start_s + GetDuration() / the timeline's fps (both count TIMELINE "
+    "frames, whatever the clip's rate: a clip at another rate plays at real speed). "
+    "In SOURCE FRAMES (at the clip's fps): in = round(GetLeftOffset() x clip_fps / "
+    "timeline_fps), out = in + round(GetDuration() x clip_fps / timeline_fps). Never "
+    "GetSourceStartTime/EndTime (they add the handles a transition blends in, and count the "
+    "start timecode) nor "
     "GetSourceStartFrame/EndFrame (a frame off on clips with a start timecode). Speed 100 % "
     "assumed. " + CUT_CONVENTION
 )
@@ -319,7 +320,7 @@ class ClipItem(BaseModel):
         "changed, through the timelines added to the library.",
     )
     source_start_s: float | None = Field(
-        default=None, ge=0, description="GetLeftOffset() / the clip's FPS (s)."
+        default=None, ge=0, description="GetLeftOffset() / the timeline's fps (s)."
     )
     source_end_s: float | None = Field(
         default=None,
@@ -327,12 +328,15 @@ class ClipItem(BaseModel):
         description="source_start_s + GetDuration() / the timeline's fps (s).",
     )
     source_start_frame: int | None = Field(
-        default=None, ge=0, description="GetLeftOffset(): 0 = the file's first frame."
+        default=None,
+        ge=0,
+        description="round(GetLeftOffset() x clip_fps / timeline_fps): 0 = the file's first frame.",
     )
     source_end_frame: int | None = Field(
         default=None,
         ge=0,
-        description="GetLeftOffset() + round(GetDuration() x clip_fps / timeline_fps) (exclusive).",
+        description="source_start_frame + round(GetDuration() x clip_fps / timeline_fps) "
+        "(exclusive).",
     )
     fps: float | None = Field(default=None, gt=0, le=1000, description="The clip's FPS.")
 

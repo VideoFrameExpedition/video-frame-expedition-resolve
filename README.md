@@ -236,6 +236,12 @@ Studio (`match_clips`, `get_reframe` and `get_resolve_payload` provide the data;
 prompt describes this approach and has it work in a copy of the timeline), with straight cuts
 and cross-dissolves only.
 
+A Claude Code plugin connects Claude Code to this server and adds a skill with the editing
+method:
+[video-frame-expedition-claude-plugin](https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin).
+Install it with `/plugin marketplace add VideoFrameExpedition/video-frame-expedition-claude-plugin`,
+then `/plugin install video-frame-expedition@video-frame-expedition`.
+
 Claude adds a new folder to the library (`analyze_folder`) only if the System page allows it.
 All the tools: [docs/mcp-tools.md](docs/mcp-tools.md).
 
@@ -256,6 +262,9 @@ are in French.
 Free and open source, under the [Apache License 2.0](LICENSE). You may use, modify, integrate
 and share it, including for paid work, as long as you keep the copyright notice and the
 [NOTICE](NOTICE) file. Provided as is, without warranty or support.
+
+Not affiliated with or endorsed by Blackmagic Design or Anthropic; DaVinci Resolve, Claude and
+the other products named here are trademarks of their respective owners.
 
 ## Contributions
 
