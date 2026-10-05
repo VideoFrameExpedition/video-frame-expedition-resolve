@@ -1,9 +1,9 @@
 [project]
 name = "vfe-vision"
-version = "1.0.0"
+version = "1.1.0"
 description = "Video Frame Expedition for DaVinci Resolve — local-first video analysis with a local vision model (LM Studio), web UI and MCP server."
 readme = "README.md"
-license = "LicenseRef-VFE-1.0"
+license = "Apache-2.0"
 authors = [{ name = "Video Frame Expedition" }]
 requires-python = ">=3.12,<3.14"
 classifiers = [

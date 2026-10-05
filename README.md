@@ -7,14 +7,38 @@
 
 [![Checks](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml/badge.svg)](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml)
 
-**Your rushes, readable at last.** A folder of videos is a list of file names and thumbnails:
-nothing tells you what is in them, what is said, or when the light was good. Video Frame
-Expedition analyses every video **on your own machine**: the file's metadata, the place, the
-time, the sun and the weather of the shoot; the shots, the keyframes and the subjects, described
-by a **local vision model** served by [LM Studio](https://lmstudio.ai); the sounds, the speech
-and the on-screen text. It then makes these analyses usable where the editing happens: in its
-own interface, in DaVinci Resolve, and through its **MCP server** for AI assistants (Claude Code,
-Claude Desktop, Cursor, VS Code, Codex), from this computer or from your other devices.
+**Video Frame Expedition for DaVinci Resolve analyses your rushes with a local vision model, so
+that an AI assistant can edit knowing what each shot contains.**
+
+**Analysis:** metadata, place, time, sun and weather of the shoot; shots, keyframes and subjects;
+sounds, speech and on-screen text. In English and in French.
+
+**Semantic search:** shots, keyframes, speech and chapters become timed passages, found by
+keywords and by meaning (hybrid search: full text and vectors computed locally). Filters by
+weather, light, place, dates, subjects, framing or quality; the local model answers questions
+about the whole library and cites its sources.
+
+**Resilient database:** each video is recognised by its content, not its path: moved or renamed,
+it keeps its analyses without being analysed again. Analysis files next to the videos bring them
+back on another computer or after the database is lost.
+
+**For AI assistants** (Claude, Cursor, VS Code, Codex): an MCP server with 25 tools. The AI
+assistant reads the timeline open in Resolve, knows what each clip contains, searches the whole
+library for shots, gets safe cut points and reframing, and builds the edit in a new timeline.
+Simple tasks (describing frames, answering about the library, locating a subject) go to the local
+model: the AI assistant only receives the results and saves its tokens.
+
+**Beyond Resolve's MCP:** four tools drive Resolve Studio 21.1 through fixed, tested scripts
+rather than code rewritten for each request: reading the timeline with exact source ranges,
+reframing (9:16…) centred on the subjects, a new timeline built then checked value by value,
+markers. They work around known pitfalls of Resolve 21.1's API, never modify an existing
+timeline, and also drive a remote Resolve, which Blackmagic's MCP server does not do yet. The AI
+assistant can still work on the open timeline through Resolve's MCP.
+
+**With DaVinci Resolve, both ways:** selected videos become a timeline with subtitles and
+markers; a Resolve timeline enters the library and its videos are analysed.
+
+**Stand-alone:** a web interface to browse the analyses, search and query the whole library.
 
 **Windows version.** This repository holds the application for Windows 11. It was developed
 and tested with an NVIDIA graphics card, which it uses when the vision model leaves enough
@@ -26,31 +50,6 @@ graphics cards have not been tested. A macOS version is planned as a separate re
 > in French: [youtu.be/1EI36bRbdWo](https://youtu.be/1EI36bRbdWo).
 >
 > This is the new version of *Video Frame Expedition*; it replaces the earlier one.
-
-## Three ways to use it
-
-1. **On its own.** A stand-alone application, with a web interface to study each analysis in
-   detail: the library and its filters (light, weather, place, subjects…), the page of a video
-   and its seven tabs (overview, shots, transcript, sounds, technical, context, exports), a
-   search by keywords and by meaning through everything that is seen, said, heard or read, and
-   questions asked in plain language about the whole library, with the sources quoted.
-2. **With DaVinci Resolve, both ways.** In one direction, the ticked videos become a timeline,
-   created directly in the open project or as an OTIO/FCPXML file, with the transcript and the
-   shot descriptions as subtitle tracks, and the highlights, wide shots and chapters as markers.
-   In the other direction, a timeline from a Resolve project enters the library as a bin, its
-   videos are analysed, and the search works inside that timeline. The Resolve project is only
-   read, never modified.
-3. **With an AI assistant, through MCP.** An MCP server exposes every analysis to Claude Code,
-   Claude Desktop, Cursor, VS Code or Codex. The assistant reads the timeline open in Resolve,
-   links it to the analyses, and builds an edit in a new timeline, knowing for once what is in
-   the shots. The application does more than hand over finished analyses: it lends the
-   assistant its **local model** for the simple tasks (analysing a video, answering a question
-   about the library, locating a subject in a frame) and, when the "Resolve tools for the
-   assistant" box is ticked, fixed scripts that drive Resolve. This is the principle of
-   **escalation**: the simple work goes to the local model, on your machine; the complex work
-   (understanding the request, choosing, editing) goes to the frontier model, whose tokens are
-   expensive and are kept for this. Without the box, the assistant goes through the MCP server
-   of DaVinci Resolve Studio. The final cut remains yours.
 
 Your frames and sounds never leave your machine, except, if you choose, to go to LM Studio on
 another of your computers; the vision model runs on your graphics card. The analyses make only
@@ -234,9 +233,8 @@ ticked (off by default). The approach:
 
 Without the box, Claude writes the same steps as scripts for the MCP server of DaVinci Resolve
 Studio (`match_clips`, `get_reframe` and `get_resolve_payload` provide the data; the `plan_edit`
-prompt describes this approach), always in a copy of the timeline, with straight cuts and
-cross-dissolves only. The application's tools also work with Resolve on another computer;
-Resolve's own server only drives its own machine.
+prompt describes this approach and has it work in a copy of the timeline), with straight cuts
+and cross-dissolves only.
 
 Claude adds a new folder to the library (`analyze_folder`) only if the System page allows it.
 All the tools: [docs/mcp-tools.md](docs/mcp-tools.md).
@@ -255,12 +253,9 @@ are in French.
 
 ## Licence
 
-Free of charge, its source code open to everyone, under the
-[Video Frame Expedition License 1.0](LICENSE.md) ([French version, authoritative](LICENSE.fr.md)).
-You may use, modify, integrate and share it, including for paid work, as long as you credit the
-author. It may not be sold, even modified, and a modified version you share stays under the same
-license, free of charge, with its source code. Military use, violence and the surveillance of
-people are forbidden. Provided as is, without warranty or support.
+Free and open source, under the [Apache License 2.0](LICENSE). You may use, modify, integrate
+and share it, including for paid work, as long as you keep the copyright notice and the
+[NOTICE](NOTICE) file. Provided as is, without warranty or support.
 
 ## Contributions
 
