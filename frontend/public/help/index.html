@@ -1831,8 +1831,11 @@
                 ><span class="fr-only">Installer et vérifier</span
                 ><span class="en-only">Install and check</span>
                 <small
-                  ><span class="fr-only">prérequis, modèles, diagnostic, préférences</span
-                  ><span class="en-only">requirements, models, diagnostic, preferences</span></small
+                  ><span class="fr-only"
+                    >prérequis, modèles, diagnostic, banc d'essai, préférences</span
+                  ><span class="en-only"
+                    >requirements, models, diagnostic, model bench, preferences</span
+                  ></small
                 ></span
               ></a
             >
@@ -2617,11 +2620,14 @@
             <div class="split" style="margin-top: 0">
               <div class="card">
                 <h4>
-                  <span class="fr-only">Sur la machine</span
-                  ><span class="en-only">On the machine</span>
+                  <span class="fr-only">L'application</span
+                  ><span class="en-only">The application</span>
                 </h4>
                 <ul>
-                  <li>Windows&nbsp;11</li>
+                  <li>
+                    <span class="fr-only">Windows&nbsp;11, pour le moment</span>
+                    <span class="en-only">Windows&nbsp;11, for now</span>
+                  </li>
                   <li>
                     <span class="fr-only"
                       ><code>uv</code>, Node.js&nbsp;24&nbsp;LTS (l'interface web est construite au
@@ -2654,15 +2660,15 @@
                     <a href="https://lmstudio.ai">LM&nbsp;Studio</a> doit tourner, son
                     <strong>serveur local activé</strong>, et un modèle <em>de vision</em> chargé —
                     par exemple <code>qwen/qwen3-vl-4b</code> ou <code>qwen/qwen3-vl-8b</code>. Sur
-                    ce PC, ou sur un autre PC de votre réseau&nbsp;:
+                    le même PC ou sur un autre ordinateur, sous Windows, macOS ou Linux&nbsp;:
                     <a href="#systeme">page Système</a>, carte «&nbsp;LM&nbsp;Studio&nbsp;».
                   </span>
                   <span class="en-only">
                     <a href="https://lmstudio.ai">LM&nbsp;Studio</a> must be running, its
                     <strong>local server on</strong>, and a <em>vision</em> model loaded — for
-                    instance <code>qwen/qwen3-vl-4b</code> or <code>qwen/qwen3-vl-8b</code>. On this
-                    PC, or on another PC of your network: <a href="#systeme">System page</a>,
-                    "LM&nbsp;Studio" card.
+                    instance <code>qwen/qwen3-vl-4b</code> or <code>qwen/qwen3-vl-8b</code>. On the
+                    same PC or on another computer, under Windows, macOS or Linux:
+                    <a href="#systeme">System page</a>, "LM&nbsp;Studio" card.
                   </span>
                 </p>
                 <p>
@@ -2715,11 +2721,13 @@
                 <p>
                   <span class="fr-only">
                     <strong>DaVinci Resolve Studio 21.1</strong> ou plus récent, pour le lien avec
-                    Resolve.
+                    Resolve&nbsp;: sur le même PC ou sur un autre ordinateur, sous Windows, macOS ou
+                    Linux (<a href="#combo-autre-ordinateur">schéma 06</a>).
                   </span>
                   <span class="en-only">
                     <strong>DaVinci Resolve Studio 21.1</strong> or later, for the link with
-                    Resolve.
+                    Resolve: on the same PC or on another computer, under Windows, macOS or Linux
+                    (<a href="#combo-autre-ordinateur">diagram 06</a>).
                   </span>
                 </p>
               </div>
@@ -3152,6 +3160,106 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                   better the model.
                 </span>
               </p>
+            </div>
+            <div class="zones">
+              <figure class="zone fr-only">
+                <a href="img/z/40a-zone--banc-classement-general.webp">
+                  <img
+                    src="img/z/40a-zone--banc-classement-general.webp"
+                    alt="Le classement général du Banc d'essai : dix modèles de vision classés sur 100 points."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="284"
+                  />
+                </a>
+                <figcaption>
+                  <b>Classement général.</b> Le dernier résultat de dix modèles, tous tests
+                  confondus&nbsp;: le classement total, sur 100&nbsp;points.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40a-zone--banc-classement-general-en.webp">
+                  <img
+                    src="img/z/40a-zone--banc-classement-general-en.webp"
+                    alt="The Model bench's general ranking: ten vision models ranked out of 100 points."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="296"
+                  />
+                </a>
+                <figcaption>
+                  <b>General ranking.</b> The latest result of ten models, all tests together: the
+                  overall ranking, out of 100&nbsp;points.
+                </figcaption>
+              </figure>
+              <figure class="zone fr-only">
+                <a href="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures.webp">
+                  <img
+                    src="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures.webp"
+                    alt="Les graphiques du Banc d'essai : mémoire et vitesse de chaque modèle, puis six mesures comparées."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="464"
+                  />
+                </a>
+                <figcaption>
+                  <b>Les graphiques.</b> En haut, la mémoire et la vitesse&nbsp;: le meilleur coin
+                  est en bas à gauche. Dessous, une mesure par graphique, la meilleure valeur mise
+                  en valeur.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures-en.webp">
+                  <img
+                    src="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures-en.webp"
+                    alt="The Model bench's charts: memory and speed of each model, then six measures compared."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="464"
+                  />
+                </a>
+                <figcaption>
+                  <b>The charts.</b> At the top, memory and speed: the best corner is the bottom
+                  left one. Below, one measure per chart, the best value standing out.
+                </figcaption>
+              </figure>
+              <figure class="zone fr-only">
+                <a href="img/z/40c-zone--banc-profils-des-modeles.webp">
+                  <img
+                    src="img/z/40c-zone--banc-profils-des-modeles.webp"
+                    alt="Les profils du Banc d'essai : une étoile à six branches par modèle."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="488"
+                  />
+                </a>
+                <figcaption>
+                  <b>Les profils.</b> Une étoile par modèle&nbsp;: plus la surface est grande,
+                  meilleur est le modèle. «&nbsp;Qualité&nbsp;» est barrée quand le modèle n'a pas
+                  été noté à l'aveugle.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40c-zone--banc-profils-des-modeles-en.webp">
+                  <img
+                    src="img/z/40c-zone--banc-profils-des-modeles-en.webp"
+                    alt="The Model bench's profiles: one six-pointed star per model."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="490"
+                  />
+                </a>
+                <figcaption>
+                  <b>Profiles.</b> One star per model: the larger the surface, the better the model.
+                  "Quality" is struck through when the model was not rated blind.
+                </figcaption>
+              </figure>
             </div>
           </div>
 
