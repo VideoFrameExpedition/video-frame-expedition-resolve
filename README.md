@@ -133,12 +133,13 @@ them).
 
 ## Requirements
 
-- Windows 11.
-- [uv](https://docs.astral.sh/uv/), Node.js 24 LTS (the web interface is built at the first
-  start), FFmpeg and ExifTool: `scripts/bootstrap.ps1` installs them.
-- LM Studio with the local server enabled and a vision model loaded (e.g. `qwen/qwen3-vl-8b`),
-  on this computer or on another computer of your network (System page, "LM Studio" card).
-- DaVinci Resolve Studio 21.1 or later, for the link with Resolve.
+- **The application**: Windows 11, for now. [uv](https://docs.astral.sh/uv/), Node.js 24 LTS
+  (the web interface is built at the first start), FFmpeg and ExifTool: `scripts/bootstrap.ps1`
+  installs them.
+- **LM Studio**, with the local server enabled and a vision model loaded (e.g.
+  `qwen/qwen3-vl-8b`): on the same PC or on another computer, under Windows, macOS or Linux.
+- **DaVinci Resolve Studio 21.1 or later**, for the link with Resolve: on the same PC or on
+  another computer, under Windows, macOS or Linux.
 
 ## Installation
 

@@ -22,18 +22,70 @@ for on this computer.
 claude mcp add --scope user --transport http vfe-vision http://127.0.0.1:8765/mcp
 ```
 
-Or the Claude Code plugin, which makes the same connection and adds a skill with the editing
-method
-([video-frame-expedition-claude-plugin](https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin)).
-In Claude Code:
+Or the Claude Code plugin, below. Use one or the other: with both, Claude Code keeps the entry
+added by `claude mcp add` and leaves the plugin's aside.
+
+### The Claude Code plugin
+
+A **plugin** is a package you install into Claude Code. Video Frame Expedition's,
+`video-frame-expedition`, has its own repository
+([video-frame-expedition-claude-plugin](https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin))
+and holds two things:
+
+- the **connection to the application's MCP server** (`vfe-vision`), the same as
+  `claude mcp add`;
+- a **skill**, `resolve-editing`: the editing method Claude reads before working in Resolve
+  (tie the open timeline to the analyses, pick the shots, write an edit list, cut at safe
+  points, edit into a new timeline, reframe for another aspect ratio, lay markers), with the
+  known pitfalls of the DaVinci Resolve Studio 21.1 scripting API and tested script templates.
+
+It needs Video Frame Expedition 1.1.1 or later, running. To edit: DaVinci Resolve Studio 21.1 or
+later, with the "Resolve tools for the assistant" box (Connections page) or Resolve's own server
+plugged into Claude Code (below). The skill's small scripts need Python 3 and Windows
+PowerShell.
+
+In Claude Code, install it, then confirm its settings:
 
 ```text
 /plugin marketplace add VideoFrameExpedition/video-frame-expedition-claude-plugin
 /plugin install video-frame-expedition@video-frame-expedition
+/plugin configure video-frame-expedition@video-frame-expedition
 ```
 
-Use one or the other: with both, Claude Code keeps the entry added by `claude mcp add` and
-leaves the plugin's aside.
+The name appears twice in `video-frame-expedition@video-frame-expedition`: the plugin, then the
+catalogue that offers it.
+
+| Setting | Value |
+|---|---|
+| Application address | `http://127.0.0.1:8765/mcp` (default) when the application runs on this computer; otherwise its address on your network or Tailscale, for instance `http://100.64.12.34:8765/mcp` |
+| Access token | Empty on the application's own computer. From another device: the token on the Connections page (kept in the system's password store) |
+
+If you had already plugged the server in with `claude mcp add`, remove that entry so the
+plugin's settings apply:
+
+```powershell
+claude mcp remove --scope user vfe-vision
+```
+
+Then ask in your own words: "Look at the timeline open in Resolve and tell me what each shot
+holds", "Edit 45 seconds from the lake videos, with safe cuts", "Make a 9:16 version of this
+timeline, framed on the people". Claude picks up the skill by itself when a request is about an
+edit in Resolve; you can also call it with `/video-frame-expedition:resolve-editing`.
+
+To update (then restart Claude Code) or remove the plugin, in a terminal:
+
+```powershell
+claude plugin marketplace update video-frame-expedition
+claude plugin update video-frame-expedition@video-frame-expedition
+
+claude plugin uninstall video-frame-expedition@video-frame-expedition
+```
+
+The plugin only contacts the application, at the address you set, and has no hook: nothing
+starts on its own. The skill's scripts only run when Claude calls them for a task you asked for,
+and download nothing. Like the application's tools, the skill never changes a timeline in place
+(it duplicates it first) and does not save the project. The other assistants (Claude Desktop,
+Cursor, VS Code, Codex) plug in as below, without the skill.
 
 ### Claude Desktop
 
@@ -281,5 +333,6 @@ accounts.
 | "Trop d'essais" (too many attempts) / 429 | 10 wrong tokens: wait one minute |
 | 400 "Invalid host header" | address not recognised: use those of the Connections page |
 | Claude Desktop does not see the tool | invalid JSON, or Claude Desktop not fully quit |
+| The Claude Code plugin does not take its address or token | a `vfe-vision` entry added by `claude mcp add` wins: `claude mcp remove --scope user vfe-vision` |
 
 Security: [SECURITY.md](../../SECURITY.md).

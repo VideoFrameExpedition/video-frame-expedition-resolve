@@ -1899,8 +1899,11 @@
                 ><span class="fr-only">Brancher un assistant</span
                 ><span class="en-only">Connect an assistant</span>
                 <small
-                  ><span class="fr-only">le serveur MCP, et ses outils</span
-                  ><span class="en-only">the MCP server, and its tools</span></small
+                  ><span class="fr-only"
+                    >le serveur MCP, ses outils, le plugin Claude&nbsp;Code</span
+                  ><span class="en-only"
+                    >the MCP server, its tools, the Claude&nbsp;Code plugin</span
+                  ></small
                 ></span
               ></a
             >
@@ -5871,7 +5874,7 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <pre><code><span class="fr-only"># Sur l'ordinateur de l'application</span><span class="en-only"># On the application's own machine</span>
 claude mcp add --scope user --transport http vfe-vision http://127.0.0.1:8765/mcp
 
-<span class="fr-only"># Ou le plugin Claude Code (la même connexion et un skill de montage), dans Claude Code</span><span class="en-only"># Or the Claude Code plugin (the same connection and an editing skill), inside Claude Code</span>
+<span class="fr-only"># Ou le plugin Claude Code (la même connexion et un skill de montage, voir plus bas), dans Claude Code</span><span class="en-only"># Or the Claude Code plugin (the same connection and an editing skill, see below), inside Claude Code</span>
 /plugin marketplace add VideoFrameExpedition/video-frame-expedition-claude-plugin
 /plugin install video-frame-expedition@video-frame-expedition
 
@@ -6062,6 +6065,216 @@ claude mcp add --scope user davinci-resolve -- "C:\Program Files\Blackmagic Desi
                     never saves the project: you press Ctrl+S if you keep the edit. Without the box,
                     the assistant goes through the same steps with Resolve's own server, in a copy
                     of your timeline.
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="block" id="plugin-claude-code">
+            <h3>
+              <span class="fr-only">Le plugin pour Claude&nbsp;Code</span
+              ><span class="en-only">The Claude&nbsp;Code plugin</span>
+            </h3>
+            <div class="block-body">
+              <p>
+                <span class="fr-only">
+                  Pour Claude&nbsp;Code, un <strong>plugin</strong> fait le branchement à votre
+                  place. Un plugin est un paquet qu'on installe dans Claude&nbsp;Code&nbsp;;
+                  celui-ci, <code>video-frame-expedition</code>, en contient deux&nbsp;:
+                </span>
+                <span class="en-only">
+                  For Claude&nbsp;Code, a <strong>plugin</strong> does the plugging-in for you. A
+                  plugin is a package you install into Claude&nbsp;Code; this one,
+                  <code>video-frame-expedition</code>, holds two things:
+                </span>
+              </p>
+              <ul style="color: var(--fg-muted); font-size: 15.5px">
+                <li>
+                  <span class="fr-only">
+                    la <strong>connexion au serveur MCP</strong> de l'application
+                    (<code>vfe-vision</code>), la même que <code>claude mcp add</code>&nbsp;;
+                  </span>
+                  <span class="en-only">
+                    the
+                    <strong>connection to the application's MCP server</strong>
+                    (<code>vfe-vision</code>), the same as <code>claude mcp add</code>;
+                  </span>
+                </li>
+                <li>
+                  <span class="fr-only">
+                    un <strong>skill</strong>, <code>resolve-editing</code>&nbsp;: la méthode de
+                    montage que Claude lit avant de travailler dans Resolve — relier la timeline
+                    ouverte aux analyses, choisir les plans, écrire une liste de montage, couper aux
+                    points sûrs, monter dans une nouvelle timeline, recadrer pour un autre format,
+                    poser des marqueurs —, avec les pièges connus de l'API de scripts de
+                    DaVinci&nbsp;Resolve Studio&nbsp;21.1 et des modèles de scripts testés.
+                  </span>
+                  <span class="en-only">
+                    a <strong>skill</strong>, <code>resolve-editing</code>: the editing method
+                    Claude reads before working in Resolve — tie the open timeline to the analyses,
+                    pick the shots, write an edit list, cut at safe points, edit into a new
+                    timeline, reframe for another aspect ratio, lay markers —, with the known
+                    pitfalls of the DaVinci&nbsp;Resolve Studio&nbsp;21.1 scripting API and tested
+                    script templates.
+                  </span>
+                </li>
+              </ul>
+              <p>
+                <span class="fr-only">
+                  Il a son propre dépôt&nbsp;:
+                  <a
+                    href="https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin"
+                    >video-frame-expedition-claude-plugin</a
+                  >. Les autres assistants (Claude&nbsp;Desktop, Cursor, VS&nbsp;Code, Codex) se
+                  branchent comme plus haut, sans le skill.
+                </span>
+                <span class="en-only">
+                  It has its own repository:
+                  <a
+                    href="https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin"
+                    >video-frame-expedition-claude-plugin</a
+                  >. The other assistants (Claude&nbsp;Desktop, Cursor, VS&nbsp;Code, Codex) plug in
+                  as above, without the skill.
+                </span>
+              </p>
+            </div>
+            <div class="split" style="margin-bottom: 20px">
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Ce qu'il vous faut</span
+                  ><span class="en-only">What you need</span>
+                </h4>
+                <ul>
+                  <li>
+                    <span class="fr-only"
+                      >Video Frame Expedition&nbsp;1.1.1 ou plus récente, lancée</span
+                    >
+                    <span class="en-only">Video Frame Expedition&nbsp;1.1.1 or later, running</span>
+                  </li>
+                  <li>Claude&nbsp;Code</li>
+                  <li>
+                    <span class="fr-only"
+                      >Pour monter&nbsp;: DaVinci&nbsp;Resolve Studio&nbsp;21.1 ou plus récent, avec
+                      la case «&nbsp;Outils Resolve pour l'assistant&nbsp;» de la page Connexions ou
+                      le serveur de Resolve branché sur Claude&nbsp;Code</span
+                    >
+                    <span class="en-only"
+                      >To edit: DaVinci&nbsp;Resolve Studio&nbsp;21.1 or later, with the "Resolve
+                      tools for the assistant" box on the Connections page or Resolve's own server
+                      plugged into Claude&nbsp;Code</span
+                    >
+                  </li>
+                  <li>
+                    <span class="fr-only"
+                      >Pour les petits scripts du skill&nbsp;: Python&nbsp;3 et Windows
+                      PowerShell</span
+                    >
+                    <span class="en-only"
+                      >For the skill's small scripts: Python&nbsp;3 and Windows PowerShell</span
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Ses deux réglages</span
+                  ><span class="en-only">Its two settings</span>
+                </h4>
+                <ul>
+                  <li>
+                    <span class="fr-only"
+                      ><strong>Adresse de l'application</strong>&nbsp;: gardez
+                      <code>http://127.0.0.1:8765/mcp</code> quand l'application tourne sur cet
+                      ordinateur&nbsp;; sinon son adresse sur votre réseau ou Tailscale, par exemple
+                      <code>http://100.x.y.z:8765/mcp</code>.</span
+                    >
+                    <span class="en-only"
+                      ><strong>Application address</strong>: keep
+                      <code>http://127.0.0.1:8765/mcp</code> when the application runs on this
+                      computer; otherwise its address on your network or Tailscale, for instance
+                      <code>http://100.x.y.z:8765/mcp</code>.</span
+                    >
+                  </li>
+                  <li>
+                    <span class="fr-only"
+                      ><strong>Jeton d'accès</strong>&nbsp;: vide sur l'ordinateur de
+                      l'application&nbsp;; depuis un autre appareil, celui de la page Connexions. Il
+                      est rangé dans le coffre de mots de passe du système.</span
+                    >
+                    <span class="en-only"
+                      ><strong>Access token</strong>: empty on the application's own computer; from
+                      another device, the one on the Connections page. It is kept in the system's
+                      password store.</span
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <pre><code><span class="fr-only"># Dans Claude Code : installer, puis confirmer les réglages</span><span class="en-only"># Inside Claude Code: install, then confirm the settings</span>
+/plugin marketplace add VideoFrameExpedition/video-frame-expedition-claude-plugin
+/plugin install video-frame-expedition@video-frame-expedition
+/plugin configure video-frame-expedition@video-frame-expedition
+
+<span class="fr-only"># Dans un terminal : mettre à jour (puis relancer Claude Code)</span><span class="en-only"># In a terminal: update (then restart Claude Code)</span>
+claude plugin marketplace update video-frame-expedition
+claude plugin update video-frame-expedition@video-frame-expedition
+
+<span class="fr-only"># Dans un terminal : retirer</span><span class="en-only"># In a terminal: remove</span>
+claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pre>
+            <div class="block-body" style="margin-top: 26px">
+              <p>
+                <span class="fr-only">
+                  Le nom revient deux fois dans
+                  <code>video-frame-expedition@video-frame-expedition</code>&nbsp;: c'est le plugin,
+                  puis le catalogue qui le propose. Si vous aviez déjà branché le serveur avec
+                  <code>claude mcp add</code>, Claude&nbsp;Code garde cette entrée et laisse de côté
+                  celle du plugin&nbsp;: retirez-la (<code
+                    >claude mcp remove --scope user vfe-vision</code
+                  >) pour que les réglages du plugin s'appliquent.
+                </span>
+                <span class="en-only">
+                  The name appears twice in
+                  <code>video-frame-expedition@video-frame-expedition</code>: the plugin, then the
+                  catalogue that offers it. If you had already plugged the server in with
+                  <code>claude mcp add</code>, Claude&nbsp;Code keeps that entry and sets the
+                  plugin's aside: remove it (<code>claude mcp remove --scope user vfe-vision</code>)
+                  so the plugin's settings apply.
+                </span>
+              </p>
+              <p>
+                <span class="fr-only">
+                  Ensuite, demandez avec vos mots&nbsp;: «&nbsp;Regarde la timeline ouverte dans
+                  Resolve et dis-moi ce que contient chaque plan&nbsp;», «&nbsp;Monte
+                  45&nbsp;secondes avec les vidéos du lac, avec des coupes sûres&nbsp;», «&nbsp;Fais
+                  une version 9:16 de cette timeline, cadrée sur les personnes&nbsp;». Claude prend
+                  le skill de lui-même quand la demande porte sur un montage dans Resolve&nbsp;;
+                  vous pouvez aussi l'appeler avec
+                  <code>/video-frame-expedition:resolve-editing</code>.
+                </span>
+                <span class="en-only">
+                  Then ask in your own words: "Look at the timeline open in Resolve and tell me what
+                  each shot holds", "Edit 45&nbsp;seconds from the lake videos, with safe cuts",
+                  "Make a 9:16 version of this timeline, framed on the people". Claude picks up the
+                  skill by itself when a request is about an edit in Resolve; you can also call it
+                  with <code>/video-frame-expedition:resolve-editing</code>.
+                </span>
+              </p>
+              <div class="note cold">
+                <p>
+                  <span class="fr-only">
+                    Le plugin ne contacte que l'application, à l'adresse réglée, et n'a aucun
+                    hook&nbsp;: rien ne se lance tout seul. Les scripts du skill ne tournent que
+                    lorsque Claude les appelle pour une tâche que vous avez demandée, et ne
+                    téléchargent rien. Comme les outils de l'application, le skill ne modifie jamais
+                    une timeline en place (il la duplique d'abord) et n'enregistre pas le projet.
+                  </span>
+                  <span class="en-only">
+                    The plugin only contacts the application, at the address you set, and has no
+                    hook: nothing starts on its own. The skill's scripts only run when Claude calls
+                    them for a task you asked for, and download nothing. Like the application's
+                    tools, the skill never changes a timeline in place (it duplicates it first) and
+                    does not save the project.
                   </span>
                 </p>
               </div>
@@ -6642,14 +6855,16 @@ claude mcp add --scope user davinci-resolve -- "C:\Program Files\Blackmagic Desi
             <p>
               <span class="fr-only">
                 «&nbsp;DaVinci&nbsp;Resolve&nbsp;» et «&nbsp;Blackmagic&nbsp;Design&nbsp;» sont des
-                marques de Blackmagic Design Pty&nbsp;Ltd. Video Frame Expedition est une
-                application indépendante&nbsp;: elle n'est ni éditée, ni approuvée, ni soutenue par
-                Blackmagic&nbsp;Design.
+                marques de Blackmagic Design Pty&nbsp;Ltd, «&nbsp;Claude&nbsp;» une marque
+                d'Anthropic. Video Frame Expedition est une application indépendante&nbsp;: elle
+                n'est ni éditée, ni approuvée, ni soutenue par Blackmagic&nbsp;Design ou par
+                Anthropic.
               </span>
               <span class="en-only">
                 "DaVinci&nbsp;Resolve" and "Blackmagic&nbsp;Design" are trademarks of Blackmagic
-                Design Pty&nbsp;Ltd. Video Frame Expedition is an independent application: it is not
-                published, endorsed or supported by Blackmagic&nbsp;Design.
+                Design Pty&nbsp;Ltd, "Claude" a trademark of Anthropic. Video Frame Expedition is an
+                independent application: it is not published, endorsed or supported by
+                Blackmagic&nbsp;Design or by Anthropic.
               </span>
             </p>
           </div>

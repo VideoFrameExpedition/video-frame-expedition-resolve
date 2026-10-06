@@ -22,18 +22,72 @@ n'est demandé sur cet ordinateur.
 claude mcp add --scope user --transport http vfe-vision http://127.0.0.1:8765/mcp
 ```
 
-Ou bien le plugin Claude Code, qui fait la même connexion et ajoute un skill qui contient la
-méthode de montage
-([video-frame-expedition-claude-plugin](https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin)).
-Dans Claude Code :
+Ou bien le plugin Claude Code, ci-dessous. Choisissez l'un ou l'autre : avec les deux, Claude
+Code garde l'entrée ajoutée par `claude mcp add` et laisse de côté celle du plugin.
+
+### Le plugin Claude Code
+
+Un **plugin** est un paquet qu'on installe dans Claude Code. Celui de Video Frame Expedition,
+`video-frame-expedition`, a son propre dépôt
+([video-frame-expedition-claude-plugin](https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin))
+et contient deux choses :
+
+- la **connexion au serveur MCP** de l'application (`vfe-vision`), la même que `claude mcp add` ;
+- un **skill**, `resolve-editing` : la méthode de montage que Claude lit avant de travailler dans
+  Resolve (relier la timeline ouverte aux analyses, choisir les plans, écrire une liste de
+  montage, couper aux points sûrs, monter dans une nouvelle timeline, recadrer pour un autre
+  format, poser des marqueurs), avec les pièges connus de l'API de scripts de DaVinci Resolve
+  Studio 21.1 et des modèles de scripts testés.
+
+Il demande Video Frame Expedition 1.1.1 ou plus récente, lancée. Pour monter : DaVinci Resolve
+Studio 21.1 ou plus récent, avec la case « Outils Resolve pour l'assistant » (page Connexions)
+ou le serveur de Resolve branché sur Claude Code (plus bas). Les petits scripts du skill
+demandent Python 3 et Windows PowerShell.
+
+Dans Claude Code, installez-le, puis confirmez ses réglages :
 
 ```text
 /plugin marketplace add VideoFrameExpedition/video-frame-expedition-claude-plugin
 /plugin install video-frame-expedition@video-frame-expedition
+/plugin configure video-frame-expedition@video-frame-expedition
 ```
 
-Choisissez l'un ou l'autre : avec les deux, Claude Code garde l'entrée ajoutée par
-`claude mcp add` et laisse de côté celle du plugin.
+Le nom revient deux fois dans `video-frame-expedition@video-frame-expedition` : c'est le
+plugin, puis le catalogue qui le propose.
+
+| Réglage | Valeur |
+|---|---|
+| Adresse de l'application | `http://127.0.0.1:8765/mcp` (par défaut) quand l'application tourne sur cet ordinateur ; sinon son adresse sur votre réseau ou Tailscale, par exemple `http://100.64.12.34:8765/mcp` |
+| Jeton d'accès | Vide sur l'ordinateur de l'application. Depuis un autre appareil : le jeton de la page Connexions (rangé dans le coffre de mots de passe du système) |
+
+Si vous aviez déjà branché le serveur avec `claude mcp add`, retirez cette entrée pour que les
+réglages du plugin s'appliquent :
+
+```powershell
+claude mcp remove --scope user vfe-vision
+```
+
+Ensuite, demandez avec vos mots : « Regarde la timeline ouverte dans Resolve et dis-moi ce que
+contient chaque plan », « Monte 45 secondes avec les vidéos du lac, avec des coupes sûres »,
+« Fais une version 9:16 de cette timeline, cadrée sur les personnes ». Claude prend le skill de
+lui-même quand la demande porte sur un montage dans Resolve ; vous pouvez aussi l'appeler avec
+`/video-frame-expedition:resolve-editing`.
+
+Mettre à jour (puis relancer Claude Code), ou retirer le plugin, dans un terminal :
+
+```powershell
+claude plugin marketplace update video-frame-expedition
+claude plugin update video-frame-expedition@video-frame-expedition
+
+claude plugin uninstall video-frame-expedition@video-frame-expedition
+```
+
+Le plugin ne contacte que l'application, à l'adresse réglée, et n'a aucun hook : rien ne se
+lance tout seul. Les scripts du skill ne tournent que lorsque Claude les appelle pour une tâche
+que vous avez demandée, et ne téléchargent rien. Comme les outils de l'application, le skill ne
+modifie jamais une timeline en place (il la duplique d'abord) et n'enregistre pas le projet.
+Les autres assistants (Claude Desktop, Cursor, VS Code, Codex) se branchent comme ci-dessous,
+sans le skill.
 
 ### Claude Desktop
 
@@ -283,5 +337,6 @@ plus présenter le jeton. N'ajoutez au tailnet que des appareils de confiance, e
 | « Trop d'essais » / 429 | 10 mauvais jetons : attendre une minute |
 | 400 « Invalid host header » | adresse non reconnue : utilisez celles de la page Connexions |
 | Claude Desktop ne voit pas l'outil | JSON invalide, ou Claude Desktop pas complètement quitté |
+| Le plugin Claude Code ne prend pas son adresse ou son jeton | une entrée `vfe-vision` ajoutée par `claude mcp add` l'emporte : `claude mcp remove --scope user vfe-vision` |
 
 Sécurité : [SECURITY.fr.md](../../SECURITY.fr.md).

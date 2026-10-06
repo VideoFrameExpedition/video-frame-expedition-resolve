@@ -140,12 +140,13 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
 
 ## Prérequis
 
-- Windows 11.
-- [uv](https://docs.astral.sh/uv/), Node.js 24 LTS (l'interface web est construite au premier
-  lancement), FFmpeg et ExifTool : `scripts/bootstrap.ps1` les installe.
-- LM Studio avec le serveur local activé et un modèle de vision chargé (ex. `qwen/qwen3-vl-8b`),
-  sur cet ordinateur ou sur un autre de votre réseau (page Système, carte « LM Studio »).
-- DaVinci Resolve Studio 21.1 ou plus récent, pour le lien avec Resolve.
+- **L'application** : Windows 11, pour le moment. [uv](https://docs.astral.sh/uv/), Node.js 24
+  LTS (l'interface web est construite au premier lancement), FFmpeg et ExifTool :
+  `scripts/bootstrap.ps1` les installe.
+- **LM Studio**, avec le serveur local activé et un modèle de vision chargé (ex.
+  `qwen/qwen3-vl-8b`) : sur le même PC ou sur un autre ordinateur, sous Windows, macOS ou Linux.
+- **DaVinci Resolve Studio 21.1 ou plus récent**, pour le lien avec Resolve : sur le même PC ou
+  sur un autre ordinateur, sous Windows, macOS ou Linux.
 
 ## Installation
 
