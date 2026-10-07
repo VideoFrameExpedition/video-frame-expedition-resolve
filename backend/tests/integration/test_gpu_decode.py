@@ -7,6 +7,7 @@ a hardware acceleration ffmpeg does not know, which fails the way an unusable GP
 from __future__ import annotations
 
 import subprocess
+import sys
 import threading
 from pathlib import Path
 from typing import Any
@@ -171,6 +172,7 @@ def test_nvidia_smi_failures_fall_back_to_the_cpu(monkeypatch: pytest.MonkeyPatc
         raise PermissionError("Accès refusé")
 
     monkeypatch.setattr(nvidia_smi, "run_process", denied)
+    monkeypatch.setattr(sys, "platform", "win32")  # a Mac never asks (test_macos.py)
     probe = NvidiaSmi("nvidia-smi")
     assert probe.free_mib() is None
     assert probe.free_mib() is None  # not asked again for a while
