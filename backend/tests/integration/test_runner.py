@@ -11,6 +11,7 @@ import anyio
 import pytest
 import sqlalchemy as sa
 import structlog
+from structlog.testing import capture_logs
 
 from vfe_vision.core.cancel import CancelToken
 from vfe_vision.core.errors import VfeError
@@ -265,6 +266,22 @@ async def test_degraded_results_are_used_but_redone(db: Database, video: VideoRe
     assert _runs(db, "after_it") == [StageStatus.SUCCEEDED]
     await runner.run(_ctx(db, video), job_id=None)
     assert _runs(db, "fallback") == [StageStatus.SUCCEEDED, StageStatus.SUCCEEDED]
+
+
+@pytest.mark.anyio
+async def test_a_stage_left_for_later_says_why_in_the_log(db: Database, video: VideoRef) -> None:
+    """LM Studio asleep: the stage is skipped for now rather than failed, the video stays
+    incomplete, and the log says which stage and why."""
+    later = StageOutcome.skipped("LM Studio injoignable", retryable=True)
+    registry = StageRegistry([_stage("vision", outcome=later), _stage("other")])
+    runner = PipelineRunner(registry, events=_Events())
+    with capture_logs() as logs:
+        report = await runner.run(_ctx(db, video), job_id=None)
+    assert report.incomplete
+    [entry] = [entry for entry in logs if entry["event"] == "stage to be redone"]
+    assert (entry["log_level"], entry["stage"], entry["status"], entry["reason"]) == (
+        "warning", "vision", "skipped", "LM Studio injoignable"
+    )  # fmt: skip
 
 
 # ------------------------------------------------ analysis modes: what is kept, what is redone

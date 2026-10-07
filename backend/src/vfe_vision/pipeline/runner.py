@@ -404,6 +404,14 @@ class PipelineRunner:
             log.warning("stage failed", error=error, duration_ms=duration_ms)
         elif outcome is not None and outcome.retryable:
             report.incomplete = True  # skipped for now, or degraded: worth another run
+            # Said in the log too: an outage (LM Studio asleep, a service down) leaves the
+            # video incomplete without any failure, and is otherwise only seen on the stage.
+            log.warning(
+                "stage to be redone",
+                status=status.value,
+                reason=outcome.skip_reason,
+                duration_ms=duration_ms,
+            )
         elif outcome is not None and outcome.status == StageStatus.SKIPPED:
             report.settled.add(stage.name)
         await anyio.to_thread.run_sync(
