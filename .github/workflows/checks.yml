@@ -21,6 +21,13 @@ jobs:
       run:
         working-directory: backend
     steps:
+      # The files as the repository stores them: run.command and bootstrap.sh keep their LF (a
+      # test checks it, for macOS), run.bat and bootstrap.ps1 their CRLF. Git on Windows runners
+      # converts line endings by default.
+      - name: Keep the repository's line endings
+        working-directory: .
+        run: git config --global core.autocrlf false
+
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
