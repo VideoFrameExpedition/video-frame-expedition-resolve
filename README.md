@@ -152,12 +152,15 @@ them).
    powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1
    ```
 
-   The script uses `winget` to install what is missing (uv, Node.js, FFmpeg, ExifTool,
-   LM Studio), then the application's Python packages and its models (about 2 GB, downloaded
-   once; `-SansModeles` skips them). Accept the Windows (UAC) prompts. Its messages are in
-   French.
+   The script uses `winget` to install what is missing (uv, Node.js, FFmpeg, ExifTool), then
+   the application's Python packages and its models (about 2 GB, downloaded once;
+   `-SansModeles` skips them). It asks whether to install LM Studio on this PC: the vision model
+   can also run in the LM Studio of another computer. `-AvecLMStudio` or `-SansLMStudio` gives
+   the answer in advance. Accept the Windows (UAC) prompts. Its messages are in French.
 3. In LM Studio, download a vision model (for example `qwen/qwen3-vl-8b`), load it and start the
-   local server.
+   local server. When LM Studio runs on another computer, do this over there and let its server
+   accept the local network (Developer › Server Settings › "Serve on Local Network"); once the
+   application is open, give its address on the System page, "LM Studio" card.
 4. Double-click `run.bat`. The first time, it builds the web interface (one or two minutes),
    then opens the browser.
 

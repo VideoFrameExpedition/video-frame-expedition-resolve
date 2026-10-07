@@ -2763,26 +2763,41 @@
                   <pre><code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code></pre>
                   <span class="fr-only">
                     Le script installe par <code>winget</code> ce qui manque (uv, Node.js, FFmpeg,
-                    ExifTool, LM&nbsp;Studio), puis les paquets Python de l'application et ses
-                    modèles (environ 2&nbsp;Go, une seule fois&nbsp;; <code>-SansModeles</code> pour
-                    s'en passer). Acceptez les demandes d'autorisation de Windows (UAC). Ses
-                    messages sont toujours en français.
+                    ExifTool), puis les paquets Python de l'application et ses modèles (environ
+                    2&nbsp;Go, une seule fois&nbsp;; <code>-SansModeles</code> pour s'en passer). Il
+                    demande s'il faut installer LM&nbsp;Studio sur ce PC&nbsp;: le modèle de vision
+                    peut aussi tourner dans le LM&nbsp;Studio d'un autre ordinateur.
+                    <code>-AvecLMStudio</code> ou <code>-SansLMStudio</code> donne la réponse
+                    d'avance. Acceptez les demandes d'autorisation de Windows (UAC). Ses messages
+                    sont toujours en français.
                   </span>
                   <span class="en-only">
                     The script installs through <code>winget</code> what is missing (uv, Node.js,
-                    FFmpeg, ExifTool, LM&nbsp;Studio), then the application's Python packages and
-                    its models (about 2&nbsp;GB, once only; <code>-SansModeles</code> to do without
-                    them). Accept the Windows (UAC) prompts. Its messages are always in French.
+                    FFmpeg, ExifTool), then the application's Python packages and its models (about
+                    2&nbsp;GB, once only; <code>-SansModeles</code> to do without them). It asks
+                    whether to install LM&nbsp;Studio on this PC: the vision model can also run in
+                    the LM&nbsp;Studio of another computer. <code>-AvecLMStudio</code> or
+                    <code>-SansLMStudio</code> gives the answer in advance. Accept the Windows (UAC)
+                    prompts. Its messages are always in French.
                   </span>
                 </li>
                 <li>
                   <span class="fr-only">
                     <strong>Dans LM&nbsp;Studio</strong>, téléchargez un modèle de vision (par
                     exemple <code>qwen/qwen3-vl-8b</code>), chargez-le et activez le serveur local.
+                    Quand LM&nbsp;Studio tourne sur un autre ordinateur, faites-le là-bas et laissez
+                    son serveur accepter le réseau local (Developer&nbsp;› Server Settings&nbsp;›
+                    «&nbsp;Serve on Local Network&nbsp;»)&nbsp;; une fois l'application ouverte,
+                    donnez son adresse <a href="#systeme">page Système</a>, carte
+                    «&nbsp;LM&nbsp;Studio&nbsp;».
                   </span>
                   <span class="en-only">
                     <strong>In LM&nbsp;Studio</strong>, download a vision model (for instance
-                    <code>qwen/qwen3-vl-8b</code>), load it and start the local server.
+                    <code>qwen/qwen3-vl-8b</code>), load it and start the local server. When
+                    LM&nbsp;Studio runs on another computer, do this over there and let its server
+                    accept the local network (Developer&nbsp;› Server Settings&nbsp;› "Serve on
+                    Local Network"); once the application is open, give its address on the
+                    <a href="#systeme">System page</a>, "LM&nbsp;Studio" card.
                   </span>
                 </li>
                 <li>

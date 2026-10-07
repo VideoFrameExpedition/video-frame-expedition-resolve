@@ -159,11 +159,17 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
    powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1
    ```
 
-   Le script installe par `winget` ce qui manque (uv, Node.js, FFmpeg, ExifTool, LM Studio),
-   puis les paquets Python de l'application et ses modèles (environ 2 Go, une seule fois ;
-   `-SansModeles` pour s'en passer). Acceptez les demandes d'autorisation de Windows (UAC).
+   Le script installe par `winget` ce qui manque (uv, Node.js, FFmpeg, ExifTool), puis les
+   paquets Python de l'application et ses modèles (environ 2 Go, une seule fois ;
+   `-SansModeles` pour s'en passer). Il demande s'il faut installer LM Studio sur ce PC : le
+   modèle de vision peut aussi tourner dans le LM Studio d'un autre ordinateur. `-AvecLMStudio`
+   ou `-SansLMStudio` donne la réponse d'avance. Acceptez les demandes d'autorisation de Windows
+   (UAC).
 3. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-8b`), chargez-le
-   et activez le serveur local.
+   et activez le serveur local. Quand LM Studio tourne sur un autre ordinateur, faites-le là-bas
+   et laissez son serveur accepter le réseau local (Developer › Server Settings › « Serve on
+   Local Network ») ; une fois l'application ouverte, donnez son adresse page Système, carte
+   « LM Studio ».
 4. Double-cliquez sur `run.bat`. La première fois, il construit l'interface web (une à deux
    minutes), puis ouvre le navigateur.
 
