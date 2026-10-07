@@ -79,4 +79,21 @@ describe("MCP client snippets", () => {
     });
     expect(mcpUrl("http://127.0.0.1:8765/")).toBe("http://127.0.0.1:8765/mcp");
   });
+
+  it("quotes command lines for the shells of macOS and Linux", () => {
+    const python = "/Users/me/vfe vision/backend/.venv/bin/python";
+    const stdio = { command: python, args: ["-m", "vfe_vision", "mcp-stdio"] };
+    expect(shellArg("plain", true)).toBe("plain");
+    expect(shellArg("http://127.0.0.1:8765/mcp", true)).toBe("http://127.0.0.1:8765/mcp");
+    expect(shellArg(python, true)).toBe(`'${python}'`);
+    expect(shellArg("l'été", true)).toBe(`'l'\\''été'`);
+    expect(stdioCommandLine(stdio, REMOTE, true)).toBe(
+      `'${python}' -m vfe_vision mcp-stdio --url ${REMOTE.url} --token ${REMOTE.token}`,
+    );
+    const resolve =
+      "/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/ResolveMCP";
+    expect(resolveClaudeCode(resolve, true)).toBe(
+      `claude mcp add --scope user davinci-resolve -- '${resolve}'`,
+    );
+  });
 });

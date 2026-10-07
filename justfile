@@ -1,6 +1,7 @@
-# Video Frame Expedition for DaVinci Resolve — development tasks.
-# The Python tools are run through `python -m …`: Windows Smart App Control blocks the
-# unsigned .exe launchers generated in the virtualenv.
+# Video Frame Expedition for DaVinci Resolve — development tasks, on Windows and macOS (the
+# recipes also run on Linux). The Python tools are run through `python -m …`, the same
+# everywhere: on Windows, Smart App Control blocks the unsigned .exe launchers generated in the
+# virtualenv.
 
 set windows-shell := ["powershell.exe", "-NoLogo", "-NoProfile", "-Command"]
 set shell := ["bash", "-cu"]
@@ -92,6 +93,6 @@ build:
 serve:
     {{py}} -m vfe_vision serve
 
-# Diagnostics of the environment (ffmpeg, exiftool, LM Studio, GPU)
+# Diagnostics of the environment (ffmpeg, exiftool, LM Studio, GPU or the Mac's memory)
 doctor:
     {{py}} -m vfe_vision doctor

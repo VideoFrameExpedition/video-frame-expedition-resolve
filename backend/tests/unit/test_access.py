@@ -118,7 +118,9 @@ class TestToken:
         assert trustees & me
         # A process run as administrator may leave Administrators, SYSTEM and the owner in:
         # they can read any file anyway. No other account, ever.
-        admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
+        admin = False
+        if sys.platform == "win32":
+            admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
         assert trustees <= me | ({"BA", "SY", "OW"} if admin else set())
 
     def test_cli_shows_then_rotates(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

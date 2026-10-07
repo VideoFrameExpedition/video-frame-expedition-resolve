@@ -25,6 +25,7 @@ from tests.fakes.library import Library, build_library
 from tests.fakes.resolve import FakeClip, FakeFolder, FakeProject, FakeResolve, run_script
 from vfe_vision.api.app import create_app
 from vfe_vision.core.config import Settings
+from vfe_vision.core.paths import CASE_INSENSITIVE_PATHS
 from vfe_vision.db.models import Job, LibraryRoot, StageRun, Video, VideoSynthesis
 from vfe_vision.db.preferences import update_preferences
 from vfe_vision.db.session import Database
@@ -207,7 +208,7 @@ def test_match_clips_endpoint(client: TestClient, library: Library, tmp_path: Pa
     response = client.post(
         "/api/v1/videos/match-clips",
         json={"items": [
-            holiday.path.upper(),
+            _other_case(holiday.path),
             {"file_path": holiday.path, "source_start_frame": 1100, "source_end_frame": 1250,
              "fps": 25},
             str(tmp_path / "inconnu.mov"),
@@ -273,7 +274,7 @@ def test_match_methods(container: AppContainer, tmp_path: Path) -> None:
                       mtime=0.0, fingerprint="fp-b", status=VideoStatus.NEW)  # fmt: skip
         session.add(other)
     queries = [
-        editing.ClipQuery("\\\\?\\" + str(tmp_path / "Rushs" / "VACANCES.MP4")),
+        editing.ClipQuery("\\\\?\\" + _other_case(str(tmp_path / "Rushs" / "vacances.mp4"))),
         editing.ClipQuery(str(copy)),
         editing.ClipQuery(str(renamed)),
         editing.ClipQuery(str(tmp_path / "ailleurs" / "vacances.mp4")),
@@ -296,6 +297,11 @@ def test_match_methods(container: AppContainer, tmp_path: Path) -> None:
         editing.match_clips(container, [editing.ClipQuery("x")] * (editing.MAX_ITEMS + 1))
 
 
+def _other_case(path: str) -> str:
+    """The same file spelled otherwise where file names ignore case (Windows, macOS)."""
+    return path.upper() if CASE_INSENSITIVE_PATHS else path
+
+
 def test_resolve_payload_applied_to_a_fake_resolve(container: AppContainer, tmp_path: Path) -> None:
     library = _prepare(container.db, tmp_path / "Rushs")
     holiday = _video(container.db, library.holiday)
@@ -312,7 +318,7 @@ def test_resolve_payload_applied_to_a_fake_resolve(container: AppContainer, tmp_
     )
     assert [m["custom_data"] for m in clip["markers"]] == [
         "vfe:chapter:1", "vfe:chapter:2", "vfe:highlight:1", "vfe:chapter:3"]  # fmt: skip
-    media = FakeClip(holiday.path.replace("\\", "/").upper(), fps=25.0, frames=3000)
+    media = FakeClip(_other_case(holiday.path.replace("\\", "/")), fps=25.0, frames=3000)
     resolve_app = FakeResolve(FakeProject(FakeFolder(folders=[FakeFolder(clips=[media])])))
     result = run_script(payload.script, resolve_app)["result"]
     assert result["errors"] == []

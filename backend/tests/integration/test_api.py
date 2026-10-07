@@ -11,7 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from vfe_vision.api.app import create_app
-from vfe_vision.core.config import Settings
+from vfe_vision.core.config import Settings, platform_name
 from vfe_vision.jobs.scan import scan_root
 from vfe_vision.services.container import AppContainer
 
@@ -34,6 +34,7 @@ def test_health(client: TestClient) -> None:
     response = client.get("/api/v1/system/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+    assert response.json()["platform"] == platform_name()  # the interface's texts follow it
 
 
 class TestSecurity:

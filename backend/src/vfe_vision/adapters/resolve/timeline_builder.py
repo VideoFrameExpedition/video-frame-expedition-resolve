@@ -3,7 +3,7 @@ the one change the application makes in Resolve, when the user asks for it.
 
 Run by ``adapters/resolve/builder.py`` with the application's Python, in isolated mode::
 
-    python -I timeline_builder.py <fusionscript.dll> build  < request (JSON)
+    python -I timeline_builder.py <fusionscript library> build  < request (JSON)
 
 The request: ``name``, ``rate`` (as Resolve writes it: "29.97"), ``width``, ``height``, ``folder``
 (the media pool bin that receives the new clips and the timeline), ``clips`` in order

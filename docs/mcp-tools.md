@@ -3,7 +3,7 @@
 **English** · [Français](mcp-tools.fr.md)
 
 The server is mounted at `http://127.0.0.1:8765/mcp` (streamable HTTP) when the
-application is running (`run.bat` or `just serve`). Registration in Claude Code:
+application is running (`run.bat`, `run.command` on a Mac, or `just serve`). Registration in Claude Code:
 
 ```powershell
 claude mcp add --scope user --transport http vfe-vision http://127.0.0.1:8765/mcp

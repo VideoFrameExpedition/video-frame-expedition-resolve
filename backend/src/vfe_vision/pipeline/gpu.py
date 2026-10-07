@@ -4,6 +4,8 @@ The vision model loaded in LM Studio owns the video memory. Another task may use
 the GPU only when the memory the model leaves free covers the task plus a safety margin, one
 task at a time; otherwise it runs on the CPU. On Windows an over-committed GPU silently moves
 memory to system RAM, which would slow the vision model down: the margin is what prevents it.
+On a Mac the memory is unified and no probe reads it: nothing is lent, the CPU decodes, and
+the vision model keeps whatever LM Studio gives it.
 """
 
 from __future__ import annotations

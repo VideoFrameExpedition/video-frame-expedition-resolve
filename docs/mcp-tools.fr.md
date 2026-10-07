@@ -3,7 +3,8 @@
 [English](mcp-tools.md) · **Français**
 
 Le serveur est monté sur `http://127.0.0.1:8765/mcp` (streamable HTTP) quand
-l'application tourne (`run.bat` ou `just serve`). Enregistrement dans Claude Code :
+l'application tourne (`run.bat`, `run.command` sur un Mac, ou `just serve`). Enregistrement dans
+Claude Code :
 
 ```powershell
 claude mcp add --scope user --transport http vfe-vision http://127.0.0.1:8765/mcp

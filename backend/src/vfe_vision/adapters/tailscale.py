@@ -10,6 +10,7 @@ import ipaddress
 import json
 import os
 import shutil
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -49,14 +50,28 @@ def in_tailnet(address: str) -> bool:
     return ip in (TAILNET_V4 if ip.version == 4 else TAILNET_V6)
 
 
+def default_places() -> tuple[Path, ...]:
+    """Where Tailscale's command line is when it is not in the PATH: its install folder on
+    Windows; the application bundle, then Homebrew, on macOS."""
+    if sys.platform == "win32":
+        program_files = Path(os.environ.get("PROGRAMFILES", r"C:\Program Files"))
+        return (program_files / "Tailscale" / "tailscale.exe",)
+    elif sys.platform == "darwin":
+        return (
+            Path("/Applications/Tailscale.app/Contents/MacOS/Tailscale"),
+            Path("/opt/homebrew/bin/tailscale"),
+            Path("/usr/local/bin/tailscale"),
+        )
+    else:
+        return (Path("/usr/bin/tailscale"), Path("/usr/local/bin/tailscale"))
+
+
 def find_cli(configured: str = "tailscale") -> str | None:
-    """The ``tailscale`` executable: configured path, PATH, then the default install folder."""
+    """The ``tailscale`` executable: configured path, PATH, then its usual places."""
     found = shutil.which(configured)
     if found:
         return found
-    default = Path(os.environ.get("PROGRAMFILES", r"C:\Program Files")) / "Tailscale"
-    candidate = default / "tailscale.exe"
-    return str(candidate) if candidate.is_file() else None
+    return next((str(place) for place in default_places() if place.is_file()), None)
 
 
 def parse_status(payload: dict[str, Any]) -> TailscaleSelf:

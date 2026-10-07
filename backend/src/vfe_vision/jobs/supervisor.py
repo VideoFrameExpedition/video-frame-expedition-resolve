@@ -64,13 +64,19 @@ class WorkerSupervisor:
         self._monitor.start()
 
     def _spawn(self) -> None:
-        creationflags = subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0
+        if sys.platform == "win32":
+            creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+        else:
+            creationflags = 0
         with self._lock:
+            # POSIX: its own session (the terminal's Ctrl+C does not reach it) and the job's
+            # lifeline, which ends it with its children if this process dies without stopping it.
             self._proc = subprocess.Popen(
                 [sys.executable, "-m", "vfe_vision", "worker"],
-                env=worker_env(self._settings),
+                env=self._job.child_env(worker_env(self._settings)),
                 creationflags=creationflags,
                 start_new_session=sys.platform != "win32",
+                **self._job.popen_kwargs(own_group=False),
             )
             self._job.assign(self._proc)
         log.info("worker process started", pid=self._proc.pid)

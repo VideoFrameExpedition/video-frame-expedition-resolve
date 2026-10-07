@@ -13,7 +13,6 @@ lies in its range, where to cut it safely and how to frame it.
 from __future__ import annotations
 
 import statistics
-import sys
 import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -24,6 +23,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 from vfe_vision.core.errors import InvalidInputError
+from vfe_vision.core.paths import CASE_INSENSITIVE_PATHS
 from vfe_vision.db.models import TimelineBinItem, Video
 from vfe_vision.db.preferences import load_preferences
 from vfe_vision.db.timeline_bins import ITEM_KEY
@@ -158,7 +158,7 @@ def match_clips(c: AppContainer, queries: list[ClipQuery]) -> list[ClipMatch]:
         raise InvalidInputError("Indiquez au moins un clip.")
     if len(queries) > MAX_ITEMS:
         raise InvalidInputError(f"Au plus {MAX_ITEMS} clips à la fois.")
-    case_insensitive = sys.platform == "win32"
+    case_insensitive = CASE_INSENSITIVE_PATHS
     with c.db.read() as session:
         rows = list(session.execute(sa.select(Video)).scalars())
         uids = {q.clip_uid for q in queries if q.clip_uid}

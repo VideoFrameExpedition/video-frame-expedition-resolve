@@ -32,7 +32,7 @@ export function AddRootDialog({ trigger }: { trigger?: React.ReactNode }) {
   const addRoot = useAddRoot();
   const picker = usePickFolder();
 
-  // The Windows folder dialog opens on this computer; the path comes back filled in, even when
+  // The desktop's folder dialog opens on this computer; the path comes back filled in, even when
   // this form was closed and reopened meanwhile (one dialog at a time: never a second request).
   const browse = (): void => {
     picker.mutate(undefined, {
@@ -97,7 +97,7 @@ export function AddRootDialog({ trigger }: { trigger?: React.ReactNode }) {
                 onChange={(e) => {
                   setPath(e.target.value);
                 }}
-                placeholder="D:\Vidéos\Tournage"
+                placeholder={t("addRoot.pathPlaceholder")}
                 required
                 spellCheck={false}
               />

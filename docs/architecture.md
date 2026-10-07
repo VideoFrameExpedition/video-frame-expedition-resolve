@@ -8,7 +8,7 @@
 flowchart LR
     Browser["Browser<br/>(React SPA)"] -- "REST /api/v1 + SSE" --> API
     Claude["Claude Code"] -- "MCP HTTP /mcp" --> API
-    Claude -- "MCP" --> Resolve["ResolveMCP.exe<br/>(DaVinci Resolve Studio)"]
+    Claude -- "MCP" --> Resolve["ResolveMCP<br/>(DaVinci Resolve Studio)"]
     API -- "child process<br/>fusionscript" --> ResolveApp["DaVinci Resolve Studio<br/>(reading, timeline creation,<br/>the assistant's Resolve tools)"]
 
     subgraph serve["vfe serve"]
@@ -19,7 +19,7 @@ flowchart LR
 
     API <--> DB[("SQLite WAL<br/>FTS5 + vectors")]
     Worker <--> DB
-    Worker --> Artifacts["Artefacts<br/>%LOCALAPPDATA%\\vfe-vision"]
+    Worker --> Artifacts["Artefacts<br/>%LOCALAPPDATA%\\vfe-vision or<br/>~/Library/Application Support/vfe-vision"]
     Worker --> FFmpeg["ffmpeg / ffprobe"]
     Worker --> ExifTool["ExifTool (-stay_open)"]
     Worker --> LMStudio["LM Studio, here or on another<br/>computer (VLM on GPU; loaded by<br/>the user, except model bench)"]
@@ -43,3 +43,8 @@ Dependencies only go downwards; `import-linter` checks this on every `just check
 | `ports` | interfaces with fakes for the tests (LM Studio, geocoding, weather, ASR, detector) |
 | `domain` | pure logic: timecodes, GPS, capture time, sun, colour, boxes, reframing… |
 | `core` | configuration, logging, errors, paths, processes |
+
+Windows and macOS share this code: what depends on the system is a `sys.platform` branch in the
+adapter or `core` module concerned. The child processes (worker, transcription, Resolve's
+scripts) are held by a Job Object on Windows, by a process group and a lifeline elsewhere
+(`core/procs.py`).

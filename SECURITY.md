@@ -57,6 +57,11 @@ Video Frame Expedition for DaVinci Resolve is a **local** application: the serve
   loads its fonts from Google Fonts and its presentation videos from youtube-nocookie.com, only
   when the reader reaches them. The models are downloaded at installation, or when you ask for
   one (Hugging Face, PyPI, GitHub, GeoNames). The application sends no telemetry.
+- **Child processes**: the analysis worker, the transcription engine and the scripts that talk
+  to DaVinci Resolve are tied to the application (a Job Object on Windows; a process group and a
+  lifeline on a Mac): if it goes away, they stop with it, and nothing of them goes on in the
+  background. On a Mac, the application also runs `osascript` (the window to choose a folder),
+  `diskutil`, `sysctl` and `pgrep`, to read only.
 
 ## Access from other devices
 

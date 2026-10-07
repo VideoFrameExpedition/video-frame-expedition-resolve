@@ -1,7 +1,7 @@
 """EmbeddingGemma-300m q4 on the CPU.
 
 The ``models`` tests need the model in VFE_EMBEDDINGS_MODEL_DIR (default
-%LOCALAPPDATA%/vfe-vision/models/embeddings/embeddinggemma-300m-q4, ``vfe models search``);
+<data folder>/models/embeddings/embeddinggemma-300m-q4, ``vfe models search``);
 they are skipped otherwise.
 """
 
@@ -24,7 +24,7 @@ from vfe_vision.adapters.embeddings.gemma import (
 )
 from vfe_vision.adapters.models.catalog import DEFAULTS, spec
 from vfe_vision.adapters.models.store import ModelStore
-from vfe_vision.core.config import Settings
+from vfe_vision.core.config import Settings, default_data_dir
 from vfe_vision.core.errors import ServiceUnavailableError
 from vfe_vision.db.session import Database
 from vfe_vision.domain.search_chunks import ChunkKind
@@ -33,7 +33,7 @@ from vfe_vision.services import search
 from vfe_vision.services.container import AppContainer
 from vfe_vision.services.search import SearchFilters
 
-_MODELS = Path(os.environ.get("LOCALAPPDATA", "")) / "vfe-vision" / "models"
+_MODELS = default_data_dir() / "models"
 MODEL_DIR = Path(
     os.environ.get("VFE_EMBEDDINGS_MODEL_DIR") or _MODELS / "embeddings" / "embeddinggemma-300m-q4"
 )

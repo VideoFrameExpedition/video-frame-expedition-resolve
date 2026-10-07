@@ -10,11 +10,11 @@ import {
   Search,
   Settings2,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useLiveEvents } from "@/api/events";
-import { useJobsSummary, useLmModels } from "@/api/queries";
+import { useJobsSummary, useLmModels, usePlatform } from "@/api/queries";
 import { Logo } from "@/components/Logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { LogoutButton } from "@/features/access/AccessGate";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnalyzePanel } from "@/features/library/AnalyzePanel";
 import { BinsTree } from "@/features/library/BinsTree";
+import { applyPlatform } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 import { PreferencesMenu } from "./PreferencesMenu";
@@ -128,6 +129,13 @@ export function AppShell() {
     select: (location) => location.pathname.replace(/\/+$/, "").toLowerCase() === "/library",
   });
   useLiveEvents();
+  // Paths, shortcuts and the launcher are named as on the application's computer.
+  const platform = usePlatform().data;
+  useEffect(() => {
+    if (platform) {
+      applyPlatform(platform);
+    }
+  }, [platform]);
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex min-h-svh">

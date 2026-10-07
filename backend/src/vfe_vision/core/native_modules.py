@@ -21,17 +21,18 @@ _LOAD_WITH_ALTERED_SEARCH_PATH = 0x00000008
 
 def refused_by_policy(path: Path) -> bool:
     """Whether Windows' application control refuses to load this file (elsewhere: never)."""
-    if sys.platform != "win32":
+    if sys.platform == "win32":
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.LoadLibraryExW.restype = ctypes.c_void_p
+        kernel32.LoadLibraryExW.argtypes = [ctypes.c_wchar_p, ctypes.c_void_p, ctypes.c_uint32]
+        kernel32.FreeLibrary.argtypes = [ctypes.c_void_p]
+        handle = kernel32.LoadLibraryExW(str(path), None, _LOAD_WITH_ALTERED_SEARCH_PATH)
+        if handle:
+            kernel32.FreeLibrary(handle)
+            return False
+        return ctypes.get_last_error() == POLICY_VIOLATION
+    else:
         return False
-    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-    kernel32.LoadLibraryExW.restype = ctypes.c_void_p
-    kernel32.LoadLibraryExW.argtypes = [ctypes.c_wchar_p, ctypes.c_void_p, ctypes.c_uint32]
-    kernel32.FreeLibrary.argtypes = [ctypes.c_void_p]
-    handle = kernel32.LoadLibraryExW(str(path), None, _LOAD_WITH_ALTERED_SEARCH_PATH)
-    if handle:
-        kernel32.FreeLibrary(handle)
-        return False
-    return ctypes.get_last_error() == POLICY_VIOLATION
 
 
 def plain_twin(path: Path) -> Path | None:

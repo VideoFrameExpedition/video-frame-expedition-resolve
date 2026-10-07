@@ -206,15 +206,20 @@ def mcp_stdio(
     anyio.run(serve_stdio, target, token or None)
 
 
+WORKER_END_GRACE_S = 15.0  # orphaned worker: time given to the graceful stop before the end
+
+
 @app.command(hidden=True)
 def worker() -> None:
     """Processus d'analyse (lancé et supervisé par ``vfe serve``)."""
     import asyncio
     import signal
     import sys
+    import threading
 
     import anyio
 
+    from vfe_vision.core import procs
     from vfe_vision.core.config import get_settings
     from vfe_vision.core.logging import configure_logging
     from vfe_vision.jobs.worker import Worker
@@ -239,6 +244,14 @@ def worker() -> None:
             signals.append(signal.SIGBREAK)
         for sig in signals:
             signal.signal(sig, request_stop)
+
+        def parent_gone() -> None:
+            """The API process died without stopping us (POSIX lifeline): finish as it would
+            have asked, then make sure nothing of ours is left."""
+            request_stop()
+            threading.Timer(WORKER_END_GRACE_S, procs.end_with_group).start()
+
+        procs.watch_lifeline(parent_gone)
         await Worker(settings).run(stop)
 
     anyio.run(main)
@@ -577,8 +590,17 @@ def models_sounds() -> None:
 
 @models_app.command("cuda-runtime")
 def models_cuda_runtime() -> None:
-    """Télécharge cuBLAS 12 (NVIDIA, 553 Mo) pour transcrire sur le GPU quand il est libre."""
-    _install(["runtime/cublas-12.9"])
+    """Télécharge cuBLAS 12 (NVIDIA, 553 Mo) pour transcrire sur le GPU quand il est libre
+    (Windows seulement : sur Mac, la transcription reste sur le processeur)."""
+    if sys.platform == "win32":
+        _install(["runtime/cublas-12.9"])
+    else:
+        typer.echo(
+            "La transcription sur le GPU (cuBLAS, cartes NVIDIA) n'existe que sous Windows : sur "
+            "cet ordinateur, la transcription reste sur le processeur.",
+            err=True,
+        )
+        raise typer.Exit(1)
 
 
 @models_app.command("ocr")
@@ -616,6 +638,8 @@ def models_list(
     store = ModelStore(get_settings().models_dir)
     failed = False
     for status in store.statuses():
+        if status.spec.kind == "runtime" and sys.platform != "win32":
+            continue  # cuBLAS: Windows and NVIDIA only
         mark = "installé" if status.installed else "absent"
         typer.echo(f"{status.spec.id:<24} {mark:<9} {status.spec.size / 1_048_576:7.0f} Mo  "
                    f"{status.spec.label}")  # fmt: skip

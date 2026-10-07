@@ -34,7 +34,7 @@ PARALLEL = 4
 MATCH_IOU = 0.5  # a model's box and a detector's box are the same being (as in the fusion)
 MIN_DETECTOR_SCORE = 0.5  # a detector box trusted on its own
 MAX_REFERENCE_BEINGS = 6  # beyond: a crowd, where the models are told to box ten at most
-FULL_VRAM_FREE_MIB = 300  # less left once loaded: Windows moves memory to the system RAM
+FULL_VRAM_FREE_MIB = 300  # less left once loaded (NVIDIA): Windows moves memory to the RAM
 MAX_RATING = 3  # 0 wrong · 1 approximate · 2 nearly right · 3 right
 MAX_NOTE = 300  # what the user writes about a run, to find it again in the history
 MIN_LANGUAGE_HITS = 3
@@ -479,7 +479,7 @@ def _area(box: Sequence[float]) -> float:
 class BenchScores(BaseModel):
     """What a run measured for one model (computed when read, from what is stored)."""
 
-    vram_mib: int | None = None  # what the model takes once loaded
+    vram_mib: int | None = None  # what the model takes once loaded (NVIDIA; a Mac measures none)
     vram_free_mib: int | None = None  # what is left then
     vram_total_mib: int | None = None
     vram_full: bool = False  # so little left that Windows spills into the system RAM

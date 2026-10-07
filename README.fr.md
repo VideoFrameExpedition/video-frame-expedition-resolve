@@ -5,7 +5,7 @@
 
 [English](README.md) · **Français**
 
-[![Checks](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml/badge.svg)](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml)
+[![Checks](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/actions/workflows/checks.yml/badge.svg)](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/actions/workflows/checks.yml)
 
 **Video Frame Expedition for DaVinci Resolve analyse vos rushs avec un modèle de vision local,
 pour qu'un assistant IA monte en sachant ce que contient chaque plan.**
@@ -44,12 +44,10 @@ analysées.
 **Stand-alone :** une interface web pour parcourir les analyses, chercher et interroger toute la
 bibliothèque.
 
-**Version Windows.** Ce dépôt contient l'application pour Windows 11. Elle a été développée et
-testée avec une carte graphique NVIDIA, qu'elle utilise quand le modèle de vision laisse assez
-de mémoire (décodage des vidéos et, en option, parole). Sans cette carte, le même travail se
-fait sur le processeur, et le modèle de vision tourne sur ce que LM Studio prend en charge sur
-votre ordinateur ; cela n'a pas été testé sur d'autres cartes. Une version macOS est prévue
-dans un dépôt à part.
+**Windows et macOS.** Ce dépôt contient l'application pour Windows 11 et pour les Mac à puce
+Apple Silicon : un seul code, une installation par système. Elle a été développée sous Windows,
+avec une carte graphique NVIDIA ; sur un Mac, les analyses, vidéos HDR comprises, et le lien
+avec DaVinci Resolve ont été essayés sur un Mac M1.
 
 > Présentation en vidéo, huit minutes : [youtu.be/1EI36bRbdWo](https://youtu.be/1EI36bRbdWo) ;
 > en anglais : [youtu.be/G0WT96QsGsU](https://youtu.be/G0WT96QsGsU).
@@ -110,8 +108,9 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
   CED-small (« sons entendus » : oiseaux, grenouilles, insectes, pluie, pas… en français, avec
   leurs moments), Whisper large-v3-turbo (transcription, dans un processus séparé) et PP-OCRv6
   (texte à l'écran) tournent sur le processeur. Leurs modèles sont téléchargés une fois par le
-  script d'installation. En option (page Système), Whisper peut emprunter le GPU quand le
-  modèle de vision laisse assez de mémoire (`vfe models cuda-runtime`).
+  script d'installation. En option (page Système), sous Windows avec une carte NVIDIA,
+  Whisper peut emprunter le GPU quand le modèle de vision laisse assez de mémoire
+  (`vfe models cuda-runtime`).
 - **Où sont les sujets** : un cadre autour de chaque être vivant (personnes, animaux, insectes)
   sur les images clés, positions réutilisables pour recadrer (MCP `get_object_locations`). Le
   modèle de vision déjà chargé repère tout, puis D-FINE et YuNet (sur le CPU) resserrent les
@@ -140,20 +139,36 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
 
 ## Prérequis
 
-- **L'application** : Windows 11, pour le moment. [uv](https://docs.astral.sh/uv/), Node.js 24
-  LTS (l'interface web est construite au premier lancement), FFmpeg et ExifTool :
-  `scripts/bootstrap.ps1` les installe.
+- **L'application** : Windows 11, ou un Mac à puce Apple Silicon (M1 ou plus récente) sous
+  macOS 15 ou plus récent, ce que demande DaVinci Resolve 21. Le même code sert aux deux.
+  [uv](https://docs.astral.sh/uv/), Node.js 24 LTS (l'interface web est construite au premier
+  lancement), FFmpeg et ExifTool : `scripts/bootstrap.ps1` (Windows) ou
+  `scripts/bootstrap.sh` (Mac) les installe. Sur Mac, FFmpeg vient dans sa version complète,
+  `ffmpeg-full`, dont le filtre zscale convertit les vidéos HDR en images pour le modèle de
+  vision.
 - **LM Studio**, avec le serveur local activé et un modèle de vision chargé (ex.
-  `qwen/qwen3-vl-8b`) : sur le même PC ou sur un autre ordinateur, sous Windows, macOS ou Linux.
-- **DaVinci Resolve Studio 21.1 ou plus récent**, pour le lien avec Resolve : sur le même PC ou
-  sur un autre ordinateur, sous Windows, macOS ou Linux.
+  `qwen/qwen3-vl-8b`) : sur le même ordinateur ou sur un autre, sous Windows, macOS ou Linux.
+- **DaVinci Resolve Studio 21.1 ou plus récent**, pour le lien avec Resolve : sur le même
+  ordinateur ou sur un autre, sous Windows, macOS ou Linux.
+
+**Sous Windows**, l'application a été développée et testée avec une carte graphique NVIDIA,
+qu'elle utilise quand le modèle de vision laisse assez de mémoire (décodage des vidéos et, en
+option, parole). Sans cette carte, le même travail se fait sur le processeur. **Sur un Mac**, le
+modèle de vision tourne dans LM Studio sur les cœurs graphiques de la puce et partage la mémoire
+unifiée avec Resolve et l'application ; le décodage des vidéos, la parole, le texte à l'écran et
+les autres modèles tournent sur le processeur. 32 Go de mémoire sont confortables pour un modèle
+de vision de 8 milliards de paramètres à côté de Resolve ; avec 16 Go, préférez un modèle de
+4 milliards et un contexte court.
 
 ## Installation
 
-1. Récupérez l'application :
-   `git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows.git`,
-   ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
-2. Dans PowerShell, depuis le dossier de l'application :
+Récupérez d'abord l'application :
+`git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve.git`,
+ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
+
+### Sous Windows
+
+1. Dans PowerShell, depuis le dossier de l'application :
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1
@@ -165,29 +180,59 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
    modèle de vision peut aussi tourner dans le LM Studio d'un autre ordinateur. `-AvecLMStudio`
    ou `-SansLMStudio` donne la réponse d'avance. Acceptez les demandes d'autorisation de Windows
    (UAC).
-3. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-8b`), chargez-le
-   et activez le serveur local. Quand LM Studio tourne sur un autre ordinateur, faites-le là-bas
-   et laissez son serveur accepter le réseau local (Developer › Server Settings › « Serve on
-   Local Network ») ; une fois l'application ouverte, donnez son adresse page Système, carte
-   « LM Studio ».
-4. Double-cliquez sur `run.bat`. La première fois, il construit l'interface web (une à deux
+2. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-8b`), chargez-le
+   et activez le serveur local (voir plus bas quand il tourne sur un autre ordinateur).
+3. Double-cliquez sur `run.bat`. La première fois, il construit l'interface web (une à deux
    minutes), puis ouvre le navigateur.
 
+### Sur un Mac
+
+1. Dans le Terminal, depuis le dossier de l'application :
+
+   ```sh
+   sh scripts/bootstrap.sh
+   ```
+
+   Le script installe par [Homebrew](https://brew.sh) ce qui manque (uv, Node.js, FFmpeg en
+   version complète, ExifTool), puis les paquets Python de l'application et ses modèles (environ
+   2 Go, une seule fois ; `--sans-modeles` pour s'en passer). Il demande s'il faut installer
+   LM Studio sur ce Mac ; `--avec-lm-studio` ou `--sans-lm-studio` donne la réponse d'avance.
+   Homebrew lui-même est installé d'abord si le Mac ne l'a pas (il demande votre mot de passe).
+2. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-4b`, ou
+   `qwen/qwen3-vl-8b` avec 32 Go de mémoire), chargez-le et activez le serveur local.
+3. Double-cliquez sur `run.command`. La première fois, il construit l'interface web (une à deux
+   minutes), puis ouvre le navigateur. macOS peut demander si le Terminal peut accéder à vos
+   Vidéos, à vos Documents ou à un disque externe : acceptez, l'application y lit vos vidéos.
+
+   Si macOS refuse d'ouvrir `run.command` la première fois (un fichier téléchargé en ZIP porte
+   une marque de quarantaine ; un dossier obtenu par `git clone` n'en a pas), autorisez-le dans
+   Réglages Système › Confidentialité et sécurité, ou retirez la marque dans le Terminal, depuis
+   le dossier de l'application : `xattr -dr com.apple.quarantine .`
+
+### LM Studio sur un autre ordinateur
+
+Quand LM Studio tourne sur un autre ordinateur, téléchargez et chargez le modèle là-bas, et
+laissez son serveur accepter le réseau local (Developer › Server Settings › « Serve on Local
+Network ») ; une fois l'application ouverte, donnez son adresse page Système, carte
+« LM Studio ».
+
 **Ligne de commande.** Dans cette page, `vfe <commande>` désigne la commande suivante, tapée
-dans PowerShell depuis le dossier de l'application :
+dans PowerShell (sur un Mac, dans le Terminal) depuis le dossier de l'application :
 
 ```powershell
 uv run --frozen --no-dev --project backend python -m vfe_vision <commande>
 ```
 
-Par exemple, `vfe doctor` vérifie FFmpeg, ExifTool, LM Studio et le GPU.
+Par exemple, `vfe doctor` vérifie FFmpeg, ExifTool, LM Studio et le GPU (sur un Mac, la puce
+et sa mémoire).
 
 ## Démarrage rapide
 
-**Au quotidien : double-cliquez sur `run.bat`.** Il démarre l'application (interface, MCP et
-analyses) et ouvre le navigateur sur http://127.0.0.1:8765. S'il est déjà lancé, il ouvre
-simplement l'interface. `run.bat build` reconstruit d'abord l'interface web après une mise à
-jour. Pour arrêter l'application, fermez la fenêtre.
+**Au quotidien : double-cliquez sur `run.bat` (Windows) ou `run.command` (Mac).** Il démarre
+l'application (interface, MCP et analyses) et ouvre le navigateur sur http://127.0.0.1:8765.
+S'il est déjà lancé, il ouvre simplement l'interface. `run.bat build` (ou `run.command build`)
+reconstruit d'abord l'interface web après une mise à jour. Pour arrêter l'application, fermez
+sa fenêtre (sur Mac, celle du Terminal, ou Ctrl+C).
 
 **La page « Aide »** de la barre latérale est le guide complet : douze parties, les sept onglets
 d'une vidéo un par un, une cinquantaine de captures de l'interface en français, avec le texte
@@ -204,14 +249,15 @@ appareils par Tailscale : page « Connexions » de l'interface et
 [guide](docs/guide/connect-mcp.fr.md).
 
 Réglages lus au démarrage (adresse et port, chemins des outils, adresse de LM Studio) : copiez
-[`docs/env.example`](docs/env.example) en fichier `.env` à côté de `run.bat`. Tout le reste se
-règle dans l'interface.
+[`docs/env.example`](docs/env.example) en fichier `.env` à côté de `run.bat` (ou de
+`run.command`). Tout le reste se règle dans l'interface.
 
 ## Développement
 
 Les tâches de développement passent par [just](https://just.systems) (`winget install
-Casey.Just`) ; chaque recette du `justfile` se lance aussi à la main si Smart App Control bloque
-`just.exe`.
+Casey.Just` sous Windows, `brew install just` sur Mac) ; chaque recette du `justfile` se lance
+aussi à la main, par exemple si Smart App Control bloque `just.exe` sous Windows. Le typage se
+vérifie pour les trois systèmes : `mypy --platform win32`, `darwin` et `linux`.
 
 ```powershell
 just setup      # dépendances backend + frontend, hook pre-commit
@@ -242,7 +288,7 @@ Connexions est cochée (désactivée par défaut). La démarche :
 4. `build_timeline` construit une timeline **neuve** « … - vfe vN » avec ces plans et ces
    recadrages, relit chaque durée et chaque valeur, et `apply_markers` pose chapitres, moments
    forts et métadonnées. Aucune timeline existante n'est modifiée et **le projet n'est pas
-   enregistré** : Ctrl+S dans Resolve si vous gardez le montage.
+   enregistré** : Ctrl+S (Cmd+S sur Mac) dans Resolve si vous gardez le montage.
 
 Sans la case, Claude écrit les mêmes étapes en scripts pour le serveur MCP de DaVinci Resolve
 Studio (`match_clips`, `get_reframe`, `get_resolve_payload` fournissent les données ; l'invite
@@ -281,8 +327,8 @@ quel, sans garantie ni support.
 
 Ce dépôt est publié pour que l'application puisse être installée et son code lu. Il ne prend pas
 de contributions de code : les demandes de fusion (pull requests) ne sont pas intégrées. Pour
-signaler un bug, [ouvrez une issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/issues/new/choose) : le formulaire demande la version de Windows, la
-carte graphique, le modèle chargé dans LM Studio et le message d'erreur. Pour signaler une faille
+signaler un bug, [ouvrez une issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/issues/new/choose) : le formulaire demande le système (Windows ou macOS, et sa version), la
+carte graphique ou le Mac, le modèle chargé dans LM Studio et le message d'erreur. Pour signaler une faille
 de sécurité, voir [SECURITY.fr.md](SECURITY.fr.md).
 
 Projet indépendant, ni affilié à Blackmagic Design ou à Anthropic, ni approuvé par eux ; DaVinci

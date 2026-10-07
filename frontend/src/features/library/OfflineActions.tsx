@@ -32,7 +32,7 @@ export function OfflineActions({ ids, onForgotten }: { ids: string[]; onForgotte
   const forget = useForgetVideos();
   const count = ids.length;
 
-  // The Windows folder dialog opens on this computer; the search runs as a task.
+  // The desktop's folder dialog opens on this computer; the search runs as a task.
   const relinkTo = (): void => {
     picker.mutate(undefined, {
       onSuccess: ({ path }) => {

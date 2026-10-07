@@ -187,6 +187,7 @@ function Clients({ data, token, masked }: { data: Connections; token: string; ma
   const base = data.remote.enabled ? data.remote.urls[0] : undefined;
   const remote: Target | null = base ? { url: mcpUrl(base, data.mcp_path), token } : null;
   const placeholder = masked ? t("connections.placeholder") : undefined;
+  const posix = data.platform !== "windows"; // how the app's computer quotes a command line
   const tabs: { id: string; label: string; content: ReactNode }[] = [
     {
       id: "claude-code",
@@ -307,7 +308,7 @@ function Clients({ data, token, masked }: { data: Connections; token: string; ma
           ) : null}
           <p className="text-sm">{t("connections.other.stdio")}</p>
           <CodeBlock
-            code={stdioCommandLine(data.stdio, local)}
+            code={stdioCommandLine(data.stdio, local, posix)}
             label={t("connections.copyThis", { what: "stdio" })}
           />
           <p className="text-muted-foreground text-xs">{t("connections.other.stdioHelp")}</p>
@@ -344,6 +345,7 @@ function Clients({ data, token, masked }: { data: Connections; token: string; ma
 function Resolve({ data }: { data: Connections }) {
   const { t } = useTranslation();
   const path = data.resolve_mcp.path;
+  const posix = data.platform !== "windows";
   return (
     <Card>
       <CardHeader>
@@ -361,7 +363,7 @@ function Resolve({ data }: { data: Connections }) {
         </p>
         <h4 className="text-sm font-medium">Claude Code</h4>
         <CodeBlock
-          code={resolveClaudeCode(path)}
+          code={resolveClaudeCode(path, posix)}
           label={t("connections.copyThis", { what: "DaVinci Resolve (Claude Code)" })}
         />
         <h4 className="text-sm font-medium">Claude Desktop</h4>

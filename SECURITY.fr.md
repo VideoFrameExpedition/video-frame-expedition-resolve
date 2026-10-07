@@ -64,6 +64,11 @@ sur `127.0.0.1` par défaut. Il peut aussi écouter sur l'adresse Tailscale de l
   youtube-nocookie.com, seulement quand le lecteur arrive à leur hauteur. Les modèles sont
   téléchargés à l'installation, ou quand vous en demandez un (Hugging Face, PyPI, GitHub, GeoNames).
   L'application n'envoie aucune télémétrie.
+- **Processus enfants** : le worker d'analyse, le moteur de transcription et les
+  scripts qui parlent à DaVinci Resolve sont liés à l'application (Job Object sous Windows ;
+  groupe de processus et fil de vie sur un Mac) : si elle disparaît, ils s'arrêtent avec elle, et
+  rien d'eux ne continue en arrière-plan. Sur un Mac, l'application lance aussi `osascript` (la
+  fenêtre de choix d'un dossier), `diskutil`, `sysctl` et `pgrep`, en lecture seulement.
 
 ## Accès depuis d'autres appareils
 

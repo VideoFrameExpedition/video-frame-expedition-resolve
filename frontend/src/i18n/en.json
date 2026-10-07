@@ -147,6 +147,7 @@
     "description": "The folder is read, never modified. All application data is stored separately.",
     "path": "Folder path",
     "pathHelp": "Absolute path, for example D:\\Videos\\Beach shoot",
+    "pathPlaceholder": "D:\\Videos\\Shoot",
     "label": "Display name",
     "focus": "Analysis focus (optional)",
     "focusHelp": "What matters to you in this footage: subjects, moods, intended use…",
@@ -579,6 +580,8 @@
       "foldersHint": "On the left the folder on this computer, on the right the same folder as Resolve sees it (for example D:\\cats 2026 and /Volumes/cats 2026).",
       "hereFolder": "Folder {{n}} on this computer",
       "thereFolder": "Folder {{n}} as Resolve sees it",
+      "herePlaceholder": "D:\\cats 2026",
+      "therePlaceholder": "/Volumes/cats 2026",
       "remove": "Remove pair {{n}}",
       "add": "Add a pair",
       "saved": "DaVinci Resolve settings saved.",
@@ -2049,6 +2052,49 @@
         "shares": "Language, text read, positions: the share measured. A model whose positions are disabled has 0.",
         "quality": "Quality: the mean of your blind ratings, brought to 100.",
         "total": "Total: the mean of these points. Only the measures every ranked model has are counted, so that all are judged on the same ground; \"What matters most\" makes one measure count three times."
+      }
+    }
+  },
+  "platform": {
+    "macos": {
+      "addRoot": {
+        "pathHelp": "Absolute path, for example /Volumes/Rushes/Beach shoot",
+        "pathPlaceholder": "/Volumes/Rushes/Shoot"
+      },
+      "connections": {
+        "remoteOff": "Off. To turn it on, add VFE_TAILSCALE=true to the .env file at the root of the app (or start “run.command tailscale”), let Python accept incoming connections if macOS's firewall asks (see the guide), then restart the app.",
+        "claudeDesktop": {
+          "merge": "Add the “vfe-vision” entry under “mcpServers”, keeping the rest of the file, then fully quit Claude Desktop (Cmd+Q) and start it again."
+        },
+        "cursor": {
+          "help": "In ~/.cursor/mcp.json (or .cursor/mcp.json in a project):"
+        },
+        "codex": {
+          "help": "OpenAI Codex CLI, in ~/.codex/config.toml:"
+        },
+        "resolve": {
+          "help": "DaVinci Resolve Studio's MCP (ResolveMCP, stdio) drives Resolve; Video Frame Expedition gives it the shots (find_clips: paths, in and out points, timecodes). Plug both into the same assistant."
+        },
+        "resolveLink": {
+          "foldersHint": "On the left the folder on this computer, on the right the same folder as Resolve sees it (for example /Volumes/cats 2026 here and D:\\cats 2026 when Resolve runs on a Windows PC).",
+          "herePlaceholder": "/Volumes/cats 2026",
+          "therePlaceholder": "D:\\cats 2026"
+        },
+        "resolveTools": {
+          "note": "Off by default. New timelines are named “… - vfe vN”: an existing timeline is never changed, and the project is not saved (Cmd+S in Resolve if you keep the edit)."
+        }
+      },
+      "bench": {
+        "results": {
+          "help": {
+            "vram": "Memory: measured on NVIDIA cards only. On a Mac, the model shares the unified memory with DaVinci Resolve and the application, and nothing is measured here."
+          }
+        }
+      },
+      "system": {
+        "hardware": {
+          "gpu_transcriptionHint": "No effect on a Mac: transcription stays on the processor (its engine does not use the chip's graphics cores)."
+        }
       }
     }
   }

@@ -20,6 +20,7 @@ from vfe_vision.core.paths import path_key
 from vfe_vision.db.models import Job, LibraryRoot, StageRun, Video
 from vfe_vision.db.preferences import update_preferences
 from vfe_vision.db.session import Database
+from vfe_vision.domain.clip_paths import HOST_STYLE
 from vfe_vision.domain.enums import JobStatus, StageStatus
 from vfe_vision.jobs import queue
 from vfe_vision.jobs import timeline_bins as sync_job
@@ -244,13 +245,17 @@ async def test_resolve_on_another_computer_sees_its_own_paths(
     rushes = tmp_path / "Rushs"
     a = _file(rushes, "a.mp4")
     video_id = register_file(c.db, _root(c, rushes), a)
-    resolve.put(timeline("tl-1", "Montage", current=True), [clip("/Volumes/Rushs/a.mp4", 0, 4)])
-    alone = timeline_bins.preview(c, project_id=PROJECT.id, timeline_id="tl-1")
-    assert (alone.files, alone.skipped.elsewhere) == (0, 1)  # a Mac path: not this computer's
-
-    update_preferences(
-        c.db, {"resolve_folders": [{"here": str(rushes), "there": "/Volumes/Rushs"}]}
+    # The other computer's folder, written as its system does (a Mac seen from a PC, a PC
+    # seen from a Mac): not a path of this computer until the pair of folders is given.
+    there = "/Volumes/Rushs" if HOST_STYLE == "windows" else r"D:\Rushs"
+    separator = "/" if HOST_STYLE == "windows" else "\\"
+    resolve.put(
+        timeline("tl-1", "Montage", current=True), [clip(there + separator + "a.mp4", 0, 4)]
     )
+    alone = timeline_bins.preview(c, project_id=PROJECT.id, timeline_id="tl-1")
+    assert (alone.files, alone.skipped.elsewhere) == (0, 1)
+
+    update_preferences(c.db, {"resolve_folders": [{"here": str(rushes), "there": there}]})
     seen = timeline_bins.preview(c, project_id=PROJECT.id, timeline_id="tl-1")
     assert (seen.files, seen.in_library, seen.skipped.elsewhere) == (1, 1, 0)
     _run_sync(c, timeline_bins.import_timeline(c, project_id=PROJECT.id, timeline_id="tl-1").job.id)
@@ -259,11 +264,11 @@ async def test_resolve_on_another_computer_sees_its_own_paths(
         watched = await client.call_tool("list_watched", {"timeline_id": "tl-1"})
         assert watched.structured_content is not None
         [row] = watched.structured_content["result"]
-        assert row["resolve_path"] == "/Volumes/Rushs/a.mp4"
+        assert row["resolve_path"] == there + separator + "a.mp4"
         manifest = await client.call_tool("get_video", {"video_id": video_id})
         text = manifest.content[0].text  # type: ignore[union-attr]
-        assert "fichier vu par DaVinci Resolve : /Volumes/Rushs/a.mp4" in text
-        matched = await client.call_tool("match_clips", {"items": ["/Volumes/Rushs/a.mp4"]})
+        assert f"fichier vu par DaVinci Resolve : {there}{separator}a.mp4" in text
+        matched = await client.call_tool("match_clips", {"items": [there + separator + "a.mp4"]})
         assert matched.structured_content is not None
         [found] = matched.structured_content["clips"]
         assert (found["method"], found["video_id"]) == ("path", video_id)
@@ -274,4 +279,4 @@ async def test_resolve_on_another_computer_sees_its_own_paths(
                      status=StageStatus.SUCCEEDED)
         )  # fmt: skip
     payload = resolve_markers.build_payload(c, [video_id], resolve_markers.MarkerOptions())
-    assert payload.data["clips"][0]["path"] == "/Volumes/Rushs/a.mp4"
+    assert payload.data["clips"][0]["path"] == there + separator + "a.mp4"

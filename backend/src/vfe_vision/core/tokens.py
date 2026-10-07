@@ -43,23 +43,23 @@ def write_new_token(path: Path) -> str:
 def restrict_to_owner(path: Path) -> None:
     """Best effort: only the current user may read the file (the data directory already is
     per-user on Windows; this also drops the inherited Administrators and SYSTEM entries)."""
-    if sys.platform != "win32":
+    if sys.platform == "win32":
+        user = getpass.getuser()
+        domain = os.environ.get("USERDOMAIN")
+        account = f"{domain}\\{user}" if domain else user
+        icacls = Path(os.environ.get("SYSTEMROOT", r"C:\Windows")) / "System32" / "icacls.exe"
+        try:
+            subprocess.run(
+                [str(icacls), str(path), "/inheritance:r", "/grant:r", f"{account}:F"],
+                check=True,
+                capture_output=True,
+                timeout=15,
+                creationflags=CREATE_NO_WINDOW,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            log.warning("token file permissions left as inherited", path=str(path), error=str(exc))
+    else:
         path.chmod(0o600)
-        return
-    user = getpass.getuser()
-    domain = os.environ.get("USERDOMAIN")
-    account = f"{domain}\\{user}" if domain else user
-    icacls = Path(os.environ.get("SYSTEMROOT", r"C:\Windows")) / "System32" / "icacls.exe"
-    try:
-        subprocess.run(
-            [str(icacls), str(path), "/inheritance:r", "/grant:r", f"{account}:F"],
-            check=True,
-            capture_output=True,
-            timeout=15,
-            creationflags=CREATE_NO_WINDOW,
-        )
-    except (OSError, subprocess.SubprocessError) as exc:
-        log.warning("token file permissions left as inherited", path=str(path), error=str(exc))
 
 
 def current_token(settings: Settings, *, create: bool) -> tuple[str | None, TokenSource | None]:

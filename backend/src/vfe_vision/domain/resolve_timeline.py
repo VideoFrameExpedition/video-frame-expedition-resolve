@@ -145,7 +145,7 @@ class SkippedItems:
     not_video_names: tuple[str, ...] = ()
     unsupported: int = 0  # camera formats the library cannot read (.braw, .r3d…)
     unsupported_names: tuple[str, ...] = ()
-    elsewhere: int = 0  # paths of another system (a macOS path in a shared project…)
+    elsewhere: int = 0  # paths of another system (a Windows path on a Mac, or the reverse)
     elsewhere_names: tuple[str, ...] = ()
 
 

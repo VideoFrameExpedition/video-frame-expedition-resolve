@@ -1,7 +1,7 @@
 """CED-small with the real model: reference checks, true-length short input, the full rule.
 
 Marked ``models``: they need model.onnx and class_labels_indices.csv in VFE_CED_MODEL_DIR
-(default %LOCALAPPDATA%/vfe-vision/models/sounds/ced-small) and YAMNet's ontology.json next to
+(default <data folder>/models/sounds/ced-small) and YAMNet's ontology.json next to
 YAMNet (``vfe models sounds``); they are skipped otherwise.
 """
 
@@ -23,9 +23,10 @@ from vfe_vision.adapters.audio_tagging.ced import (
     self_test,
 )
 from vfe_vision.adapters.audio_tagging.yamnet import ONTOLOGY_FILE
+from vfe_vision.core.config import default_data_dir
 from vfe_vision.core.errors import ServiceUnavailableError
 
-_MODELS = Path(os.environ.get("LOCALAPPDATA", "")) / "vfe-vision" / "models"
+_MODELS = default_data_dir() / "models"
 MODEL_DIR = Path(os.environ.get("VFE_CED_MODEL_DIR") or _MODELS / "sounds" / "ced-small")
 ONTOLOGY = Path(os.environ.get("VFE_YAMNET_MODEL_DIR") or _MODELS / "yamnet") / ONTOLOGY_FILE
 needs_model = pytest.mark.skipif(

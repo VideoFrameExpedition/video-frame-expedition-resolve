@@ -5,7 +5,7 @@
 
 **English** · [Français](README.fr.md)
 
-[![Checks](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml/badge.svg)](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/actions/workflows/checks.yml)
+[![Checks](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/actions/workflows/checks.yml/badge.svg)](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/actions/workflows/checks.yml)
 
 **Video Frame Expedition for DaVinci Resolve analyses your rushes with a local vision model, so
 that an AI assistant can edit knowing what each shot contains.**
@@ -40,11 +40,10 @@ markers; a Resolve timeline enters the library and its videos are analysed.
 
 **Stand-alone:** a web interface to browse the analyses, search and query the whole library.
 
-**Windows version.** This repository holds the application for Windows 11. It was developed
-and tested with an NVIDIA graphics card, which it uses when the vision model leaves enough
-memory (video decoding, and optionally speech recognition). Without one, that work runs on the
-processor, and the vision model runs on whatever LM Studio supports on your computer; other
-graphics cards have not been tested. A macOS version is planned as a separate repository.
+**Windows and macOS.** This repository holds the application for Windows 11 and for Macs with
+Apple Silicon: one code base, one installation per system. It was developed on Windows, with an
+NVIDIA graphics card; on a Mac, the analyses, HDR videos included, and the link with DaVinci
+Resolve were tried on an M1 Mac.
 
 > Video presentation, nine minutes: [youtu.be/G0WT96QsGsU](https://youtu.be/G0WT96QsGsU);
 > in French: [youtu.be/1EI36bRbdWo](https://youtu.be/1EI36bRbdWo).
@@ -104,8 +103,8 @@ them).
   from CED-small ("sounds heard": birds, frogs, insects, rain, footsteps… with their timestamps),
   Whisper large-v3-turbo (transcription, in a separate process) and PP-OCRv6 (on-screen text)
   run on the processor. Their models are downloaded once by the installation script. As an
-  option (System page), Whisper can borrow the GPU when the vision model leaves enough memory
-  (`vfe models cuda-runtime`).
+  option (System page), on Windows with an NVIDIA card, Whisper can borrow the GPU when the
+  vision model leaves enough memory (`vfe models cuda-runtime`).
 - **Where the subjects are**: a box around every living being (people, animals, insects) on the
   keyframes, positions that can be reused to reframe (MCP `get_object_locations`). The vision
   model already loaded finds them all, then D-FINE and YuNet (on the CPU) tighten the boxes and
@@ -133,20 +132,34 @@ them).
 
 ## Requirements
 
-- **The application**: Windows 11, for now. [uv](https://docs.astral.sh/uv/), Node.js 24 LTS
-  (the web interface is built at the first start), FFmpeg and ExifTool: `scripts/bootstrap.ps1`
-  installs them.
+- **The application**: Windows 11, or a Mac with Apple Silicon (M1 or later) on macOS 15 or
+  later, which DaVinci Resolve 21 requires. The same code serves both.
+  [uv](https://docs.astral.sh/uv/), Node.js 24 LTS (the web interface is built at the first
+  start), FFmpeg and ExifTool: `scripts/bootstrap.ps1` (Windows) or `scripts/bootstrap.sh` (Mac)
+  installs them. On a Mac, FFmpeg comes in its full build, `ffmpeg-full`, whose zscale filter
+  turns HDR videos into frames for the vision model.
 - **LM Studio**, with the local server enabled and a vision model loaded (e.g.
-  `qwen/qwen3-vl-8b`): on the same PC or on another computer, under Windows, macOS or Linux.
-- **DaVinci Resolve Studio 21.1 or later**, for the link with Resolve: on the same PC or on
-  another computer, under Windows, macOS or Linux.
+  `qwen/qwen3-vl-8b`): on the same computer or on another one, under Windows, macOS or Linux.
+- **DaVinci Resolve Studio 21.1 or later**, for the link with Resolve: on the same computer or
+  on another one, under Windows, macOS or Linux.
+
+**On Windows**, the application was developed and tested with an NVIDIA graphics card, which it
+uses when the vision model leaves enough memory (video decoding and, as an option, speech).
+Without one, that work runs on the processor. **On a Mac**, the vision model runs in LM Studio
+on the chip's graphics cores and shares the unified memory with Resolve and the application;
+video decoding, speech, on-screen text and the other models run on the processor. 32 GB of
+memory are comfortable for an 8-billion-parameter vision model next to Resolve; with 16 GB,
+prefer a 4-billion one and a short context.
 
 ## Installation
 
-1. Get the application:
-   `git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows.git`,
-   or GitHub's "Code › Download ZIP" button, then unzip it.
-2. In PowerShell, from the application's folder:
+First get the application:
+`git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve.git`,
+or GitHub's "Code › Download ZIP" button, then unzip it.
+
+### On Windows
+
+1. In PowerShell, from the application's folder:
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1
@@ -157,28 +170,59 @@ them).
    `-SansModeles` skips them). It asks whether to install LM Studio on this PC: the vision model
    can also run in the LM Studio of another computer. `-AvecLMStudio` or `-SansLMStudio` gives
    the answer in advance. Accept the Windows (UAC) prompts. Its messages are in French.
-3. In LM Studio, download a vision model (for example `qwen/qwen3-vl-8b`), load it and start the
-   local server. When LM Studio runs on another computer, do this over there and let its server
-   accept the local network (Developer › Server Settings › "Serve on Local Network"); once the
-   application is open, give its address on the System page, "LM Studio" card.
-4. Double-click `run.bat`. The first time, it builds the web interface (one or two minutes),
+2. In LM Studio, download a vision model (for example `qwen/qwen3-vl-8b`), load it and start the
+   local server (see below when it runs on another computer).
+3. Double-click `run.bat`. The first time, it builds the web interface (one or two minutes),
    then opens the browser.
 
+### On a Mac
+
+1. In the Terminal, from the application's folder:
+
+   ```sh
+   sh scripts/bootstrap.sh
+   ```
+
+   The script uses [Homebrew](https://brew.sh) to install what is missing (uv, Node.js, the full
+   build of FFmpeg, ExifTool), then the application's Python packages and its models (about
+   2 GB, downloaded once; `--sans-modeles` skips them). It asks whether to install LM Studio on
+   this Mac; `--avec-lm-studio` or `--sans-lm-studio` gives the answer in advance. Homebrew
+   itself is installed first when the Mac does not have it (it asks for your password). Its
+   messages are in French.
+2. In LM Studio, download a vision model (for example `qwen/qwen3-vl-4b`, or `qwen/qwen3-vl-8b`
+   with 32 GB of memory), load it and start the local server.
+3. Double-click `run.command`. The first time, it builds the web interface (one or two
+   minutes), then opens the browser. macOS may ask whether the Terminal may access your Movies,
+   your Documents or an external disk: accept, the application reads your videos there.
+
+   If macOS refuses to open `run.command` the first time (a file downloaded as a ZIP carries a
+   quarantine mark; a folder obtained with `git clone` does not), allow it in System Settings ›
+   Privacy & Security, or remove the mark in the Terminal, from the application's folder:
+   `xattr -dr com.apple.quarantine .`
+
+### LM Studio on another computer
+
+When LM Studio runs on another computer, download and load the model over there, and let its
+server accept the local network (Developer › Server Settings › "Serve on Local Network"); once
+the application is open, give its address on the System page, "LM Studio" card.
+
 **Command line.** In this page, `vfe <command>` stands for the following command, typed in
-PowerShell from the application's folder:
+PowerShell (on a Mac, in the Terminal) from the application's folder:
 
 ```powershell
 uv run --frozen --no-dev --project backend python -m vfe_vision <command>
 ```
 
-For example, `vfe doctor` checks FFmpeg, ExifTool, LM Studio and the GPU.
+For example, `vfe doctor` checks FFmpeg, ExifTool, LM Studio and the GPU (on a Mac, the chip
+and its memory).
 
 ## Quick start
 
-**Day to day: double-click `run.bat`.** It starts the application (interface, MCP and analyses)
-and opens the browser on http://127.0.0.1:8765. If the application is already running, it
-simply opens the interface. `run.bat build` first rebuilds the web interface after an update.
-To stop the application, close its window.
+**Day to day: double-click `run.bat` (Windows) or `run.command` (Mac).** It starts the
+application (interface, MCP and analyses) and opens the browser on http://127.0.0.1:8765. If the
+application is already running, it simply opens the interface. `run.bat build` (or
+`run.command build`) first rebuilds the web interface after an update. To stop the application,
+close its window (on a Mac, the Terminal's, or press Ctrl+C).
 
 **The "Help" page** in the sidebar is the complete guide: twelve parts, the seven tabs of a video
 one by one, some fifty screenshots of the French interface, with the text in French and in
@@ -195,13 +239,15 @@ application from your other devices through Tailscale: "Connections" page of the
 [guide](docs/guide/connect-mcp.md).
 
 Settings read at start-up (address and port, paths of the tools, address of LM Studio): copy
-[`docs/env.example`](docs/env.example) to a `.env` file next to `run.bat`. Everything else is
-set in the interface.
+[`docs/env.example`](docs/env.example) to a `.env` file next to `run.bat` (or `run.command`).
+Everything else is set in the interface.
 
 ## Development
 
-The development tasks go through [just](https://just.systems) (`winget install Casey.Just`);
-every recipe of the `justfile` can also be run by hand if Smart App Control blocks `just.exe`.
+The development tasks go through [just](https://just.systems) (`winget install Casey.Just` on
+Windows, `brew install just` on a Mac); every recipe of the `justfile` can also be run by hand,
+for instance if Smart App Control blocks `just.exe` on Windows. Typing is checked for the three
+systems: `mypy --platform win32`, `darwin` and `linux`.
 
 ```powershell
 just setup      # backend + frontend dependencies, pre-commit hook
@@ -232,8 +278,8 @@ ticked (off by default). The approach:
    only looks at the contact sheets of the shots that were flagged;
 4. `build_timeline` builds a **new** timeline "… - vfe vN" with these shots and these reframes,
    reads every duration and every value back, and `apply_markers` places chapters, highlights and
-   metadata. No existing timeline is modified and **the project is not saved**: press Ctrl+S in
-   Resolve if you keep the edit.
+   metadata. No existing timeline is modified and **the project is not saved**: press Ctrl+S
+   (Cmd+S on a Mac) in Resolve if you keep the edit.
 
 Without the box, Claude writes the same steps as scripts for the MCP server of DaVinci Resolve
 Studio (`match_clips`, `get_reframe` and `get_resolve_payload` provide the data; the `plan_edit`
@@ -274,5 +320,5 @@ the other products named here are trademarks of their respective owners.
 
 This repository is published so that the application can be installed and its code read. It does
 not take code contributions: pull requests are not merged. To report a bug, [open an
-issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows/issues/new/choose): the form asks for the Windows version, the graphics card, the model loaded in
+issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/issues/new/choose): the form asks for the system (Windows or macOS, and its version), the graphics card or the Mac, the model loaded in
 LM Studio and the error message. To report a security flaw, see [SECURITY.md](SECURITY.md).

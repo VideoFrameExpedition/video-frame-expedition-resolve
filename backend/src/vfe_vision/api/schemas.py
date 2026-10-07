@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
+from vfe_vision.core.config import Platform
 from vfe_vision.db.models import (
     AudioStats,
     ContextPlace,
@@ -690,7 +691,9 @@ class SkippedItemsOut(ApiModel):
     not_video_names: list[str]
     unsupported: int = Field(description="Unsupported camera formats (.braw…).")
     unsupported_names: list[str]
-    elsewhere: int = Field(description="Paths from another system (macOS…).")
+    elsewhere: int = Field(
+        description="Paths of another system (a Windows path on a Mac, or the reverse)."
+    )
     elsewhere_names: list[str]
 
     @classmethod
@@ -2147,6 +2150,10 @@ class HealthOut(ApiModel):
     status: str
     version: str
     worker_pid: int | None
+    platform: Platform = Field(
+        description="System of the application's computer: the interface and the help match "
+        "their texts to it (paths, shortcuts, launcher)."
+    )
 
 
 RootCreated.model_rebuild()

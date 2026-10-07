@@ -8,7 +8,7 @@
 flowchart LR
     Browser["Navigateur<br/>(React SPA)"] -- "REST /api/v1 + SSE" --> API
     Claude["Claude Code"] -- "MCP HTTP /mcp" --> API
-    Claude -- "MCP" --> Resolve["ResolveMCP.exe<br/>(DaVinci Resolve Studio)"]
+    Claude -- "MCP" --> Resolve["ResolveMCP<br/>(DaVinci Resolve Studio)"]
     API -- "processus enfant<br/>fusionscript" --> ResolveApp["DaVinci Resolve Studio<br/>(lecture, création de timeline,<br/>outils Resolve de l'assistant)"]
 
     subgraph serve["vfe serve"]
@@ -19,7 +19,7 @@ flowchart LR
 
     API <--> DB[("SQLite WAL<br/>FTS5 + vecteurs")]
     Worker <--> DB
-    Worker --> Artifacts["Artefacts<br/>%LOCALAPPDATA%\\vfe-vision"]
+    Worker --> Artifacts["Artefacts<br/>%LOCALAPPDATA%\\vfe-vision ou<br/>~/Library/Application Support/vfe-vision"]
     Worker --> FFmpeg["ffmpeg / ffprobe"]
     Worker --> ExifTool["ExifTool (-stay_open)"]
     Worker --> LMStudio["LM Studio, ici ou sur un autre<br/>ordinateur (VLM sur GPU ; chargé par<br/>l'utilisateur, sauf banc d'essai)"]
@@ -43,3 +43,8 @@ Les dépendances vont uniquement vers le bas ; `import-linter` le vérifie à ch
 | `ports` | interfaces à faux pour les tests (LM Studio, géocodage, météo, ASR, détecteur) |
 | `domain` | logique pure : timecodes, GPS, heure de capture, soleil, couleur, boîtes, recadrage… |
 | `core` | configuration, journalisation, erreurs, chemins, processus |
+
+Windows et macOS partagent ce code : ce qui dépend du système est une branche
+`sys.platform` dans l'adaptateur ou le module `core` concerné. Les processus enfants (worker,
+transcription, scripts de Resolve) sont tenus par un Job Object sous Windows, par un groupe de
+processus et un fil de vie ailleurs (`core/procs.py`).

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import platform
+import re
 import shutil
 import sys
 from enum import StrEnum
@@ -91,7 +92,8 @@ def _failed_imports(modules: list[str]) -> list[str]:
 
 
 def _native_modules() -> Check:
-    """Import native extensions early: Smart App Control may block unknown DLLs.
+    """Import native extensions early: on Windows, Smart App Control may block unknown
+    DLLs.
 
     ``win32job`` (pywin32, pulled in by the MCP SDK) only serves the SDK's stdio client, which
     the app does not use (its own Job Objects go through ``ctypes``): a block is a warning.
@@ -99,6 +101,7 @@ def _native_modules() -> Check:
     # av and tokenizers are the native parts of faster-whisper (the transcription child).
     required = ["cv2", "onnxruntime", "ctranslate2", "av", "tokenizers", "numpy"]
     optional = ["win32job"] if sys.platform == "win32" else []
+    hint = _SMART_APP_CONTROL_HINT if sys.platform == "win32" else None
     failed = _failed_imports(required)
     if failed:
         return Check(
@@ -106,7 +109,7 @@ def _native_modules() -> Check:
             label="Modules natifs",
             status=CheckStatus.ERROR,
             detail="Chargement impossible : " + "; ".join(failed),
-            hint=_SMART_APP_CONTROL_HINT,
+            hint=hint,
         )
     failed = _failed_imports(optional)
     if failed:
@@ -115,7 +118,7 @@ def _native_modules() -> Check:
             label="Modules natifs",
             status=CheckStatus.WARNING,
             detail="Module facultatif bloqué : " + "; ".join(failed),
-            hint=_SMART_APP_CONTROL_HINT,
+            hint=hint,
         )
     return Check(
         id="native",
@@ -125,7 +128,43 @@ def _native_modules() -> Check:
     )
 
 
+def _sysctl(name: str) -> str | None:
+    """A macOS kernel value (``sysctl -n``), None when it cannot be read."""
+    try:
+        result = run_process(["/usr/sbin/sysctl", "-n", name], timeout_s=5, tool_name="sysctl")
+    except ExternalToolError:
+        return None
+    return result.stdout_text.strip() or None
+
+
+def _apple_gpu() -> Check:
+    """A Mac: one unified memory for the processor, the graphics cores, LM Studio, DaVinci
+    Resolve and the application; nothing is lent, the CPU does the decoding and the speech."""
+    chip = _sysctl("machdep.cpu.brand_string") or "Apple Silicon"
+    memory = _sysctl("hw.memsize")
+    unified = (
+        f"{int(memory) / 2**30:.0f} Go de mémoire unifiée"
+        if memory and memory.isdigit()
+        else "mémoire unifiée"
+    )
+    return Check(
+        id="gpu",
+        label="GPU",
+        status=CheckStatus.OK,
+        detail=f"{chip} — {unified}, partagée entre LM Studio, DaVinci Resolve et l'application",
+        hint="Sur Mac, le décodage des vidéos et la transcription restent sur le processeur ; "
+        "le modèle de vision garde la mémoire que LM Studio lui donne.",
+    )
+
+
 def _gpu() -> Check:
+    if sys.platform == "darwin":
+        return _apple_gpu()
+    else:
+        return _nvidia_gpu()
+
+
+def _nvidia_gpu() -> Check:
     try:
         import pynvml
 
@@ -196,8 +235,19 @@ def _last_gpu_fallback(c: AppContainer) -> str | None:
 
 def _gpu_transcription(c: AppContainer) -> Check:
     """Whether a transcription would be lent the GPU right now."""
-    prefs = load_preferences(c.db)
     label = "Transcription sur le GPU"
+    if sys.platform == "darwin":
+        return Check(
+            id="gpu_transcription", label=label, status=CheckStatus.OK,
+            detail="Sur Mac, la transcription reste sur le processeur : le moteur de "
+            "transcription n'utilise pas la carte graphique Apple.",
+        )  # fmt: skip
+    else:
+        return _nvidia_gpu_transcription(c, label)
+
+
+def _nvidia_gpu_transcription(c: AppContainer, label: str) -> Check:
+    prefs = load_preferences(c.db)
     need = GPU_NEED_MIB.get(prefs.whisper_model, 1664) + c.settings.gpu_vram_margin_mib
     wanted = f"{_gigabytes(need)} libres"
     if not prefs.gpu_transcription:
@@ -487,18 +537,54 @@ def _storage(c: AppContainer) -> Check:
     )
 
 
+def _hdr_filter(ffmpeg_path: str) -> Check:
+    """Whether this FFmpeg has zscale, which turns HDR footage (PQ, HLG) into the SDR frames
+    the vision model is shown: without it, HDR videos cannot be analysed."""
+    label = "FFmpeg : vidéos HDR"
+    try:
+        result = run_process(
+            [ffmpeg_path, "-hide_banner", "-filters"], timeout_s=20, tool_name="ffmpeg"
+        )
+    except ExternalToolError as exc:
+        return Check(id="ffmpeg_hdr", label=label, status=CheckStatus.WARNING, detail=exc.detail)
+    if re.search(r"^\s*\S+\s+zscale\s", result.stdout_text, re.MULTILINE):
+        return Check(
+            id="ffmpeg_hdr", label=label, status=CheckStatus.OK, detail="filtre zscale présent"
+        )
+    if sys.platform == "darwin":
+        hint = "brew install ffmpeg-full : la version complète, que l'application trouve seule."
+    else:
+        hint = "Installez une version de FFmpeg compilée avec zimg (winget install Gyan.FFmpeg)."
+    return Check(
+        id="ffmpeg_hdr",
+        label=label,
+        status=CheckStatus.WARNING,
+        detail="Ce FFmpeg n'a pas le filtre zscale : les vidéos HDR (PQ, HLG) ne pourront pas "
+        "être analysées.",
+        hint=hint,
+    )
+
+
+def _install_hint(program: str, winget_id: str, brew_name: str, variable: str) -> str:
+    """How to install a missing tool on this system, or point at it."""
+    command = (
+        f"winget install {winget_id}" if sys.platform == "win32" else f"brew install {brew_name}"
+    )
+    return f"Installez {program} ({command}) ou réglez {variable}."
+
+
 async def doctor(c: AppContainer) -> DoctorReport:
     s = c.settings
     blocking_checks = await anyio.to_thread.run_sync(
         lambda: [
             _tool_version("ffmpeg", [s.ffmpeg_path, "-version"], "ffmpeg",
-                          "Installez FFmpeg (winget install Gyan.FFmpeg) "
-                          "ou réglez VFE_FFMPEG_PATH."),
+                          _install_hint("FFmpeg", "Gyan.FFmpeg", "ffmpeg-full", "VFE_FFMPEG_PATH")),
             _tool_version("ffprobe", [s.ffprobe_path, "-version"], "ffprobe",
                           "ffprobe est fourni avec FFmpeg."),
+            _hdr_filter(s.ffmpeg_path),
             _tool_version("ExifTool", [s.exiftool_path, "-ver"], "exiftool",
-                          "Installez ExifTool (winget install OliverBetz.ExifTool) ou réglez "
-                          "VFE_EXIFTOOL_PATH."),
+                          _install_hint("ExifTool", "OliverBetz.ExifTool", "exiftool",
+                                        "VFE_EXIFTOOL_PATH")),
             _native_modules(),
             _gpu(),
             _gpu_transcription(c),

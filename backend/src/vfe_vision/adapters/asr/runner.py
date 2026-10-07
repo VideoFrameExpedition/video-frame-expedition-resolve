@@ -41,6 +41,7 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any
 
+from vfe_vision.core.procs import lower_priority, watch_lifeline
 from vfe_vision.domain import transcript as guards
 from vfe_vision.ports.asr import AsrRequest
 
@@ -183,43 +184,56 @@ def _num(value: float | None, digits: int = 3) -> float | None:
 
 
 def _process_stats() -> dict[str, Any]:
-    """Peak memory and CPU time of this process (Windows; empty elsewhere)."""
-    if sys.platform != "win32":
-        return {}
-    import ctypes
-    from ctypes import wintypes
+    """Peak memory and CPU time of this process."""
+    if sys.platform == "win32":
+        import ctypes
+        from ctypes import wintypes
 
-    class Counters(ctypes.Structure):
-        _fields_ = [
-            ("cb", wintypes.DWORD),
-            ("PageFaultCount", wintypes.DWORD),
-            ("PeakWorkingSetSize", ctypes.c_size_t),
-            ("WorkingSetSize", ctypes.c_size_t),
-            ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
-            ("QuotaPagedPoolUsage", ctypes.c_size_t),
-            ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
-            ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-            ("PagefileUsage", ctypes.c_size_t),
-            ("PeakPagefileUsage", ctypes.c_size_t),
+        class Counters(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD),
+                ("PageFaultCount", wintypes.DWORD),
+                ("PeakWorkingSetSize", ctypes.c_size_t),
+                ("WorkingSetSize", ctypes.c_size_t),
+                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                ("PagefileUsage", ctypes.c_size_t),
+                ("PeakPagefileUsage", ctypes.c_size_t),
+            ]
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+        kernel32.K32GetProcessMemoryInfo.argtypes = [
+            wintypes.HANDLE,
+            ctypes.c_void_p,
+            wintypes.DWORD,
         ]
+        kernel32.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.c_void_p] * 4
+        me = kernel32.GetCurrentProcess()
+        counters = Counters()
+        counters.cb = ctypes.sizeof(Counters)
+        stats: dict[str, Any] = {}
+        if kernel32.K32GetProcessMemoryInfo(me, ctypes.byref(counters), counters.cb):
+            stats["peak_working_set_mb"] = round(counters.PeakWorkingSetSize / 2**20)
+            stats["peak_private_mb"] = round(counters.PeakPagefileUsage / 2**20)
+        times = [wintypes.FILETIME() for _ in range(4)]
+        if kernel32.GetProcessTimes(me, *(ctypes.byref(t) for t in times)):
+            kernel, user = times[2], times[3]
+            ticks = sum((t.dwHighDateTime << 32) | t.dwLowDateTime for t in (kernel, user))
+            stats["cpu_s"] = round(ticks / 1e7, 1)
+        return stats
+    else:
+        import resource
 
-    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-    kernel32.GetCurrentProcess.restype = wintypes.HANDLE
-    kernel32.K32GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.c_void_p, wintypes.DWORD]
-    kernel32.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.c_void_p] * 4
-    me = kernel32.GetCurrentProcess()
-    counters = Counters()
-    counters.cb = ctypes.sizeof(Counters)
-    stats: dict[str, Any] = {}
-    if kernel32.K32GetProcessMemoryInfo(me, ctypes.byref(counters), counters.cb):
-        stats["peak_working_set_mb"] = round(counters.PeakWorkingSetSize / 2**20)
-        stats["peak_private_mb"] = round(counters.PeakPagefileUsage / 2**20)
-    times = [wintypes.FILETIME() for _ in range(4)]
-    if kernel32.GetProcessTimes(me, *(ctypes.byref(t) for t in times)):
-        kernel, user = times[2], times[3]
-        ticks = sum((t.dwHighDateTime << 32) | t.dwLowDateTime for t in (kernel, user))
-        stats["cpu_s"] = round(ticks / 1e7, 1)
-    return stats
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        # ru_maxrss is in bytes on macOS, in kibibytes on Linux.
+        peak = usage.ru_maxrss / (2**20 if sys.platform == "darwin" else 2**10)
+        return {
+            "peak_working_set_mb": round(peak),
+            "cpu_s": round(usage.ru_utime + usage.ru_stime, 1),
+        }
 
 
 def model_label(model_dir: Path) -> str:
@@ -369,9 +383,10 @@ def preload_cuda(dll_dir: Path | None) -> None:
         _dll_dirs.append(os.add_dll_directory(str(dll_dir)))
     for name in CUBLAS_DLLS:
         try:
-            ctypes.WinDLL(str(dll_dir / name)) if sys.platform == "win32" else ctypes.CDLL(
-                str(dll_dir / name)
-            )
+            if sys.platform == "win32":
+                ctypes.WinDLL(str(dll_dir / name))
+            else:
+                ctypes.CDLL(str(dll_dir / name))
         except OSError as exc:
             raise ChildError("CudaUnavailable", f"{name} ne se charge pas : {exc}") from exc
 
@@ -668,6 +683,8 @@ def _looks_like_cuda(exc: BaseException) -> bool:
 
 def main() -> int:
     proto = protect_stdout()  # first: nothing may write to the protocol channel but us
+    lower_priority()  # POSIX (Windows: the parent started us below normal)
+    watch_lifeline()  # POSIX: end with ffmpeg if the parent dies (Windows: its Job Object)
     _force_environment(CHILD_ENV.items())
     emit = make_emitter(proto)
     started = time.perf_counter()

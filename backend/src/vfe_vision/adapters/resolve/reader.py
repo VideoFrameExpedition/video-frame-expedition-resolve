@@ -1,10 +1,11 @@
 """Read the project open in DaVinci Resolve through its external scripting API.
 
-Resolve's scripting library (``fusionscript.dll``) is loaded only in a short-lived child
-process (``timeline_reader.py``): the application's own processes never host it, a crash or
-a hang of Resolve's side ends with the child. Reading only; calls are serialised (Resolve
-answers one script at a time) and bounded in time: the child ends itself at its deadline, and
-its Job Object is closed after each call, so no reader outlives its request.
+Resolve's scripting library (``fusionscript.dll`` on Windows, ``fusionscript.so`` on macOS) is
+loaded only in a short-lived child process (``timeline_reader.py``): the application's own
+processes never host it, a crash or a hang of Resolve's side ends with the child. Reading only;
+calls are serialised (Resolve answers one script at a time) and bounded in time: the child ends
+itself at its deadline, and its process job is closed after each call, so no reader outlives its
+request.
 """
 
 from __future__ import annotations
@@ -42,7 +43,19 @@ from vfe_vision.domain.resolve_timeline import (
     use_from_json,
 )
 
-DEFAULT_LIBRARY = r"C:\Program Files\Blackmagic Design\DaVinci Resolve\fusionscript.dll"
+# Where Resolve installs its scripting library, by system (Resolve's own documentation).
+DEFAULT_LIBRARIES = {
+    "win32": r"C:\Program Files\Blackmagic Design\DaVinci Resolve\fusionscript.dll",
+    "darwin": (
+        "/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Libraries/Fusion/"
+        "fusionscript.so"
+    ),
+    "linux": "/opt/resolve/libs/Fusion/fusionscript.so",
+}
+DEFAULT_LIBRARY = DEFAULT_LIBRARIES.get(sys.platform, DEFAULT_LIBRARIES["linux"])
+# The name of Resolve's process, by system (``Resolve.exe``; the binary inside the app bundle
+# on macOS).
+RESOLVE_PROCESS = {"win32": "Resolve.exe", "darwin": "Resolve", "linux": "resolve"}
 CHILD_SCRIPT = Path(__file__).with_name("timeline_reader.py")
 PROJECT_TIMEOUT_S = 30.0
 TIMELINE_TIMEOUT_S = 120.0
@@ -57,8 +70,12 @@ NOT_RUNNING = "DaVinci Resolve n'est pas lancé. Ouvrez votre projet dans Resolv
 SCRIPTING_OFF = (
     "DaVinci Resolve est lancé mais refuse la connexion. Dans Resolve Studio : Préférences › "
     "Système › Général › « Script externe » (External scripting using) sur « Local ». La version "
-    "gratuite de Resolve n'accepte pas les scripts externes. Si Resolve est lancé en "
-    "administrateur, relancez-le normalement."
+    "gratuite de Resolve n'accepte pas les scripts externes."
+    + (
+        " Si Resolve est lancé en administrateur, relancez-le normalement."
+        if sys.platform == "win32"
+        else ""
+    )
 )
 STARTING = (
     "DaVinci Resolve est en train de démarrer ou de charger un projet. Réessayez dans un instant."
@@ -239,19 +256,25 @@ def reachable(host: str) -> bool:
 
 
 def resolve_running() -> bool | None:
-    """Whether a Resolve process runs on this computer (None when it cannot be told)."""
-    if sys.platform != "win32":
+    """Whether a Resolve process runs on this computer (None when it cannot be told):
+    ``tasklist`` on Windows, ``pgrep`` on macOS and Linux."""
+    name = RESOLVE_PROCESS.get(sys.platform)
+    if name is None:
         return None
+    if sys.platform == "win32":
+        args = ["tasklist", "/FI", f"IMAGENAME eq {name}", "/FO", "CSV", "/NH"]
+    else:
+        args = ["pgrep", "-x", name]  # exact name; exit status 1 when no process matches
     try:
-        result = run_process(
-            ["tasklist", "/FI", "IMAGENAME eq Resolve.exe", "/FO", "CSV", "/NH"],
-            timeout_s=10,
-            check=False,
-            tool_name="tasklist",
-        )
+        result = run_process(args, timeout_s=10, check=False, tool_name=args[0])
     except ExternalToolError:
         return None
-    return "resolve.exe" in result.stdout_text.casefold()
+    if sys.platform == "win32":
+        return name.casefold() in result.stdout_text.casefold()
+    else:
+        if result.returncode not in {0, 1}:
+            return None
+        return result.returncode == 0 and bool(result.stdout.strip())
 
 
 # ---------------------------------------------------------------- read once, import after

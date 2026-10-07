@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from vfe_vision.core.cancel import CancelToken
 from vfe_vision.core.errors import CancelledError, PathNotAllowedError, VfeError
 from vfe_vision.core.logging import get_logger
-from vfe_vision.core.paths import is_cloud_placeholder, path_key
+from vfe_vision.core.paths import is_cloud_placeholder, path_key, unmounted_volume
 from vfe_vision.db.models import TimelineBin, TimelineBinItem, Video
 from vfe_vision.db.preferences import load_preferences
 from vfe_vision.db.session import Database
@@ -39,11 +39,12 @@ log = get_logger(__name__)
 
 SCANNED_EVERY = 25  # files registered between two « library.scanned » (the page refreshes)
 ANALYSIS_PRIORITY = 50  # as a video asked for through MCP
-CLOUD_NOTE = "fichier OneDrive non présent sur ce PC"
+CLOUD_NOTE = "fichier OneDrive ou iCloud non présent sur cet ordinateur"
 OUTSIDE_NOTE = "hors bibliothèque"
 GONE = "Timeline retirée de la bibliothèque"
 # Windows errors of a network share out of reach (path or name not found, gone, unreachable):
-# Python reports some of them as FileNotFoundError, but the file may well be there.
+# Python reports some of them as FileNotFoundError, but the file may well be there. On macOS
+# the same situation is an unmounted volume (see ``unmounted_volume``) or another OSError.
 NETWORK_ERRORS = frozenset({53, 64, 67, 1231})
 
 FolderFiles = dict[str, tuple[str, int]]  # name casefolded → (name on the disk, size)
@@ -51,12 +52,12 @@ FolderFiles = dict[str, tuple[str, int]]  # name casefolded → (name on the dis
 
 def folder_files(folder: str) -> FolderFiles | None:
     """The files of a folder, None when the folder does not exist; OSError when it cannot be
-    read (a network share out of reach)."""
+    read (a network share out of reach, a volume not mounted)."""
     try:
         with os.scandir(folder) as entries:
             return {e.name.casefold(): (e.name, e.stat().st_size) for e in entries if e.is_file()}
     except (FileNotFoundError, NotADirectoryError) as exc:
-        if getattr(exc, "winerror", None) in NETWORK_ERRORS:
+        if getattr(exc, "winerror", None) in NETWORK_ERRORS or unmounted_volume(folder):
             raise
         return None
 

@@ -71,7 +71,7 @@ def _discover(
     cli = find_cli(settings.tailscale_path)
     if cli is None:
         if settings.tailscale:
-            notices.append(f"Tailscale est introuvable (tailscale.exe) : {OFF}.")
+            notices.append(f"Tailscale est introuvable (commande « tailscale ») : {OFF}.")
         return None
     try:
         me = read_self(cli)

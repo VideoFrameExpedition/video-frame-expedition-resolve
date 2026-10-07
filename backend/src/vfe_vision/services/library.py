@@ -11,7 +11,7 @@ from typing import Any
 import sqlalchemy as sa
 
 from vfe_vision.core.errors import ConflictError, InvalidInputError, NotFoundError
-from vfe_vision.core.paths import is_within, path_key, volume_serial
+from vfe_vision.core.paths import EXAMPLE_FOLDER, is_within, path_key, volume_serial
 from vfe_vision.db.models import Job, LibraryRoot, Video
 from vfe_vision.domain.enums import JobKind, RootKind, VideoStatus
 from vfe_vision.jobs import queue
@@ -81,7 +81,7 @@ def add_root(
     from a timeline in it or below join it with their analyses, and follow its settings."""
     folder = Path(path).expanduser()
     if not folder.is_absolute():
-        raise InvalidInputError("Indiquez un chemin absolu, par exemple D:\\Vidéos\\Tournage.")
+        raise InvalidInputError(f"Indiquez un chemin absolu, par exemple {EXAMPLE_FOLDER}.")
     if not folder.is_dir():
         raise InvalidInputError(f"Ce dossier n'existe pas ou n'est pas accessible : {folder}")
     if is_within(c.settings.data_dir, folder) or is_within(folder, c.settings.data_dir):

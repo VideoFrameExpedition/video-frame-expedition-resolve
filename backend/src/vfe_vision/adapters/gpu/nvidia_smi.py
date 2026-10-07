@@ -1,8 +1,10 @@
 """Free VRAM read with ``nvidia-smi``: signed by NVIDIA and installed with the driver, so nothing
-new is loaded into our processes (Smart App Control) and no CUDA context is created."""
+new is loaded into our processes (Smart App Control) and no CUDA context is created. A Mac has
+no such driver: the probe answers None at once, and the CPU does the work."""
 
 from __future__ import annotations
 
+import sys
 import time
 
 from vfe_vision.core.errors import ExternalToolError
@@ -16,7 +18,7 @@ RETRY_AFTER_S = 300  # after a failure (hung driver…), the CPU is used without
 class NvidiaSmi:
     def __init__(self, path: str = "nvidia-smi") -> None:
         self.path = path
-        self._absent = False
+        self._absent = sys.platform == "darwin"  # no NVIDIA driver exists for today's Macs
         self._retry_at = 0.0
 
     def free_mib(self) -> int | None:

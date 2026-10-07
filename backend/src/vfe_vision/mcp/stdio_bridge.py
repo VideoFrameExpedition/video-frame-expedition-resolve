@@ -64,8 +64,8 @@ Send = Callable[[SessionMessage], Awaitable[None]]
 
 def app_down(url: str) -> str:
     return (
-        f"{APP} ne répond pas à {url} : lancez l'application (run.bat) sur l'ordinateur "
-        "qui l'héberge, puis réessayez."
+        f"{APP} ne répond pas à {url} : lancez l'application (run.command sur Mac, run.bat "
+        "sous Windows) sur l'ordinateur qui l'héberge, puis réessayez."
     )
 
 

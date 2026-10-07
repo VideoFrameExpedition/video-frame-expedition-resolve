@@ -4,6 +4,7 @@ Resolve cannot be read. The child itself runs against a fake scripting library."
 from __future__ import annotations
 
 import json
+import os
 import socket
 import subprocess
 import sys
@@ -525,15 +526,27 @@ def test_a_second_read_waits_briefly_then_says_busy(
 
 
 def _running(pid: int) -> bool:
-    if sys.platform != "win32":
-        return Path(f"/proc/{pid}").exists()
-    done = subprocess.run(
-        ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    return f'"{pid}"' in done.stdout
+    if sys.platform == "win32":
+        done = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        return f'"{pid}"' in done.stdout
+    else:
+        try:
+            os.kill(pid, 0)  # no signal: only tells whether the process exists
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+        # A zombie (ended, not yet reaped) no longer runs anything.
+        done = subprocess.run(
+            ["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True, check=False
+        )
+        state = done.stdout.strip()
+        return bool(state) and not state.startswith("Z")
 
 
 # ---------------------------------------------------------------- read once, import after

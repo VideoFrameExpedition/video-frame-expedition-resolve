@@ -13,7 +13,14 @@ from vfe_vision.core.atomic_io import atomic_write_bytes, atomic_write_text
 from vfe_vision.core.cancel import CancelToken
 from vfe_vision.core.config import Settings, is_loopback
 from vfe_vision.core.errors import CancelledError, ExternalToolError
-from vfe_vision.core.paths import is_video_file, is_within, joined_inside, path_key
+from vfe_vision.core.paths import (
+    CASE_INSENSITIVE_PATHS,
+    is_video_file,
+    is_within,
+    joined_inside,
+    normalize_text,
+    path_key,
+)
 from vfe_vision.core.procs import run_process
 
 
@@ -45,9 +52,16 @@ class TestPaths:
     ) -> None:
         assert joined_inside(tmp_path, text) is None
 
-    @pytest.mark.skipif(sys.platform != "win32", reason="case-insensitive paths")
-    def test_path_key_is_case_insensitive_on_windows(self) -> None:
-        assert path_key("C:/Vidéos/Été.MP4") == path_key(r"c:\vidéos\été.mp4")
+    @pytest.mark.skipif(not CASE_INSENSITIVE_PATHS, reason="case-insensitive paths")
+    def test_path_key_is_case_insensitive_on_windows_and_macos(self, tmp_path: Path) -> None:
+        upper, lower = tmp_path / "Vidéos" / "Été.MP4", tmp_path / "vidéos" / "été.mp4"
+        assert path_key(upper) == path_key(lower)
+
+    def test_path_key_spells_accents_one_way(self, tmp_path: Path) -> None:
+        """A Mac (HFS+, a share, Resolve) may give « é » as « e » plus a combining accent."""
+        composed, decomposed = tmp_path / "Rushs été", tmp_path / "Rushs été"
+        assert path_key(composed) == path_key(decomposed)
+        assert normalize_text("é") == "é"
 
     @pytest.mark.parametrize(
         ("name", "expected"),

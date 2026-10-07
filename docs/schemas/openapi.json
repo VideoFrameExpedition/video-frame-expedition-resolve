@@ -3255,7 +3255,7 @@
             "type": "boolean"
           },
           "kind": {
-            "description": "classic: installer from claude.ai; store: Microsoft Store (MSIX).",
+            "description": "classic : installateur de claude.ai (le seul sur macOS et Linux) ; store : Microsoft Store (MSIX).",
             "enum": [
               "classic",
               "store"
@@ -3295,6 +3295,16 @@
             "title": "Mcp Path",
             "type": "string"
           },
+          "platform": {
+            "description": "System of the application's computer: how its paths and command lines are written (quoting, configuration files of the clients).",
+            "enum": [
+              "windows",
+              "macos",
+              "linux"
+            ],
+            "title": "Platform",
+            "type": "string"
+          },
           "port": {
             "title": "Port",
             "type": "integer"
@@ -3319,6 +3329,7 @@
         },
         "required": [
           "viewer_local",
+          "platform",
           "port",
           "local_url",
           "mcp_path",
@@ -4531,6 +4542,16 @@
       },
       "HealthOut": {
         "properties": {
+          "platform": {
+            "description": "System of the application's computer: the interface and the help match their texts to it (paths, shortcuts, launcher).",
+            "enum": [
+              "windows",
+              "macos",
+              "linux"
+            ],
+            "title": "Platform",
+            "type": "string"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -4554,7 +4575,8 @@
         "required": [
           "status",
           "version",
-          "worker_pid"
+          "worker_pid",
+          "platform"
         ],
         "title": "HealthOut",
         "type": "object"
@@ -8369,7 +8391,7 @@
             "type": "integer"
           },
           "elsewhere": {
-            "description": "Paths from another system (macOS…).",
+            "description": "Paths of another system (a Windows path on a Mac, or the reverse).",
             "title": "Elsewhere",
             "type": "integer"
           },
@@ -15410,7 +15432,7 @@
     },
     "/api/v1/system/pick-folder": {
       "post": {
-        "description": "Open the Windows folder picker on the application's computer (for « Add a folder »);\nreserved for a browser open on this computer.",
+        "description": "Open the desktop's folder picker on the application's computer (for « Add a folder »);\nreserved for a browser open on this computer.",
         "operationId": "choose_folder_api_v1_system_pick_folder_post",
         "responses": {
           "200": {

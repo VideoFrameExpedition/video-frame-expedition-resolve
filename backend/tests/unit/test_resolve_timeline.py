@@ -4,7 +4,8 @@ and the stored form of those links. Cases taken from a real project."""
 from __future__ import annotations
 
 from dataclasses import replace
-from pathlib import Path
+from functools import partial
+from pathlib import Path, PureWindowsPath
 
 from hypothesis import given
 from hypothesis import strategies as st
@@ -88,7 +89,7 @@ def clip(
     vfe_video_id: str | None = None,
     **kwargs: object,
 ) -> TimelineClip:
-    name = Path(path).name if path else "Titre"
+    name = PureWindowsPath(path).name if path else "Titre"
     return TimelineClip(
         file_path=path,
         clip_type=clip_type or ("Video + Audio" if path else None),
@@ -99,8 +100,11 @@ def clip(
 
 
 def files_of(clips: list[TimelineClip]):  # type: ignore[no-untyped-def]
+    # The cases below come from a Windows project: read as a Windows library would, case
+    # ignored, whatever the system running the tests.
+    windows = partial(canonical_path, style="windows")
     return timeline_files(
-        clips, is_video=lambda p: is_video_file(Path(p)), canonical=canonical_path, key=path_key
+        clips, is_video=lambda p: is_video_file(Path(p)), canonical=windows, key=str.casefold
     )
 
 
@@ -111,7 +115,7 @@ def test_one_entry_per_file_in_order_of_first_use() -> None:
         clip(r"D:\cats 2026\hdr\a.mp4", 110661, 111000),  # used twice
     ]
     files, skipped = files_of(clips)
-    assert [Path(f.path).name for f in files] == ["a.mp4", "b.mp4"]
+    assert [PureWindowsPath(f.path).name for f in files] == ["a.mp4", "b.mp4"]
     assert [f.position for f in files] == [0, 1]
     assert len(files[0].uses) == 2
     assert skipped.graphics == 0
@@ -156,7 +160,7 @@ def test_what_is_not_a_video_of_the_library_is_told_apart() -> None:
         clip(r"D:\r\a.mp4", 108500, 108600),
     ]
     files, skipped = files_of(clips)
-    assert [Path(f.path).name for f in files] == ["a.mp4"]
+    assert [PureWindowsPath(f.path).name for f in files] == ["a.mp4"]
     assert skipped.graphics == 2
     assert skipped.graphics_names == ("Titre",)
     assert skipped.containers == 1

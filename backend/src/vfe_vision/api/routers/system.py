@@ -15,7 +15,7 @@ from vfe_vision.adapters.lmstudio.catalog import ModelInfo
 from vfe_vision.api.deps import Container
 from vfe_vision.api.schemas import HealthOut, JobOut, PickedFolderOut, StageOut
 from vfe_vision.core.cancel import CancelToken
-from vfe_vision.core.config import is_loopback
+from vfe_vision.core.config import is_loopback, platform_name
 from vfe_vision.core.errors import CancelledError, ConflictError, PathNotAllowedError, VfeError
 from vfe_vision.services import analysis, system
 from vfe_vision.services import settings as settings_service
@@ -27,7 +27,9 @@ DISCONNECT_POLL_S = 0.5
 
 @router.get("/health")
 def health(c: Container) -> HealthOut:
-    return HealthOut(status="ok", version=__version__, worker_pid=c.worker_pid)
+    return HealthOut(
+        status="ok", version=__version__, worker_pid=c.worker_pid, platform=platform_name()
+    )
 
 
 @router.get("/doctor")
@@ -55,7 +57,7 @@ async def probe_vision(c: Container) -> JobOut:
 
 @router.post("/pick-folder")
 async def choose_folder(request: Request) -> PickedFolderOut:
-    """Open the Windows folder picker on the application's computer (for « Add a folder »);
+    """Open the desktop's folder picker on the application's computer (for « Add a folder »);
     reserved for a browser open on this computer."""
     if request.client is None or not is_loopback(request.client.host):
         raise PathNotAllowedError("Le choix de dossier ne s'ouvre que sur l'ordinateur local.")

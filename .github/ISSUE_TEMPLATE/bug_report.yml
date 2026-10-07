@@ -16,19 +16,19 @@ body:
     validations:
       required: true
   - type: input
-    id: windows
+    id: system
     attributes:
-      label: Windows version · Version de Windows
-      description: Settings > System > About. · Paramètres > Système > Informations système.
-      placeholder: Windows 11 24H2
+      label: System and its version · Système et sa version
+      description: "Windows: Settings > System > About. macOS: Apple menu > About This Mac. · Windows : Paramètres > Système > Informations système. macOS : menu Pomme > À propos de ce Mac."
+      placeholder: Windows 11 24H2 · macOS 15.6
     validations:
       required: true
   - type: input
-    id: gpu
+    id: hardware
     attributes:
-      label: Graphics card · Carte graphique
-      description: Its name and its video memory. · Son nom et sa mémoire vidéo.
-      placeholder: NVIDIA GeForce RTX 4070, 12 GB
+      label: Graphics card, or Mac · Carte graphique, ou Mac
+      description: "A PC: the card's name and its video memory. A Mac: its chip and its memory. · Un PC : le nom de la carte et sa mémoire vidéo. Un Mac : sa puce et sa mémoire."
+      placeholder: NVIDIA GeForce RTX 4070, 12 GB · Apple M3 Pro, 36 GB
     validations:
       required: true
   - type: input

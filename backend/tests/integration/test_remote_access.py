@@ -3,6 +3,7 @@ tells the loopback from a tailnet device."""
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -263,8 +264,14 @@ class TestConnections:
         assert here["remote"]["enabled"] is True
         assert here["remote"]["urls"][:2] == [REMOTE, f"http://{NAME}:8765"]
         assert here["stdio"]["args"][-3:] == ["-m", "vfe_vision", "mcp-stdio"]
-        assert {c["kind"] for c in here["claude_desktop"]} == {"classic", "store"}
-        assert here["resolve_mcp"]["path"].endswith("ResolveMCP.exe")
+        if sys.platform == "win32":
+            assert here["platform"] == "windows"
+            assert {c["kind"] for c in here["claude_desktop"]} == {"classic", "store"}
+            assert here["resolve_mcp"]["path"].endswith("ResolveMCP.exe")
+        else:
+            assert here["platform"] == ("macos" if sys.platform == "darwin" else "linux")
+            assert [c["kind"] for c in here["claude_desktop"]] == ["classic"]
+            assert here["resolve_mcp"]["path"].endswith("ResolveMCP")
 
         there = remote.get("/api/v1/access/connections", headers=_bearer()).json()
         assert there["viewer_local"] is False

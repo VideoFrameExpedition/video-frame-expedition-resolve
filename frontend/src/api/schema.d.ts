@@ -869,7 +869,7 @@ export interface paths {
         put?: never;
         /**
          * Choose Folder
-         * @description Open the Windows folder picker on the application's computer (for « Add a folder »);
+         * @description Open the desktop's folder picker on the application's computer (for « Add a folder »);
          *     reserved for a browser open on this computer.
          */
         post: operations["choose_folder_api_v1_system_pick_folder_post"];
@@ -2833,7 +2833,7 @@ export interface components {
             installed: boolean;
             /**
              * Kind
-             * @description classic: installer from claude.ai; store: Microsoft Store (MSIX).
+             * @description classic : installateur de claude.ai (le seul sur macOS et Linux) ; store : Microsoft Store (MSIX).
              * @enum {string}
              */
             kind: "classic" | "store";
@@ -2851,6 +2851,12 @@ export interface components {
              * @default /mcp
              */
             mcp_path: string;
+            /**
+             * Platform
+             * @description System of the application's computer: how its paths and command lines are written (quoting, configuration files of the clients).
+             * @enum {string}
+             */
+            platform: "windows" | "macos" | "linux";
             /** Port */
             port: number;
             remote: components["schemas"]["RemoteOut"];
@@ -3274,6 +3280,12 @@ export interface components {
         };
         /** HealthOut */
         HealthOut: {
+            /**
+             * Platform
+             * @description System of the application's computer: the interface and the help match their texts to it (paths, shortcuts, launcher).
+             * @enum {string}
+             */
+            platform: "windows" | "macos" | "linux";
             /** Status */
             status: string;
             /** Version */
@@ -4797,7 +4809,7 @@ export interface components {
             containers: number;
             /**
              * Elsewhere
-             * @description Paths from another system (macOS…).
+             * @description Paths of another system (a Windows path on a Mac, or the reverse).
              */
             elsewhere: number;
             /** Elsewhere Names */

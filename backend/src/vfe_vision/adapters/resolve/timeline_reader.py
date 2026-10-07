@@ -2,8 +2,8 @@
 
 Run by ``adapters/resolve/reader.py`` with the application's Python, in isolated mode::
 
-    python -I timeline_reader.py <fusionscript.dll> project
-    python -I timeline_reader.py <fusionscript.dll> timeline <timeline id | ->
+    python -I timeline_reader.py <fusionscript library> project
+    python -I timeline_reader.py <fusionscript library> timeline <timeline id | ->
 
 It loads Resolve's scripting library, connects to the running Resolve (external scripting,
 preference « Local »), reads, and prints ONE JSON object (ASCII only) on stdout:

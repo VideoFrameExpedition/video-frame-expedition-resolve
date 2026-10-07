@@ -13,11 +13,14 @@ vi.mock("@/api/access", () => ({
 }));
 
 const TOKEN = "jeton-secret-42";
-const PYTHON = String.raw`C:\vfe\backend\.venv\Scripts\python.exe`;
+const PYTHON = "/Users/me/vfe/backend/.venv/bin/python";
+const RESOLVE_MCP =
+  "/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/ResolveMCP";
 
 function connections(overrides: Partial<Connections> = {}): Connections {
   return {
     viewer_local: true,
+    platform: "macos",
     port: 8765,
     local_url: "http://127.0.0.1:8765",
     mcp_path: "/mcp",
@@ -31,27 +34,18 @@ function connections(overrides: Partial<Connections> = {}): Connections {
       available: true,
       source: "file",
       value: TOKEN,
-      path: String.raw`C:\Users\me\AppData\Local\vfe-vision\api-token.txt`,
+      path: "/Users/me/Library/Application Support/vfe-vision/api-token.txt",
     },
     stdio: { command: PYTHON, args: ["-m", "vfe_vision", "mcp-stdio"] },
     claude_desktop: [
       {
         kind: "classic",
-        path: String.raw`C:\Users\me\AppData\Roaming\Claude\claude_desktop_config.json`,
-        installed: false,
-        exists: false,
-      },
-      {
-        kind: "store",
-        path: String.raw`C:\Users\me\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`,
+        path: "/Users/me/Library/Application Support/Claude/claude_desktop_config.json",
         installed: true,
         exists: true,
       },
     ],
-    resolve_mcp: {
-      path: String.raw`C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolveMCP.exe`,
-      installed: true,
-    },
+    resolve_mcp: { path: RESOLVE_MCP, installed: true },
     ...overrides,
   };
 }
@@ -89,7 +83,7 @@ describe("ConnectionsPage", () => {
     render(<ConnectionsPage />);
     await user.click(screen.getByRole("tab", { name: "Claude Desktop" }));
     const panel = screen.getByRole("tabpanel");
-    expect(within(panel).getByText(/Claude_pzs8sxrjxfjjc/)).toBeVisible();
+    expect(within(panel).getByText(/Application Support\/Claude\//)).toBeVisible();
     expect(within(panel).getAllByText("installé")).toHaveLength(1);
     const config = JSON.parse(panel.querySelector("pre")?.textContent ?? "") as {
       mcpServers: Record<string, { command: string; args: string[] }>;
@@ -98,7 +92,43 @@ describe("ConnectionsPage", () => {
       command: PYTHON,
       args: ["-m", "vfe_vision", "mcp-stdio", "--url", "http://127.0.0.1:8765/mcp"],
     });
+    // A Mac: the shell's single quotes around a path with spaces.
+    expect(
+      screen.getByText(`claude mcp add --scope user davinci-resolve -- '${RESOLVE_MCP}'`),
+    ).toBeVisible();
+  });
+
+  it("quotes the command lines as a Windows PC does, and finds Claude Desktop's Store install", async () => {
+    const windowsPython = String.raw`C:\vfe\backend\.venv\Scripts\python.exe`;
+    data = connections({
+      platform: "windows",
+      stdio: { command: windowsPython, args: ["-m", "vfe_vision", "mcp-stdio"] },
+      claude_desktop: [
+        {
+          kind: "classic",
+          path: String.raw`C:\Users\me\AppData\Roaming\Claude\claude_desktop_config.json`,
+          installed: false,
+          exists: false,
+        },
+        {
+          kind: "store",
+          path: String.raw`C:\Users\me\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`,
+          installed: true,
+          exists: true,
+        },
+      ],
+      resolve_mcp: {
+        path: String.raw`C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolveMCP.exe`,
+        installed: true,
+      },
+    });
+    const user = userEvent.setup();
+    render(<ConnectionsPage />);
     expect(screen.getByText(/davinci-resolve -- "C:\\Program Files/)).toBeVisible();
+    await user.click(screen.getByRole("tab", { name: "Claude Desktop" }));
+    const panel = screen.getByRole("tabpanel");
+    expect(within(panel).getByText(/Claude_pzs8sxrjxfjjc/)).toBeVisible();
+    expect(within(panel).getAllByText("installé")).toHaveLength(1);
   });
 
   it("never shows the token to another device", () => {

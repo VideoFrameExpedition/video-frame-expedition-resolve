@@ -44,7 +44,7 @@ READ_CONVENTION = (
 )
 BUILD_NOTE = (
     "Timeline NEUVE (jamais une timeline existante), projet NON enregistré : rappelez à "
-    "l'utilisateur d'enregistrer dans Resolve (Ctrl+S) s'il garde le montage."
+    "l'utilisateur d'enregistrer dans Resolve (Ctrl+S ; Cmd+S sur Mac) s'il garde le montage."
 )
 
 

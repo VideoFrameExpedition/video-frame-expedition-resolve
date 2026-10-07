@@ -147,6 +147,7 @@
     "description": "Le dossier est lu, jamais modifié. Toutes les données de l'application sont stockées à part.",
     "path": "Chemin du dossier",
     "pathHelp": "Chemin absolu, par exemple D:\\Vidéos\\Tournage plage",
+    "pathPlaceholder": "D:\\Vidéos\\Tournage",
     "label": "Nom affiché",
     "focus": "Objectif d'analyse (facultatif)",
     "focusHelp": "Ce qui compte pour vous dans ces rushs : sujets, ambiances, usages prévus…",
@@ -579,6 +580,8 @@
       "foldersHint": "À gauche le dossier sur cet ordinateur, à droite le même dossier tel que Resolve le voit (par exemple D:\\cats 2026 et /Volumes/cats 2026).",
       "hereFolder": "Dossier {{n}} sur cet ordinateur",
       "thereFolder": "Dossier {{n}} vu par Resolve",
+      "herePlaceholder": "D:\\cats 2026",
+      "therePlaceholder": "/Volumes/cats 2026",
       "remove": "Retirer la correspondance {{n}}",
       "add": "Ajouter une correspondance",
       "saved": "Réglages de DaVinci Resolve enregistrés.",
@@ -2049,6 +2052,49 @@
         "shares": "Langue, texte lu, positions : le pourcentage mesuré. Un modèle dont les positions sont désactivées a 0.",
         "quality": "Qualité : la moyenne de vos notes à l'aveugle, ramenée sur 100.",
         "total": "Total : la moyenne de ces points. Seules comptent les mesures que tous les modèles classés ont, pour les juger sur la même base ; « Ce qui compte le plus » fait compter une mesure trois fois."
+      }
+    }
+  },
+  "platform": {
+    "macos": {
+      "addRoot": {
+        "pathHelp": "Chemin absolu, par exemple /Volumes/Rushs/Tournage plage",
+        "pathPlaceholder": "/Volumes/Rushs/Tournage"
+      },
+      "connections": {
+        "remoteOff": "Désactivé. Pour l'activer, ajoutez VFE_TAILSCALE=true dans le fichier .env à la racine de l'application (ou lancez « run.command tailscale »), laissez Python accepter les connexions entrantes si le pare-feu de macOS le demande (voir le guide), puis redémarrez l'application.",
+        "claudeDesktop": {
+          "merge": "Ajoutez l'entrée « vfe-vision » sous « mcpServers » en gardant le reste du fichier, puis quittez complètement Claude Desktop (Cmd+Q) et relancez-le."
+        },
+        "cursor": {
+          "help": "Dans ~/.cursor/mcp.json (ou .cursor/mcp.json dans un projet) :"
+        },
+        "codex": {
+          "help": "OpenAI Codex CLI, dans ~/.codex/config.toml :"
+        },
+        "resolve": {
+          "help": "Le MCP de DaVinci Resolve Studio (ResolveMCP, en stdio) pilote Resolve ; Video Frame Expedition lui fournit les plans (find_clips : chemins, points d'entrée et de sortie, timecodes). Branchez les deux au même assistant."
+        },
+        "resolveLink": {
+          "foldersHint": "À gauche le dossier sur cet ordinateur, à droite le même dossier tel que Resolve le voit (par exemple /Volumes/cats 2026 ici et D:\\cats 2026 quand Resolve tourne sur un PC Windows).",
+          "herePlaceholder": "/Volumes/cats 2026",
+          "therePlaceholder": "D:\\cats 2026"
+        },
+        "resolveTools": {
+          "note": "Désactivé par défaut. Les nouvelles timelines s'appellent « … - vfe vN » : jamais une timeline existante n'est modifiée, et le projet n'est pas enregistré (Cmd+S dans Resolve si vous gardez le montage)."
+        }
+      },
+      "bench": {
+        "results": {
+          "help": {
+            "vram": "Mémoire : elle n'est mesurée que sur les cartes NVIDIA. Sur un Mac, le modèle partage la mémoire unifiée avec DaVinci Resolve et l'application, et rien n'est mesuré ici."
+          }
+        }
+      },
+      "system": {
+        "hardware": {
+          "gpu_transcriptionHint": "Sans effet sur un Mac : la transcription reste sur le processeur (son moteur n'utilise pas les cœurs graphiques de la puce)."
+        }
       }
     }
   }

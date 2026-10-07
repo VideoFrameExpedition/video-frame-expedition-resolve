@@ -90,7 +90,7 @@ async def test_a_clear_error_when_the_app_is_not_running() -> None:
             await client.list_tools()
     text = " | ".join(_messages(caught.value))
     assert f"Video Frame Expedition ne répond pas à {url}" in text
-    assert "run.bat" in text
+    assert "run.command" in text
 
 
 def _messages(error: BaseException) -> list[str]:

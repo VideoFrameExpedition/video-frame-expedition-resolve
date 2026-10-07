@@ -2,7 +2,7 @@
 
 Decoding and chunking run everywhere (ffmpeg and a fake ONNX session). The tests marked
 ``models`` need yamnet.onnx, yamnet_class_map.csv and ontology.json in VFE_YAMNET_MODEL_DIR
-(default %LOCALAPPDATA%/vfe-vision/models/yamnet); they are skipped otherwise.
+(default <data folder>/models/yamnet); they are skipped otherwise.
 """
 
 from __future__ import annotations
@@ -34,6 +34,7 @@ from vfe_vision.adapters.audio_tagging.yamnet import (
     self_test,
 )
 from vfe_vision.core.cancel import CancelToken
+from vfe_vision.core.config import default_data_dir
 from vfe_vision.core.errors import CancelledError, ExternalToolError, ServiceUnavailableError
 from vfe_vision.domain.audio_events import Category, analyze, shot_labels
 
@@ -42,7 +43,7 @@ def _model_dir() -> Path:
     configured = os.environ.get("VFE_YAMNET_MODEL_DIR")
     if configured:
         return Path(configured)
-    return Path(os.environ.get("LOCALAPPDATA", "")) / "vfe-vision" / "models" / "yamnet"
+    return default_data_dir() / "models" / "yamnet"
 
 
 MODEL_DIR = _model_dir()

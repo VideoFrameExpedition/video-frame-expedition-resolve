@@ -2,7 +2,8 @@
 <!--
   Video Frame Expedition for DaVinci Resolve — guide and presentation page.
 
-  One file, two languages (French / English), two themes (Nuit / Papier).
+  One file, two languages (French / English), two themes (Nuit / Papier), two systems
+  (Windows / Mac: « win-only » and « mac-only » blocks, on the model of the languages).
   The pictures are in "img/":
       img/t/  the thumbnails of the cards   (the top of the page, cropped)
       img/z/  the enlarged pictures         (opened in an overlay on click)
@@ -31,13 +32,15 @@
     />
 
     <script>
-      // Language and theme are set before the first paint: no flicker.
+      // Language, system and theme are set before the first paint: no flicker.
       (function () {
         var html = document.documentElement;
         var lang = null;
+        var os = null;
         var theme = null;
         try {
           lang = localStorage.getItem("vfe-help-lang");
+          os = localStorage.getItem("vfe-help-os");
           theme = localStorage.getItem("vfe-help-theme");
         } catch (e) {
           /* private browsing, site data blocked: the defaults apply */
@@ -45,7 +48,17 @@
         if (lang !== "fr" && lang !== "en") {
           lang = (navigator.language || "fr").toLowerCase().indexOf("fr") === 0 ? "fr" : "en";
         }
+        if (os !== "windows" && os !== "macos") {
+          // Guessed from this browser; served by the application, the page then takes the
+          // system of its computer (see the script at the end).
+          var platform =
+            (navigator.userAgentData && navigator.userAgentData.platform) ||
+            navigator.platform ||
+            "";
+          os = /mac/i.test(platform) ? "macos" : "windows";
+        }
         html.classList.add("lang-" + lang);
+        html.classList.add("os-" + os);
         html.setAttribute("lang", lang);
         if (theme === "light" || theme === "dark") html.setAttribute("data-theme", theme);
       })();
@@ -263,6 +276,12 @@
       .lang-en .fr-only {
         display: none !important;
       }
+
+      /* ── Systems ──────────────────────────────────────────────────────── */
+      .os-windows .mac-only,
+      .os-macos .win-only {
+        display: none !important;
+      }
       .sr-only {
         position: absolute;
         width: 1px;
@@ -385,6 +404,7 @@
         align-items: center;
         gap: 18px;
         height: 62px;
+        max-width: 1440px; /* wider than the text: the sections, the language and the system */
       }
       .topbar-mark {
         display: flex;
@@ -416,7 +436,7 @@
         gap: 2px;
         margin-inline-start: auto;
       }
-      @media (min-width: 1100px) {
+      @media (min-width: 1440px) {
         .topbar-nav {
           display: flex;
         }
@@ -439,7 +459,7 @@
         gap: 8px;
         margin-inline-start: auto;
       }
-      @media (min-width: 1100px) {
+      @media (min-width: 1440px) {
         .topbar-tools {
           margin-inline-start: 12px;
         }
@@ -1424,6 +1444,10 @@
           <div class="switch" role="group" aria-label="Langue / Language">
             <button type="button" data-lang="fr" aria-pressed="true">FR</button>
             <button type="button" data-lang="en" aria-pressed="false">EN</button>
+          </div>
+          <div class="switch" role="group" aria-label="Système / System">
+            <button type="button" data-os="windows" aria-pressed="true">Windows</button>
+            <button type="button" data-os="macos" aria-pressed="false">Mac</button>
           </div>
           <button type="button" class="icon-btn" id="theme-btn">
             <span class="sr-only fr-only">Changer de thème</span>
@@ -2625,28 +2649,54 @@
                 </h4>
                 <ul>
                   <li>
-                    <span class="fr-only">Windows&nbsp;11, pour le moment</span>
-                    <span class="en-only">Windows&nbsp;11, for now</span>
+                    <span class="fr-only win-only">Windows&nbsp;11</span>
+                    <span class="fr-only mac-only"
+                      >Un Mac à puce Apple Silicon (M1 ou plus récente), macOS&nbsp;15 ou plus
+                      récent</span
+                    >
+                    <span class="en-only win-only">Windows&nbsp;11</span>
+                    <span class="en-only mac-only"
+                      >A Mac with Apple Silicon (M1 or later), macOS&nbsp;15 or later</span
+                    >
                   </li>
                   <li>
-                    <span class="fr-only"
+                    <span class="fr-only win-only"
                       ><code>uv</code>, Node.js&nbsp;24&nbsp;LTS (l'interface web est construite au
                       premier lancement), FFmpeg et ExifTool</span
                     >
-                    <span class="en-only"
+                    <span class="fr-only mac-only"
+                      ><code>uv</code>, Node.js&nbsp;24&nbsp;LTS (l'interface web est construite au
+                      premier lancement), FFmpeg dans sa version complète (<code>ffmpeg-full</code>,
+                      pour les vidéos HDR) et ExifTool</span
+                    >
+                    <span class="en-only win-only"
                       ><code>uv</code>, Node.js&nbsp;24&nbsp;LTS (the web interface is built at the
                       first start), FFmpeg and ExifTool</span
+                    >
+                    <span class="en-only mac-only"
+                      ><code>uv</code>, Node.js&nbsp;24&nbsp;LTS (the web interface is built at the
+                      first start), FFmpeg in its full build (<code>ffmpeg-full</code>, for HDR
+                      videos) and ExifTool</span
                     >
                   </li>
                 </ul>
                 <p>
-                  <span class="fr-only"
+                  <span class="fr-only win-only"
                     ><code>scripts\bootstrap.ps1</code> les installe s'ils manquent&nbsp;: voir
                     <a href="#installation">l'installation</a>, juste après.</span
                   >
-                  <span class="en-only"
+                  <span class="fr-only mac-only"
+                    ><code>scripts/bootstrap.sh</code> les installe s'ils manquent (par
+                    Homebrew)&nbsp;: voir <a href="#installation">l'installation</a>, juste
+                    après.</span
+                  >
+                  <span class="en-only win-only"
                     ><code>scripts\bootstrap.ps1</code> installs them if they are missing: see
                     <a href="#installation">the installation</a>, just below.</span
+                  >
+                  <span class="en-only mac-only"
+                    ><code>scripts/bootstrap.sh</code> installs them if they are missing (through
+                    Homebrew): see <a href="#installation">the installation</a>, just below.</span
                   >
                 </p>
               </div>
@@ -2660,14 +2710,14 @@
                     <a href="https://lmstudio.ai">LM&nbsp;Studio</a> doit tourner, son
                     <strong>serveur local activé</strong>, et un modèle <em>de vision</em> chargé —
                     par exemple <code>qwen/qwen3-vl-4b</code> ou <code>qwen/qwen3-vl-8b</code>. Sur
-                    le même PC ou sur un autre ordinateur, sous Windows, macOS ou Linux&nbsp;:
+                    le même ordinateur ou sur un autre, sous Windows, macOS ou Linux&nbsp;:
                     <a href="#systeme">page Système</a>, carte «&nbsp;LM&nbsp;Studio&nbsp;».
                   </span>
                   <span class="en-only">
                     <a href="https://lmstudio.ai">LM&nbsp;Studio</a> must be running, its
                     <strong>local server on</strong>, and a <em>vision</em> model loaded — for
                     instance <code>qwen/qwen3-vl-4b</code> or <code>qwen/qwen3-vl-8b</code>. On the
-                    same PC or on another computer, under Windows, macOS or Linux:
+                    same computer or on another one, under Windows, macOS or Linux:
                     <a href="#systeme">System page</a>, "LM&nbsp;Studio" card.
                   </span>
                 </p>
@@ -2688,31 +2738,57 @@
               </div>
               <div class="card">
                 <h4>
-                  <span class="fr-only">La carte graphique</span
-                  ><span class="en-only">The graphics card</span>
+                  <span class="fr-only win-only">La carte graphique</span>
+                  <span class="fr-only mac-only">La mémoire du Mac</span
+                  ><span class="en-only win-only">The graphics card</span>
+                  <span class="en-only mac-only">The Mac's memory</span>
                 </h4>
                 <p>
-                  <span class="fr-only">
+                  <span class="fr-only win-only">
                     <strong>Elle n'est pas obligatoire.</strong> L'application a été développée et
                     testée avec une carte NVIDIA, qu'elle utilise quand le modèle de vision laisse
                     assez de mémoire&nbsp;: décodage des vidéos et, en option, parole.
                   </span>
-                  <span class="en-only">
+                  <span class="fr-only mac-only">
+                    <strong>Une seule mémoire pour tout.</strong> Le modèle de vision tourne dans
+                    LM&nbsp;Studio sur les cœurs graphiques de la puce et partage la mémoire unifiée
+                    du Mac avec DaVinci Resolve et l'application&nbsp;; le décodage des vidéos, la
+                    parole, le texte à l'écran et les sujets restent sur le processeur.
+                  </span>
+                  <span class="en-only win-only">
                     <strong>It is not required.</strong> The application was developed and tested
                     with an NVIDIA card, which it uses when the vision model leaves enough memory:
                     video decoding and, as an option, speech.
                   </span>
+                  <span class="en-only mac-only">
+                    <strong>One memory for everything.</strong> The vision model runs in
+                    LM&nbsp;Studio on the chip's graphics cores and shares the Mac's unified memory
+                    with DaVinci Resolve and the application; video decoding, speech, on-screen text
+                    and subjects stay on the processor.
+                  </span>
                 </p>
                 <p>
-                  <span class="fr-only">
+                  <span class="fr-only win-only">
                     Sans elle, le même travail se fait sur le processeur, et le modèle de vision
                     tourne sur ce que LM&nbsp;Studio prend en charge sur votre ordinateur&nbsp;;
                     cela n'a pas été testé sur d'autres cartes.
                   </span>
-                  <span class="en-only">
+                  <span class="fr-only mac-only">
+                    Comptez 32&nbsp;Go pour un modèle de vision de 8&nbsp;milliards de paramètres à
+                    côté de Resolve&nbsp;; avec 16&nbsp;Go, préférez un modèle de 4&nbsp;milliards
+                    (<code>qwen/qwen3-vl-4b</code>) et un contexte court. La page
+                    <a href="#banc-essai">Banc d'essai</a> dit ce qui tient sur votre Mac.
+                  </span>
+                  <span class="en-only win-only">
                     Without one, the same work is done on the processor, and the vision model runs
                     on whatever LM&nbsp;Studio supports on your computer; this has not been tested
                     on other cards.
+                  </span>
+                  <span class="en-only mac-only">
+                    Count on 32&nbsp;GB for an 8-billion-parameter vision model next to Resolve;
+                    with 16&nbsp;GB, prefer a 4-billion one (<code>qwen/qwen3-vl-4b</code>) and a
+                    short context. The
+                    <a href="#banc-essai">Model bench</a> page tells what fits on your Mac.
                   </span>
                 </p>
               </div>
@@ -2721,12 +2797,12 @@
                 <p>
                   <span class="fr-only">
                     <strong>DaVinci Resolve Studio 21.1</strong> ou plus récent, pour le lien avec
-                    Resolve&nbsp;: sur le même PC ou sur un autre ordinateur, sous Windows, macOS ou
+                    Resolve&nbsp;: sur le même ordinateur ou sur un autre, sous Windows, macOS ou
                     Linux (<a href="#combo-autre-ordinateur">schéma 06</a>).
                   </span>
                   <span class="en-only">
                     <strong>DaVinci Resolve Studio 21.1</strong> or later, for the link with
-                    Resolve: on the same PC or on another computer, under Windows, macOS or Linux
+                    Resolve: on the same computer or on another one, under Windows, macOS or Linux
                     (<a href="#combo-autre-ordinateur">diagram 06</a>).
                   </span>
                 </p>
@@ -2751,17 +2827,26 @@
                     <strong>Get the application</strong>: clone its repository, or download it from
                     GitHub with the "Code&nbsp;› Download ZIP" button, then unzip it.
                   </span>
-                  <pre><code>git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve-windows.git</code></pre>
+                  <pre><code>git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve.git</code></pre>
                 </li>
                 <li>
-                  <span class="fr-only">
+                  <span class="fr-only win-only">
                     <strong>Dans PowerShell, depuis le dossier de l'application</strong>&nbsp;:
                   </span>
-                  <span class="en-only">
+                  <span class="fr-only mac-only">
+                    <strong>Dans le Terminal, depuis le dossier de l'application</strong>&nbsp;:
+                  </span>
+                  <span class="en-only win-only">
                     <strong>In PowerShell, from the application's folder</strong>:
                   </span>
-                  <pre><code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code></pre>
-                  <span class="fr-only">
+                  <span class="en-only mac-only">
+                    <strong>In the Terminal, from the application's folder</strong>:
+                  </span>
+                  <pre
+                    class="win-only"
+                  ><code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code></pre>
+                  <pre class="mac-only"><code>sh scripts/bootstrap.sh</code></pre>
+                  <span class="fr-only win-only">
                     Le script installe par <code>winget</code> ce qui manque (uv, Node.js, FFmpeg,
                     ExifTool), puis les paquets Python de l'application et ses modèles (environ
                     2&nbsp;Go, une seule fois&nbsp;; <code>-SansModeles</code> pour s'en passer). Il
@@ -2771,7 +2856,18 @@
                     d'avance. Acceptez les demandes d'autorisation de Windows (UAC). Ses messages
                     sont toujours en français.
                   </span>
-                  <span class="en-only">
+                  <span class="fr-only mac-only">
+                    Le script installe par <a href="https://brew.sh">Homebrew</a> ce qui manque (uv,
+                    Node.js, FFmpeg en version complète, ExifTool), puis les paquets Python de
+                    l'application et ses modèles (environ 2&nbsp;Go, une seule fois&nbsp;;
+                    <code>--sans-modeles</code> pour s'en passer). Il demande s'il faut installer
+                    LM&nbsp;Studio sur ce Mac&nbsp;: le modèle de vision peut aussi tourner dans le
+                    LM&nbsp;Studio d'un autre ordinateur. <code>--avec-lm-studio</code> ou
+                    <code>--sans-lm-studio</code> donne la réponse d'avance. Homebrew lui-même est
+                    installé d'abord si le Mac ne l'a pas (il demande votre mot de passe). Ses
+                    messages sont toujours en français.
+                  </span>
+                  <span class="en-only win-only">
                     The script installs through <code>winget</code> what is missing (uv, Node.js,
                     FFmpeg, ExifTool), then the application's Python packages and its models (about
                     2&nbsp;GB, once only; <code>-SansModeles</code> to do without them). It asks
@@ -2780,9 +2876,20 @@
                     <code>-SansLMStudio</code> gives the answer in advance. Accept the Windows (UAC)
                     prompts. Its messages are always in French.
                   </span>
+                  <span class="en-only mac-only">
+                    The script installs through <a href="https://brew.sh">Homebrew</a> what is
+                    missing (uv, Node.js, the full build of FFmpeg, ExifTool), then the
+                    application's Python packages and its models (about 2&nbsp;GB, once only;
+                    <code>--sans-modeles</code> to do without them). It asks whether to install
+                    LM&nbsp;Studio on this Mac: the vision model can also run in the LM&nbsp;Studio
+                    of another computer. <code>--avec-lm-studio</code> or
+                    <code>--sans-lm-studio</code> gives the answer in advance. Homebrew itself is
+                    installed first when the Mac does not have it (it asks for your password). Its
+                    messages are always in French.
+                  </span>
                 </li>
                 <li>
-                  <span class="fr-only">
+                  <span class="fr-only win-only">
                     <strong>Dans LM&nbsp;Studio</strong>, téléchargez un modèle de vision (par
                     exemple <code>qwen/qwen3-vl-8b</code>), chargez-le et activez le serveur local.
                     Quand LM&nbsp;Studio tourne sur un autre ordinateur, faites-le là-bas et laissez
@@ -2791,7 +2898,17 @@
                     donnez son adresse <a href="#systeme">page Système</a>, carte
                     «&nbsp;LM&nbsp;Studio&nbsp;».
                   </span>
-                  <span class="en-only">
+                  <span class="fr-only mac-only">
+                    <strong>Dans LM&nbsp;Studio</strong>, téléchargez un modèle de vision (par
+                    exemple <code>qwen/qwen3-vl-4b</code>, ou <code>qwen/qwen3-vl-8b</code> avec
+                    32&nbsp;Go de mémoire), chargez-le et activez le serveur local. Quand
+                    LM&nbsp;Studio tourne sur un autre ordinateur, faites-le là-bas et laissez son
+                    serveur accepter le réseau local (Developer&nbsp;› Server Settings&nbsp;›
+                    «&nbsp;Serve on Local Network&nbsp;»)&nbsp;; une fois l'application ouverte,
+                    donnez son adresse <a href="#systeme">page Système</a>, carte
+                    «&nbsp;LM&nbsp;Studio&nbsp;».
+                  </span>
+                  <span class="en-only win-only">
                     <strong>In LM&nbsp;Studio</strong>, download a vision model (for instance
                     <code>qwen/qwen3-vl-8b</code>), load it and start the local server. When
                     LM&nbsp;Studio runs on another computer, do this over there and let its server
@@ -2799,17 +2916,46 @@
                     Local Network"); once the application is open, give its address on the
                     <a href="#systeme">System page</a>, "LM&nbsp;Studio" card.
                   </span>
+                  <span class="en-only mac-only">
+                    <strong>In LM&nbsp;Studio</strong>, download a vision model (for instance
+                    <code>qwen/qwen3-vl-4b</code>, or <code>qwen/qwen3-vl-8b</code> with 32&nbsp;GB
+                    of memory), load it and start the local server. When LM&nbsp;Studio runs on
+                    another computer, do this over there and let its server accept the local network
+                    (Developer&nbsp;› Server Settings&nbsp;› "Serve on Local Network"); once the
+                    application is open, give its address on the <a href="#systeme">System page</a>,
+                    "LM&nbsp;Studio" card.
+                  </span>
                 </li>
                 <li>
-                  <span class="fr-only">
+                  <span class="fr-only win-only">
                     <strong>Double-cliquez sur <code>run.bat</code></strong
                     >. La première fois, il construit l'interface web (une à deux minutes), puis
                     ouvre le navigateur.
                   </span>
-                  <span class="en-only">
+                  <span class="fr-only mac-only">
+                    <strong>Double-cliquez sur <code>run.command</code></strong
+                    >. La première fois, il construit l'interface web (une à deux minutes), puis
+                    ouvre le navigateur. macOS peut demander si le Terminal peut accéder à vos
+                    Vidéos, à vos Documents ou à un disque externe&nbsp;: acceptez, l'application y
+                    lit vos vidéos. S'il refuse d'ouvrir le fichier (téléchargé en ZIP, il porte une
+                    marque de quarantaine), autorisez-le dans Réglages Système › Confidentialité et
+                    sécurité, ou tapez dans le Terminal, depuis le dossier de l'application&nbsp;:
+                    <code>xattr -dr com.apple.quarantine .</code>
+                  </span>
+                  <span class="en-only win-only">
                     <strong>Double-click <code>run.bat</code></strong
                     >. The first time, it builds the web interface (one or two minutes), then opens
                     the browser.
+                  </span>
+                  <span class="en-only mac-only">
+                    <strong>Double-click <code>run.command</code></strong
+                    >. The first time, it builds the web interface (one or two minutes), then opens
+                    the browser. macOS may ask whether the Terminal may access your Movies, your
+                    Documents or an external disk: accept, the application reads your videos there.
+                    If it refuses to open the file (downloaded as a ZIP, it carries a quarantine
+                    mark), allow it in System Settings › Privacy &amp; Security, or type in the
+                    Terminal, from the application's folder:
+                    <code>xattr -dr com.apple.quarantine .</code>
                   </span>
                 </li>
               </ol>
@@ -2820,26 +2966,46 @@
                   <span class="fr-only">Au quotidien</span><span class="en-only">Day to day</span>
                 </h4>
                 <p>
-                  <span class="fr-only">
+                  <span class="fr-only win-only">
                     Double-cliquez sur <code>run.bat</code>. Il lance l'application — interface,
                     serveur MCP et analyses — et ouvre le navigateur sur
                     <code>http://127.0.0.1:8765</code>. S'il tourne déjà, il ouvre simplement
                     l'interface. Pour l'arrêter, fermez la fenêtre.
                   </span>
-                  <span class="en-only">
+                  <span class="fr-only mac-only">
+                    Double-cliquez sur <code>run.command</code>. Il lance l'application — interface,
+                    serveur MCP et analyses — et ouvre le navigateur sur
+                    <code>http://127.0.0.1:8765</code>. S'il tourne déjà, il ouvre simplement
+                    l'interface. Pour l'arrêter, fermez la fenêtre du Terminal (ou Ctrl+C).
+                  </span>
+                  <span class="en-only win-only">
                     Double-click <code>run.bat</code>. It starts the application — interface, MCP
                     server and analyses — and opens the browser on
                     <code>http://127.0.0.1:8765</code>. If it is already running, it simply opens
                     the interface. To stop it, close the window.
                   </span>
+                  <span class="en-only mac-only">
+                    Double-click <code>run.command</code>. It starts the application — interface,
+                    MCP server and analyses — and opens the browser on
+                    <code>http://127.0.0.1:8765</code>. If it is already running, it simply opens
+                    the interface. To stop it, close the Terminal window (or press Ctrl+C).
+                  </span>
                 </p>
                 <p>
-                  <span class="fr-only"
+                  <span class="fr-only win-only"
                     ><code>run.bat build</code> reconstruit d'abord l'interface, après une mise à
                     jour.</span
                   >
-                  <span class="en-only"
+                  <span class="fr-only mac-only"
+                    ><code>run.command build</code> reconstruit d'abord l'interface, après une mise
+                    à jour.</span
+                  >
+                  <span class="en-only win-only"
                     ><code>run.bat build</code> rebuilds the interface first, after an update.</span
+                  >
+                  <span class="en-only mac-only"
+                    ><code>run.command build</code> rebuilds the interface first, after an
+                    update.</span
                   >
                 </p>
               </div>
@@ -2849,16 +3015,24 @@
                   ><span class="en-only">The command line</span>
                 </h4>
                 <p>
-                  <span class="fr-only">
+                  <span class="fr-only win-only">
                     Les commandes de l'application — diagnostic, modèles, jeton d'accès — se lancent
                     dans PowerShell, depuis son dossier, par <code>uv</code>&nbsp;: le Contrôle
                     intelligent des applications de Windows (Smart App Control) peut bloquer son
                     lanceur <code>vfe.exe</code>.
                   </span>
-                  <span class="en-only">
+                  <span class="fr-only mac-only">
+                    Les commandes de l'application — diagnostic, modèles, jeton d'accès — se lancent
+                    dans le Terminal, depuis son dossier, par <code>uv</code>.
+                  </span>
+                  <span class="en-only win-only">
                     The application's commands — diagnostic, models, access token — are run in
                     PowerShell, from its folder, through <code>uv</code>: Windows Smart App Control
                     can block its <code>vfe.exe</code> launcher.
+                  </span>
+                  <span class="en-only mac-only">
+                    The application's commands — diagnostic, models, access token — are run in the
+                    Terminal, from its folder, through <code>uv</code>.
                   </span>
                 </p>
                 <p>
@@ -3285,7 +3459,7 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
             </h3>
             <div class="block-body">
               <p>
-                <span class="fr-only">
+                <span class="fr-only win-only">
                   Rien de tout cela n'est nécessaire pour se servir de l'application. Les tâches de
                   développement passent par <a href="https://just.systems">just</a> (<code
                     >winget install Casey.Just</code
@@ -3293,12 +3467,26 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                   facultatif&nbsp;: chaque recette du <code>justfile</code> se lance aussi à la main
                   si Smart App Control bloque <code>just.exe</code>.
                 </span>
-                <span class="en-only">
+                <span class="fr-only mac-only">
+                  Rien de tout cela n'est nécessaire pour se servir de l'application. Les tâches de
+                  développement passent par <a href="https://just.systems">just</a> (<code
+                    >brew install just</code
+                  >), avec <code>pnpm</code> pour l'interface. <code>just</code> est
+                  facultatif&nbsp;: chaque recette du <code>justfile</code> se lance aussi à la
+                  main.
+                </span>
+                <span class="en-only win-only">
                   None of this is needed to use the application. The development tasks go through
                   <a href="https://just.systems">just</a> (<code>winget install Casey.Just</code>),
                   with <code>pnpm</code> for the interface. <code>just</code> is optional: every
                   recipe of the <code>justfile</code> can also be run by hand if Smart App Control
                   blocks <code>just.exe</code>.
+                </span>
+                <span class="en-only mac-only">
+                  None of this is needed to use the application. The development tasks go through
+                  <a href="https://just.systems">just</a> (<code>brew install just</code>), with
+                  <code>pnpm</code> for the interface. <code>just</code> is optional: every recipe
+                  of the <code>justfile</code> can also be run by hand.
                 </span>
               </p>
             </div>
@@ -3982,14 +4170,18 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </p>
               <p>
                 <span class="fr-only">
-                  Sur une RTX&nbsp;3060 de 12&nbsp;Go, comptez une quinzaine de secondes pour un
-                  plan de dix secondes, et de deux à six minutes pour une vidéo de dix minutes riche
-                  en parole et en texte. Deux vidéos sont traitées de front.
+                  Sur un PC avec une carte RTX&nbsp;3060 de 12&nbsp;Go, comptez une quinzaine de
+                  secondes pour un plan de dix secondes, et de deux à six minutes pour une vidéo de
+                  dix minutes riche en parole et en texte. Sur un Mac, le temps dépend de la puce et
+                  de la mémoire&nbsp;: la page <a href="#banc-essai">Banc d'essai</a> mesure celui
+                  du modèle de vision. Deux vidéos sont traitées de front.
                 </span>
                 <span class="en-only">
-                  On a 12&nbsp;GB RTX&nbsp;3060, expect around fifteen seconds for a ten-second
-                  clip, and two to six minutes for a ten-minute video dense in speech and text. Two
-                  videos are processed at a time.
+                  On a PC with a 12&nbsp;GB RTX&nbsp;3060 card, expect around fifteen seconds for a
+                  ten-second clip, and two to six minutes for a ten-minute video dense in speech and
+                  text. On a Mac, the time depends on the chip and the memory: the
+                  <a href="#banc-essai">Model bench</a> page measures the vision model's. Two videos
+                  are processed at a time.
                 </span>
               </p>
             </div>
@@ -5978,8 +6170,8 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                   <strong>jeton d'accès</strong>, qu'on peut afficher, copier et renouveler&nbsp;;
                   des <strong>configurations prêtes à copier</strong> pour six clients&nbsp;; une
                   section <strong>DaVinci&nbsp;Resolve</strong> qui détecte
-                  <code>ResolveMCP.exe</code> et donne la commande pour le brancher&nbsp;; et la
-                  carte <strong>Outils Resolve pour l'assistant</strong>, dont la case (décochée par
+                  <code>ResolveMCP</code> et donne la commande pour le brancher&nbsp;; et la carte
+                  <strong>Outils Resolve pour l'assistant</strong>, dont la case (décochée par
                   défaut) laisse l'assistant piloter Resolve par l'application.
                 </span>
                 <span class="en-only">
@@ -5988,7 +6180,7 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                   <strong>access token</strong>, which can be shown, copied and rotated;
                   <strong>ready-to-copy configurations</strong> for six clients; a
                   <strong>DaVinci&nbsp;Resolve</strong> section that detects
-                  <code>ResolveMCP.exe</code> and gives the command to plug it in; and the
+                  <code>ResolveMCP</code> and gives the command to plug it in; and the
                   <strong>Resolve tools for the assistant</strong> card, whose box (off by default)
                   lets the assistant drive Resolve through the application.
                 </span>
@@ -6005,7 +6197,7 @@ claude mcp add --scope user --transport http vfe-vision http://127.0.0.1:8765/mc
 claude mcp add --scope user --transport http vfe-vision http://100.x.y.z:8765/mcp --header "Authorization: Bearer <span class="fr-only">&lt;JETON&gt;</span><span class="en-only">&lt;TOKEN&gt;</span>"
 
 <span class="fr-only"># Le serveur de DaVinci Resolve Studio, en stdio</span><span class="en-only"># DaVinci Resolve Studio's own server, over stdio</span>
-claude mcp add --scope user davinci-resolve -- "C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolveMCP.exe"</code></pre>
+<span class="win-only">claude mcp add --scope user davinci-resolve -- "C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolveMCP.exe"</span><span class="mac-only">claude mcp add --scope user davinci-resolve -- '/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/ResolveMCP'</span></code></pre>
             <div class="shots">
               <figure class="shot">
                 <a
@@ -6179,15 +6371,18 @@ claude mcp add --scope user davinci-resolve -- "C:\Program Files\Blackmagic Desi
                     L'application <strong>lit</strong> le projet ouvert dans Resolve&nbsp;; elle ne
                     le modifie pas. Les timelines qu'elle crée sont des ajouts, jamais des
                     remplacements, et elle n'enregistre jamais le projet&nbsp;: c'est vous qui
-                    faites Ctrl+S si vous gardez le montage. Sans la case, l'assistant fait les
-                    mêmes étapes par le serveur de Resolve, dans une copie de votre timeline.
+                    faites <span class="win-only">Ctrl+S</span
+                    ><span class="mac-only">Cmd+S</span> si vous gardez le montage. Sans la case,
+                    l'assistant fait les mêmes étapes par le serveur de Resolve, dans une copie de
+                    votre timeline.
                   </span>
                   <span class="en-only">
                     The application <strong>reads</strong> the project open in Resolve; it does not
                     change it. The timelines it creates are additions, never replacements, and it
-                    never saves the project: you press Ctrl+S if you keep the edit. Without the box,
-                    the assistant goes through the same steps with Resolve's own server, in a copy
-                    of your timeline.
+                    never saves the project: you press <span class="win-only">Ctrl+S</span
+                    ><span class="mac-only">Cmd+S</span> if you keep the edit. Without the box, the
+                    assistant goes through the same steps with Resolve's own server, in a copy of
+                    your timeline.
                   </span>
                 </p>
               </div>
@@ -6289,12 +6484,20 @@ claude mcp add --scope user davinci-resolve -- "C:\Program Files\Blackmagic Desi
                     >
                   </li>
                   <li>
-                    <span class="fr-only"
+                    <span class="fr-only win-only"
                       >Pour les petits scripts du skill&nbsp;: Python&nbsp;3 et Windows
                       PowerShell</span
                     >
-                    <span class="en-only"
+                    <span class="fr-only mac-only"
+                      >Pour les petits scripts du skill&nbsp;: Python&nbsp;3 et
+                      <code>osascript</code>, fourni avec macOS</span
+                    >
+                    <span class="en-only win-only"
                       >For the skill's small scripts: Python&nbsp;3 and Windows PowerShell</span
+                    >
+                    <span class="en-only mac-only"
+                      >For the skill's small scripts: Python&nbsp;3 and <code>osascript</code>, part
+                      of macOS</span
                     >
                   </li>
                 </ul>
@@ -7081,6 +7284,48 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
           });
         });
         setLang(html.classList.contains("lang-en") ? "en" : "fr");
+
+        // ── System ─────────────────────────────────────────────────────────
+        // Windows or Mac: the installation, the launcher and a few shortcuts change. A choice
+        // made here is kept; otherwise, served by the application, the page takes the system of
+        // its computer (/system/health).
+        var osButtons = document.querySelectorAll(".switch button[data-os]");
+        var osChosen = false;
+
+        function setOs(os) {
+          html.classList.remove("os-windows", "os-macos");
+          html.classList.add("os-" + os);
+          osButtons.forEach(function (b) {
+            b.setAttribute("aria-pressed", String(b.dataset.os === os));
+          });
+        }
+
+        osButtons.forEach(function (b) {
+          b.addEventListener("click", function () {
+            osChosen = true;
+            setOs(b.dataset.os);
+            remember("vfe-help-os", b.dataset.os);
+          });
+        });
+        setOs(html.classList.contains("os-macos") ? "macos" : "windows");
+        try {
+          osChosen = localStorage.getItem("vfe-help-os") !== null;
+        } catch (e) {
+          /* nothing kept: the application's system, if it answers, decides */
+        }
+        if (!osChosen && window.fetch && location.pathname.indexOf("/help/") === 0) {
+          fetch("/api/v1/system/health", { credentials: "same-origin" })
+            .then(function (response) {
+              return response.ok ? response.json() : null;
+            })
+            .then(function (health) {
+              var os = health && health.platform;
+              if (!osChosen && (os === "windows" || os === "macos")) setOs(os);
+            })
+            .catch(function () {
+              /* page read outside the application: the guessed system stays */
+            });
+        }
 
         // ── Theme ──────────────────────────────────────────────────────────
         document.getElementById("theme-btn").addEventListener("click", function () {

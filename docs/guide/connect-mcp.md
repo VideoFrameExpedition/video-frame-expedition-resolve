@@ -5,8 +5,8 @@
 Video Frame Expedition for DaVinci Resolve contains an **MCP server**: an assistant (Claude
 Code, Claude Desktop, Cursor, VS Code, Codex…) can consult your analysed videos there. It looks
 for shots (place, light, weather, subjects), reads what is said, looks at frames and prepares an
-edit in DaVinci Resolve. The server answers as long as the application is running (`run.bat`); it
-never starts it.
+edit in DaVinci Resolve. The server answers as long as the application is running (`run.bat` on
+Windows, `run.command` on a Mac); it never starts it.
 
 The **Connections** page of the interface (left-hand menu) gives everything below **for your
 computer**: addresses, token, and configurations ready to copy with the right paths.
@@ -41,8 +41,8 @@ and holds two things:
 
 It needs Video Frame Expedition 1.1.1 or later, running. To edit: DaVinci Resolve Studio 21.1 or
 later, with the "Resolve tools for the assistant" box (Connections page) or Resolve's own server
-plugged into Claude Code (below). The skill's small scripts need Python 3 and Windows
-PowerShell.
+plugged into Claude Code (below). The skill's small scripts need Python 3, with Windows
+PowerShell on Windows or `osascript` (part of macOS) on a Mac.
 
 In Claude Code, install it, then confirm its settings:
 
@@ -92,14 +92,17 @@ Cursor, VS Code, Codex) plug in as below, without the skill.
 Claude Desktop's configuration file only launches **local commands** ("stdio" servers). Video
 Frame Expedition therefore provides a bridge, `vfe mcp-stdio`, which relays the messages to the
 application already running, without ever starting it: if it is not running, Claude Desktop
-receives a clear error ("Video Frame Expedition ne répond pas… lancez l'application (run.bat)",
-that is, "Video Frame Expedition is not responding… start the application (run.bat)").
+receives a clear error ("Video Frame Expedition ne répond pas… lancez l'application (run.command
+sur Mac, run.bat sous Windows)", that is, "Video Frame Expedition is not responding… start the
+application").
 
 File to edit:
 
-- Microsoft Store installation (MSIX):
+- Windows, Microsoft Store installation (MSIX):
   `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`
-- installation from claude.ai: `%APPDATA%\Claude\claude_desktop_config.json`
+- Windows, installation from claude.ai: `%APPDATA%\Claude\claude_desktop_config.json`
+- Mac: `~/Library/Application Support/Claude/claude_desktop_config.json` (in the Finder: Go ›
+  Go to Folder, then paste this path without the file name)
 
 Add the `vfe-vision` entry under `mcpServers`, **keeping the rest of the file** (it already
 contains your preferences). The program is the application's Python, as an absolute path: Claude
@@ -109,15 +112,16 @@ Desktop then needs neither the `PATH` nor a particular working directory.
 {
   "mcpServers": {
     "vfe-vision": {
-      "command": "C:\\…\\video-frame-expedition-resolve-windows\\backend\\.venv\\Scripts\\python.exe",
+      "command": "C:\\…\\video-frame-expedition-resolve\\backend\\.venv\\Scripts\\python.exe",
       "args": ["-m", "vfe_vision", "mcp-stdio", "--url", "http://127.0.0.1:8765/mcp"]
     }
   }
 }
 ```
 
-The Connections page shows this block with the exact path. Then quit Claude Desktop
-**completely** (icon near the clock, "Quit") and start it again. Its server log is in the `logs`
+On a Mac, the application's Python is `…/backend/.venv/bin/python`. The Connections page shows
+this block with the exact path. Then quit Claude Desktop **completely** (on Windows, icon near
+the clock, "Quit"; on a Mac, Cmd+Q) and start it again. Its server log is in the `logs`
 folder next to the configuration file (`mcp-server-vfe-vision.log`).
 
 Claude Desktop's "custom connectors" (remote URL) go through Anthropic's servers: they cannot
@@ -125,7 +129,8 @@ reach a local address or a Tailscale address. Use the bridge above.
 
 ### Cursor
 
-`%USERPROFILE%\.cursor\mcp.json` (or `.cursor/mcp.json` in a project):
+`%USERPROFILE%\.cursor\mcp.json` on Windows, `~/.cursor/mcp.json` on a Mac (or
+`.cursor/mcp.json` in a project):
 
 ```json
 { "mcpServers": { "vfe-vision": { "url": "http://127.0.0.1:8765/mcp" } } }
@@ -141,7 +146,7 @@ Command "MCP: Open User Configuration" (or `.vscode/mcp.json` in a project):
 
 ### OpenAI Codex CLI
 
-`%USERPROFILE%\.codex\config.toml`:
+`%USERPROFILE%\.codex\config.toml` on Windows, `~/.codex/config.toml` on a Mac:
 
 ```toml
 [mcp_servers.vfe-vision]
@@ -152,7 +157,7 @@ A version of Codex that does not take HTTP servers goes through the stdio bridge
 
 ```toml
 [mcp_servers.vfe-vision]
-command = 'C:\…\backend\.venv\Scripts\python.exe'
+command = 'C:\…\backend\.venv\Scripts\python.exe'  # on a Mac: '/Users/me/…/backend/.venv/bin/python'
 args = ["-m", "vfe_vision", "mcp-stdio", "--url", "http://127.0.0.1:8765/mcp"]
 ```
 
@@ -160,6 +165,7 @@ args = ["-m", "vfe_vision", "mcp-stdio", "--url", "http://127.0.0.1:8765/mcp"]
 
 - Streamable HTTP: `http://127.0.0.1:8765/mcp`.
 - stdio: `"<the application's Python>" -m vfe_vision mcp-stdio --url http://127.0.0.1:8765/mcp`
+  (on a Mac, in single quotes)
   (options: `--token`, or the `VFE_MCP_TOKEN` variable, for an application on another
   device). Standard output carries only the protocol; the log goes to standard error.
 
@@ -174,12 +180,14 @@ Video Frame Expedition then drive Resolve through the application's fixed script
 `build_timeline` builds a new timeline "… - vfe vN", `apply_markers` places the
 markers. The assistant sends only data, never code, and receives short results: it uses far
 fewer tokens than when it writes and rereads its own scripts.
-No existing timeline is modified and the project is not saved (Ctrl+S in Resolve if you keep the
-edit).
+No existing timeline is modified and the project is not saved (Ctrl+S, or Cmd+S on a Mac, in
+Resolve if you keep the edit).
 No other server needs to be plugged in.
 
-**The MCP of DaVinci Resolve Studio 21** (`C:\Program Files\Blackmagic Design\DaVinci
-Resolve\ResolveMCP.exe`, over stdio), for everything these four tools do not cover
+**The MCP of DaVinci Resolve Studio 21** (`ResolveMCP`, over stdio: on Windows,
+`C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolveMCP.exe`; on a Mac, in
+`/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/`; the Connections page
+shows where it is), for everything these four tools do not cover
 (cross dissolves, effects): the assistant writes its scripts there, and Video Frame Expedition
 gives it the shots (`find_clips`: paths, in and out points, timecodes). Plug both into the same
 assistant:
@@ -188,7 +196,14 @@ assistant:
 claude mcp add --scope user davinci-resolve -- "C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolveMCP.exe"
 ```
 
-For Claude Desktop, add under `mcpServers`:
+On a Mac:
+
+```sh
+claude mcp add --scope user davinci-resolve -- '/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/ResolveMCP'
+```
+
+For Claude Desktop, add under `mcpServers` (on a Mac, Resolve also provides the
+`DaVinciResolve.mcpb` extension, which a double-click installs in Claude Desktop):
 
 ```json
 "davinci-resolve": {
@@ -224,6 +239,11 @@ classed as "public", allow `fuscript.exe` and `Resolve.exe` (DaVinci Resolve's f
 network. This PC keeps DaVinci Resolve installed (without starting it): the application uses its
 scripting library to read the Mac's Resolve.
 
+The reverse works the same way: the application on a Mac reads and drives the Resolve of a
+Windows PC or of another Mac. The folders are then given from the Mac (for example
+`/Volumes/cats 2026` here and `D:\cats 2026` on the PC), and the Mac keeps DaVinci Resolve
+installed for its scripting library (`fusionscript.so`).
+
 For the subtitles, the share of the rushes must be **read and write**: the application writes
 the timeline's tracks next to its first video (`<timeline>_TIMELINE_EN.srt`), where Resolve reads
 them to lay them, and each video's subtitles next to it. On a read-only share, the timeline
@@ -237,17 +257,19 @@ phone open the interface and their assistants use the MCP.
 
 ### Turn it on
 
-1. Create (or add to) the `.env` file at the root of the repository, next to `run.bat`:
+1. Create (or add to) the `.env` file at the root of the repository, next to `run.bat` (or
+   `run.command`):
 
    ```ini
    VFE_TAILSCALE=true
    ```
 
-   For a single launch: `run.bat tailscale`. You can also give specific addresses:
+   For a single launch: `run.bat tailscale` (or `run.command tailscale`). You can also give
+   specific addresses:
    `VFE_EXTRA_HOSTS=100.64.12.34` (IP addresses only, separated by commas).
 
-2. Allow the port in Windows Firewall, **once**, in a PowerShell opened **as administrator**
-   (Windows classifies the tailnet as "Private"):
+2. **On Windows**, allow the port in the firewall, **once**, in a PowerShell opened **as
+   administrator** (Windows classifies the tailnet as "Private"):
 
    ```powershell
    New-NetFirewallRule -DisplayName "Video Frame Expedition (Tailscale)" -Direction Inbound -Protocol TCP -LocalPort 8765 -RemoteAddress 100.64.0.0/10 -Profile Private -Action Allow
@@ -258,6 +280,12 @@ phone open the interface and their assistants use the MCP.
    Python and you refused, a **block** rule for `python.exe` may exist (it wins over any
    allow rule): delete it in "Windows Defender Firewall with Advanced Security" → "Inbound
    Rules".
+
+   **On a Mac**, if macOS's firewall is on (System Settings › Network › Firewall), it asks
+   **once**, when the application starts listening, whether Python may accept incoming
+   connections: click "Allow". With "Block all incoming connections", your other devices do not
+   reach the application. If you once refused, change the answer in the firewall's Options, in
+   the list of applications.
 
 3. Restart the application. The console shows the addresses reachable from your devices, for
    example `http://100.64.12.34:8765` and `http://<machine>.<tailnet>.ts.net:8765` (MagicDNS name).
@@ -270,8 +298,9 @@ only, with a warning (console and Connections page); restart it once Tailscale i
 ### The token
 
 From another device, an **access token** is asked for. It is created at the first start with
-remote access, in the data folder (`%LOCALAPPDATA%\vfe-vision\api-token.txt`, readable by your
-Windows account only), unless `VFE_API_TOKEN` is set.
+remote access, in the data folder (`%LOCALAPPDATA%\vfe-vision\api-token.txt` on Windows,
+`~/Library/Application Support/vfe-vision/api-token.txt` on a Mac), readable by your account
+only, unless `VFE_API_TOKEN` is set.
 
 - `vfe token` prints it (the token alone on standard output); in full, from the
   application's folder: `uv run --frozen --no-dev --project backend python -m vfe_vision token`;
@@ -327,7 +356,7 @@ accounts.
 
 | Symptom | Likely cause |
 |---|---|
-| "Video Frame Expedition ne répond pas à …" (the application is not responding at …) | the application is not running (`run.bat`) |
+| "Video Frame Expedition ne répond pas à …" (the application is not responding at …) | the application is not running (`run.bat`, `run.command`) |
 | The page does not open from the phone | firewall rule missing, Tailscale disconnected on one of the two devices, or application started before Tailscale |
 | "Jeton d'API requis" (API token required) / 401 | token missing or changed (`vfe token`) |
 | "Trop d'essais" (too many attempts) / 429 | 10 wrong tokens: wait one minute |

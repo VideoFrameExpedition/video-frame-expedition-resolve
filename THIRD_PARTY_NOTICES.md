@@ -31,7 +31,7 @@ independent application: it is not published, endorsed or supported by Blackmagi
 |---|---|---|
 | YAMNet (Google, AudioSet) — tf2onnx conversion `zeropointnine/yamnet-onnx` | Apache-2.0 | Sounds and instruments |
 | CED-small (Xiaomi / mispeech, `mispeech/ced-small`, ONNX) | Apache-2.0 | Second opinion on the sounds heard |
-| cuBLAS 12.9 (NVIDIA, `cublasLt64_12.dll` and `cublas64_12.dll` taken unmodified from the `nvidia-cublas-cu12` 12.9.2.10 wheel on PyPI) | NVIDIA CUDA Toolkit EULA (redistributable component) | Whisper on the GPU when it is lent; downloaded only by `vfe models cuda-runtime` |
+| cuBLAS 12.9 (NVIDIA, `cublasLt64_12.dll` and `cublas64_12.dll` taken unmodified from the `nvidia-cublas-cu12` 12.9.2.10 wheel on PyPI) | NVIDIA CUDA Toolkit EULA (redistributable component) | Whisper on the GPU when it is lent (Windows with an NVIDIA card only); downloaded only by `vfe models cuda-runtime`, which refuses on macOS |
 | YuNet face detector 2023mar (OpenCV Zoo, `opencv/face_detection_yunet`) | MIT | Face positions and landmarks (never identities), for reframing |
 | PP-OCRv6 small detection and recognition (PaddlePaddle, ONNX) | Apache-2.0 | On-screen text (own pre/post-processing, no RapidOCR) |
 | Whisper large-v3-turbo, small, tiny (OpenAI; CTranslate2 conversions by dropbox-dash and SYSTRAN), run by faster-whisper and Silero VAD | MIT | Transcription |

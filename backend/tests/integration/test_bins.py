@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -155,13 +156,17 @@ def test_the_folder_dialog_dies_with_the_app(monkeypatch: pytest.MonkeyPatch) ->
     from vfe_vision.core.procs import ProcessResult
 
     seen: dict[str, Any] = {}
+    if sys.platform == "win32":
+        picked, expected = b"C:\\Videos\\Rushes", Path("C:/Videos/Rushes")
+    else:  # the Finder's POSIX path ends with a slash
+        picked, expected = b"/Volumes/Rushs/Rushes/\n", Path("/Volumes/Rushs/Rushes")
 
     def run(args: list[str], **kwargs: Any) -> ProcessResult:
         seen.update(kwargs)
-        return ProcessResult(0, b"C:\\Videos\\Rushes", b"", 0.1)
+        return ProcessResult(0, picked, b"", 0.1)
 
     monkeypatch.setattr(folder_picker, "run_process", run)
     token = CancelToken()
-    assert folder_picker.pick_folder("t", cancel=token) == Path("C:/Videos/Rushes")
+    assert folder_picker.pick_folder("t", cancel=token) == expected
     assert seen["cancel"] is token
     assert seen["job"] is folder_picker._app_job()  # the app's job: killed with it

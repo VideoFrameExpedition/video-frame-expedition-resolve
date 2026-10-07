@@ -27,6 +27,7 @@ from vfe_vision.api.schemas import (
 from vfe_vision.core.cancel import CancelToken
 from vfe_vision.core.config import Settings
 from vfe_vision.core.errors import ConflictError, NotFoundError
+from vfe_vision.core.paths import CASE_INSENSITIVE_PATHS
 from vfe_vision.db.models import (
     AudioStats,
     ContextPlace,
@@ -114,6 +115,7 @@ class TestScan:
         assert (video.id, video.status) == (video_id, VideoStatus.READY)
         assert video.rel_path == f"Jour 1/{video_file.name}"
 
+    @pytest.mark.skipif(not CASE_INSENSITIVE_PATHS, reason="names differing by case: two folders")
     def test_a_folder_renamed_by_its_case_keeps_one_spelling(
         self, db: Database, library_folder: Path
     ) -> None:

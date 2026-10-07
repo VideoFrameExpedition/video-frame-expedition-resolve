@@ -31,6 +31,7 @@ from vfe_vision.db.models import Job, LibraryRoot, StageRun, TimelineBin, Timeli
 from vfe_vision.db.preferences import update_preferences
 from vfe_vision.db.session import Database
 from vfe_vision.db.timeline_bins import resolve_links
+from vfe_vision.domain.clip_paths import HOST_STYLE
 from vfe_vision.domain.enums import JobKind, JobStatus, RootKind, StageStatus, VideoStatus
 from vfe_vision.domain.resolve_timeline import ClipKind, ResolveProjectRef
 from vfe_vision.jobs import queue, scan
@@ -40,6 +41,9 @@ from vfe_vision.jobs.sidecars import write_after as really_write
 from vfe_vision.jobs.worker import Worker
 from vfe_vision.services import analysis, library, timeline_bins, videos
 from vfe_vision.services.container import AppContainer
+
+# A clip path from a computer of the other system: a Mac's seen from a PC, a PC's from a Mac.
+FOREIGN = "/Volumes/rushs/c.mp4" if HOST_STYLE == "windows" else r"D:\rushs\c.mp4"
 
 
 class Sink:
@@ -297,15 +301,17 @@ def test_long_paths_and_shares_name_the_files_of_the_library(
     resolve.put(
         timeline("tl-1", "Montage"),
         [
-            clip("\\\\?\\" + str(local), 0, 4),
+            clip(("\\\\?\\" if HOST_STYLE == "windows" else "") + str(local), 0, 4),
             clip(r"\\?\UNC\nas-vfe-test\rushs\b.mp4", 4, 8),
-            clip("/Volumes/rushs/c.mp4", 8, 12),  # a path of another computer
+            clip(FOREIGN, 8, 12),  # a path of a computer of the other system
         ],
     )
     started = time.monotonic()
     seen = timeline_bins.preview(c, project_id=PROJECT.id, timeline_id="tl-1")
     assert time.monotonic() - started < 3  # the share is never asked
-    assert (seen.files, seen.in_library, seen.skipped.elsewhere) == (2, 2, 1)
+    # On a Mac, the PC's share and the path of the other system are not paths of this computer.
+    expected = (2, 2, 1) if HOST_STYLE == "windows" else (1, 1, 2)
+    assert (seen.files, seen.in_library, seen.skipped.elsewhere) == expected
 
 
 def test_an_unreachable_share_is_not_waited_for(

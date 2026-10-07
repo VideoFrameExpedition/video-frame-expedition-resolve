@@ -2,7 +2,7 @@
 
 The helpers and the fake-session pipeline need no model and run by default. The tests marked
 ``models`` load the real ONNX files from ``VFE_OCR_MODEL_DIR`` (default:
-``%LOCALAPPDATA%/vfe-vision/models/ocr/pp-ocrv6-small``, filled by ``vfe models ocr``) and are
+``<data folder>/models/ocr/pp-ocrv6-small``, filled by ``vfe models ocr``) and are
 skipped when a file is missing.
 """
 

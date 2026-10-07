@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import ipaddress
 import os
+import shutil
+import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal
@@ -17,11 +19,64 @@ from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 APP_NAME = "vfe-vision"
+# Where Homebrew and uv put their programs on a Mac: a Terminal has them in its PATH, an
+# application started from the Finder or at login may not.
+MACOS_TOOL_DIRS = ("/opt/homebrew/bin", "/usr/local/bin", "~/.local/bin")
+# Homebrew's ffmpeg-full: the build with zscale, which the HDR tone mapping needs. It is keg-only
+# (never linked into the PATH), so its own folder is searched first for FFmpeg's programs.
+FFMPEG_FULL_DIRS = ("/opt/homebrew/opt/ffmpeg-full/bin", "/usr/local/opt/ffmpeg-full/bin")
+FFMPEG_PROGRAMS = frozenset({"ffmpeg", "ffprobe"})
+TOOL_SETTINGS = ("ffmpeg_path", "ffprobe_path", "exiftool_path")
+
+
+Platform = Literal["windows", "macos", "linux"]
+
+
+def platform_name() -> Platform:
+    """The system the application runs on, as the interface names it."""
+    if sys.platform == "win32":
+        return "windows"
+    elif sys.platform == "darwin":
+        return "macos"
+    else:
+        return "linux"
 
 
 def default_data_dir() -> Path:
-    """Per-user data directory, e.g. ``%LOCALAPPDATA%\\vfe-vision`` on Windows."""
+    """Per-user data directory: ``%LOCALAPPDATA%\\vfe-vision`` on Windows,
+    ``~/Library/Application Support/vfe-vision`` on macOS."""
     return Path(user_data_dir(APP_NAME, appauthor=False, roaming=False))
+
+
+def find_tool(
+    name: str,
+    *,
+    places: tuple[str, ...] = MACOS_TOOL_DIRS,
+    ffmpeg_places: tuple[str, ...] = FFMPEG_FULL_DIRS,
+) -> str:
+    """``name`` as given when it is a path, or a program found in the PATH. On macOS, FFmpeg's
+    full build comes first (``FFMPEG_FULL_DIRS``), and a program missing from the PATH is looked
+    for in its usual folders (else the name, for a clear error later)."""
+    if sys.platform == "darwin":
+        if os.sep in name:
+            return name
+        if name in FFMPEG_PROGRAMS:
+            full = _executable_in(name, ffmpeg_places)
+            if full is not None:
+                return full
+        if shutil.which(name):
+            return name
+        return _executable_in(name, places) or name
+    else:
+        return name
+
+
+def _executable_in(name: str, places: tuple[str, ...]) -> str | None:
+    for place in places:
+        candidate = Path(place).expanduser() / name
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    return None
 
 
 def is_loopback(host: str) -> bool:
@@ -104,6 +159,12 @@ class Settings(BaseSettings):
         if isinstance(value, list | tuple):
             return list(dict.fromkeys(listen_address(str(item)) for item in value))
         return value
+
+    @model_validator(mode="after")
+    def _find_tools(self) -> Settings:
+        for name in TOOL_SETTINGS:
+            setattr(self, name, find_tool(getattr(self, name)))
+        return self
 
     @model_validator(mode="after")
     def _require_token_off_loopback(self) -> Settings:

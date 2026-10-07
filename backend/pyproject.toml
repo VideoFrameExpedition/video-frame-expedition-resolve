@@ -10,6 +10,7 @@ classifiers = [
     "Private :: Do Not Upload",
     "Programming Language :: Python :: 3.12",
     "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
 ]
 dependencies = [
     "alembic>=1.20.0",
@@ -80,6 +81,9 @@ ignore = [
     "PLC0415",  # lazy imports are deliberate (Windows-only ctypes, heavy ML libraries)
     "PTH100",   # os.path.abspath: normalise without resolving symlinks, unlike Path.resolve
     "ARG002",   # overridden methods do not always use every argument of the base signature
+    # Platform branches keep their else after a return: mypy then reads each system's branch
+    # with that system's library and sees no dead code (macOS, Linux and Windows alike).
+    "RET505", "RET506",
 ]
 # Note: the TC (type-checking imports) rules are not enabled: Pydantic and SQLAlchemy evaluate
 # annotations at runtime, so moving imports under TYPE_CHECKING would break the models.

@@ -31,6 +31,7 @@ export type SearchParams = NonNullable<paths["/api/v1/search"]["get"]["parameter
 
 export const queryKeys = {
   health: ["health"] as const,
+  platform: ["platform"] as const,
   roots: ["roots"] as const,
   folders: ["folders"] as const,
   videos: (filters: VideoFilters) => ["videos", filters] as const,
@@ -80,6 +81,16 @@ export function useHealth() {
     queryKey: queryKeys.health,
     queryFn: () => unwrap(api.GET("/api/v1/system/health")),
     refetchInterval: 30_000,
+  });
+}
+
+/** The system of the application's computer: it does not change while the page is open. */
+export function usePlatform() {
+  return useQuery({
+    queryKey: queryKeys.platform,
+    queryFn: () => unwrap(api.GET("/api/v1/system/health")),
+    select: (health) => health.platform,
+    staleTime: Infinity,
   });
 }
 
@@ -617,7 +628,7 @@ export function useRelinkVideos() {
   });
 }
 
-/** Open the Windows folder dialog on this computer (null: closed without choosing). */
+/** Open the desktop's folder dialog on this computer (null: closed without choosing). */
 export function usePickFolder() {
   return useMutation({
     mutationFn: () => unwrap(api.POST("/api/v1/system/pick-folder")),

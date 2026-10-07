@@ -11,7 +11,6 @@ analysed videos, as data for the fixed script (``adapters/resolve``), never as c
 
 from __future__ import annotations
 
-import sys
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
@@ -19,6 +18,7 @@ from typing import Any
 from vfe_vision import __version__
 from vfe_vision.adapters.resolve.script import SCRIPT_FORMAT, SCRIPT_VERSION, render_script
 from vfe_vision.core.errors import InvalidInputError, NotFoundError
+from vfe_vision.core.paths import CASE_INSENSITIVE_PATHS
 from vfe_vision.db.models import Video
 from vfe_vision.db.preferences import load_preferences
 from vfe_vision.domain.clip_paths import file_name
@@ -173,7 +173,7 @@ def payload_document(clips: list[ClipPayload], pairs: Sequence[FolderPair] = ())
         "version": SCRIPT_VERSION,
         "app_version": __version__,
         "prefix": PREFIX,
-        "case_insensitive": sys.platform == "win32",
+        "case_insensitive": CASE_INSENSITIVE_PATHS,
         "clips": [
             {
                 "video_id": clip.video.id,

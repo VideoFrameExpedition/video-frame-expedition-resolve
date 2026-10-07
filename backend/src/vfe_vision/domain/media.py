@@ -320,8 +320,9 @@ def parse_probe(
     )
 
 
-# What Chromium browsers (Edge, Chrome) play in <video> on Windows: codec -> pixel formats.
-# HEVC needs the GPU's decoder, present on every NVIDIA card since 2016.
+# What the browsers play in <video>: codec -> pixel formats. HEVC: Chromium on Windows needs
+# the GPU's decoder (every NVIDIA card since 2016); Safari and Chrome on a Mac decode it with the
+# media engine of the chip.
 WEB_VIDEO: dict[str, frozenset[str]] = {
     "h264": frozenset({"yuv420p", "yuvj420p"}),
     "hevc": frozenset({"yuv420p", "yuvj420p", "yuv420p10le"}),

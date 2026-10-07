@@ -52,9 +52,18 @@ BAD_VERSION = "version de donn\u00e9es non prise en charge par ce script"
 NO_PROJECT = "aucun projet ouvert dans DaVinci Resolve"
 
 
+try:  # accents in one spelling (a Mac may decompose them); absent from a stricter sandbox
+    import unicodedata
+except ImportError:  # pragma: no cover - Resolve's own interpreter
+    unicodedata = None
+
+
 def match_key(path, case_insensitive=True):
     """The comparison form of a path (same rule as ``vfe_vision.domain.clip_paths``)."""
-    text = str(path).strip().strip('"').replace("\\", "/")
+    text = str(path).strip().strip('"')
+    if unicodedata is not None:
+        text = unicodedata.normalize("NFC", text)
+    text = text.replace("\\", "/")
     if text[:8].lower() == "//?/unc/":
         text = "//" + text[8:]
     elif text[:4] in ("//?/", "//./"):

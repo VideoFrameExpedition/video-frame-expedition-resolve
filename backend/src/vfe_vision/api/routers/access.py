@@ -27,13 +27,19 @@ from vfe_vision.api.access import (
 )
 from vfe_vision.api.deps import Container
 from vfe_vision.api.schemas import ApiModel
-from vfe_vision.core.config import is_loopback
+from vfe_vision.core.config import Platform, is_loopback, platform_name
 from vfe_vision.core.errors import ConflictError
 
 router = APIRouter(prefix="/access", tags=["access"])
 
 CLAUDE_STORE_PACKAGE = "Claude_pzs8sxrjxfjjc"  # Claude Desktop from the Microsoft Store (MSIX)
 RESOLVE_MCP = Path("Blackmagic Design") / "DaVinci Resolve" / "ResolveMCP.exe"
+# Where DaVinci Resolve Studio 21 puts its MCP server on a Mac (the first one found is shown;
+# with none, the first one is shown as missing).
+RESOLVE_MCP_MACOS = (
+    Path("/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/ResolveMCP"),
+)
+RESOLVE_MCP_LINUX = (Path("/opt/resolve/bin/ResolveMCP"),)
 
 
 class SessionOut(ApiModel):
@@ -74,7 +80,8 @@ class StdioCommandOut(ApiModel):
 
 class ConfigFileOut(ApiModel):
     kind: Literal["classic", "store"] = Field(
-        description="classic: installer from claude.ai; store: Microsoft Store (MSIX)."
+        description="classic : installateur de claude.ai (le seul sur macOS et Linux) ; "
+        "store : Microsoft Store (MSIX)."
     )
     path: str
     installed: bool = Field(description="This installation of Claude Desktop is present.")
@@ -88,6 +95,10 @@ class ResolveMcpOut(ApiModel):
 
 class ConnectionsOut(ApiModel):
     viewer_local: bool = Field(description="Page viewed from the application's computer.")
+    platform: Platform = Field(
+        description="System of the application's computer: how its paths and command lines are "
+        "written (quoting, configuration files of the clients)."
+    )
     port: int
     local_url: str
     mcp_path: str = "/mcp"
@@ -176,6 +187,7 @@ def connections(request: Request, c: Container) -> ConnectionsOut:
     )
     return ConnectionsOut(
         viewer_local=local,
+        platform=platform_name(),
         port=config.port,
         local_url=f"http://{url_host(host)}:{config.port}",
         remote=RemoteOut(
@@ -198,13 +210,24 @@ def stdio_command() -> StdioCommandOut:
 
 
 def claude_desktop_configs() -> list[ConfigFileOut]:
-    appdata = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
-    local = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
-    package = local / "Packages" / CLAUDE_STORE_PACKAGE
-    places: list[tuple[Literal["classic", "store"], Path, Path]] = [
-        ("classic", appdata / "Claude", appdata / "Claude"),
-        ("store", package, package / "LocalCache" / "Roaming" / "Claude"),
-    ]
+    """Where Claude Desktop keeps its configuration on this system: (kind, a folder whose
+    presence means that installation exists, the configuration folder)."""
+    places: list[tuple[Literal["classic", "store"], Path, Path]]
+    if sys.platform == "win32":
+        appdata = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
+        local = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+        package = local / "Packages" / CLAUDE_STORE_PACKAGE
+        places = [
+            ("classic", appdata / "Claude", appdata / "Claude"),
+            ("store", package, package / "LocalCache" / "Roaming" / "Claude"),
+        ]
+    elif sys.platform == "darwin":
+        folder = Path.home() / "Library" / "Application Support" / "Claude"
+        app = Path("/Applications/Claude.app")
+        places = [("classic", app if app.is_dir() else folder, folder)]
+    else:
+        folder = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "Claude"
+        places = [("classic", folder, folder)]
     return [
         ConfigFileOut(
             kind=kind,
@@ -217,5 +240,12 @@ def claude_desktop_configs() -> list[ConfigFileOut]:
 
 
 def resolve_mcp() -> ResolveMcpOut:
-    path = Path(os.environ.get("PROGRAMFILES", r"C:\Program Files")) / RESOLVE_MCP
+    """DaVinci Resolve Studio's own MCP server on this computer."""
+    if sys.platform == "win32":
+        places = (Path(os.environ.get("PROGRAMFILES", r"C:\Program Files")) / RESOLVE_MCP,)
+    elif sys.platform == "darwin":
+        places = RESOLVE_MCP_MACOS
+    else:
+        places = RESOLVE_MCP_LINUX
+    path = next((place for place in places if place.is_file()), places[0])
     return ResolveMcpOut(path=str(path), installed=path.is_file())

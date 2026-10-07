@@ -5,8 +5,8 @@
 Video Frame Expedition for DaVinci Resolve contient un **serveur MCP** : un assistant (Claude
 Code, Claude Desktop, Cursor, VS Code, Codex…) peut y consulter vos vidéos analysées. Il cherche
 des plans (lieu, lumière, météo, sujets), lit ce qui est dit, regarde des images et prépare un
-montage dans DaVinci Resolve. Le serveur répond tant que l'application tourne (`run.bat`) ; il ne
-la démarre jamais.
+montage dans DaVinci Resolve. Le serveur répond tant que l'application tourne (`run.bat` sous
+Windows, `run.command` sur un Mac) ; il ne la démarre jamais.
 
 La page **Connexions** de l'interface (menu de gauche) donne tout ce qui suit **pour votre
 ordinateur** : adresses, jeton, et configurations prêtes à copier avec les bons chemins.
@@ -42,7 +42,8 @@ et contient deux choses :
 Il demande Video Frame Expedition 1.1.1 ou plus récente, lancée. Pour monter : DaVinci Resolve
 Studio 21.1 ou plus récent, avec la case « Outils Resolve pour l'assistant » (page Connexions)
 ou le serveur de Resolve branché sur Claude Code (plus bas). Les petits scripts du skill
-demandent Python 3 et Windows PowerShell.
+demandent Python 3, avec Windows PowerShell sous Windows ou `osascript` (fourni avec macOS) sur
+un Mac.
 
 Dans Claude Code, installez-le, puis confirmez ses réglages :
 
@@ -95,13 +96,15 @@ Le fichier de configuration de Claude Desktop ne lance que des **commandes local
 « stdio »). Video Frame Expedition fournit donc un pont, `vfe mcp-stdio`, qui relaie les
 messages vers l'application déjà lancée, sans jamais la démarrer : si elle ne tourne pas, Claude
 Desktop reçoit une erreur claire (« Video Frame Expedition ne répond pas… lancez l'application
-(run.bat) »).
+(run.command sur Mac, run.bat sous Windows) »).
 
 Fichier à modifier :
 
-- installation Microsoft Store (MSIX) :
+- Windows, installation Microsoft Store (MSIX) :
   `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`
-- installation depuis claude.ai : `%APPDATA%\Claude\claude_desktop_config.json`
+- Windows, installation depuis claude.ai : `%APPDATA%\Claude\claude_desktop_config.json`
+- Mac : `~/Library/Application Support/Claude/claude_desktop_config.json` (dans le Finder :
+  Aller › Aller au dossier, puis collez ce chemin sans le nom du fichier)
 
 Ajoutez l'entrée `vfe-vision` sous `mcpServers`, **en gardant le reste du fichier** (il contient
 déjà vos préférences). Le programme est le Python de l'application, en chemin absolu : Claude
@@ -111,15 +114,17 @@ Desktop n'a alors besoin ni du `PATH` ni d'un dossier de travail particulier.
 {
   "mcpServers": {
     "vfe-vision": {
-      "command": "C:\\…\\video-frame-expedition-resolve-windows\\backend\\.venv\\Scripts\\python.exe",
+      "command": "C:\\…\\video-frame-expedition-resolve\\backend\\.venv\\Scripts\\python.exe",
       "args": ["-m", "vfe_vision", "mcp-stdio", "--url", "http://127.0.0.1:8765/mcp"]
     }
   }
 }
 ```
 
-La page Connexions affiche ce bloc avec le chemin exact. Quittez ensuite **complètement** Claude
-Desktop (icône près de l'horloge, « Quitter ») et relancez-le. Son journal du serveur se trouve
+Sur un Mac, le Python de l'application est `…/backend/.venv/bin/python`. La page Connexions
+affiche ce bloc avec le chemin exact. Quittez ensuite **complètement** Claude Desktop (sous
+Windows, icône près de l'horloge, « Quitter » ; sur un Mac, Cmd+Q) et relancez-le. Son journal du
+serveur se trouve
 dans le dossier `logs` à côté du fichier de configuration (`mcp-server-vfe-vision.log`).
 
 Les « connecteurs personnalisés » (URL distante) de Claude Desktop passent par les serveurs
@@ -128,7 +133,8 @@ pont ci-dessus.
 
 ### Cursor
 
-`%USERPROFILE%\.cursor\mcp.json` (ou `.cursor/mcp.json` dans un projet) :
+`%USERPROFILE%\.cursor\mcp.json` sous Windows, `~/.cursor/mcp.json` sur un Mac (ou
+`.cursor/mcp.json` dans un projet) :
 
 ```json
 { "mcpServers": { "vfe-vision": { "url": "http://127.0.0.1:8765/mcp" } } }
@@ -144,7 +150,7 @@ Commande « MCP: Open User Configuration » (ou `.vscode/mcp.json` dans un proje
 
 ### OpenAI Codex CLI
 
-`%USERPROFILE%\.codex\config.toml` :
+`%USERPROFILE%\.codex\config.toml` sous Windows, `~/.codex/config.toml` sur un Mac :
 
 ```toml
 [mcp_servers.vfe-vision]
@@ -155,7 +161,7 @@ Une version de Codex qui ne prend pas les serveurs HTTP passe par le pont stdio 
 
 ```toml
 [mcp_servers.vfe-vision]
-command = 'C:\…\backend\.venv\Scripts\python.exe'
+command = 'C:\…\backend\.venv\Scripts\python.exe'  # sur un Mac : '/Users/me/…/backend/.venv/bin/python'
 args = ["-m", "vfe_vision", "mcp-stdio", "--url", "http://127.0.0.1:8765/mcp"]
 ```
 
@@ -163,6 +169,7 @@ args = ["-m", "vfe_vision", "mcp-stdio", "--url", "http://127.0.0.1:8765/mcp"]
 
 - HTTP « streamable » : `http://127.0.0.1:8765/mcp`.
 - stdio : `"<python de l'application>" -m vfe_vision mcp-stdio --url http://127.0.0.1:8765/mcp`
+  (sur un Mac, entre guillemets simples)
   (options : `--token`, ou la variable `VFE_MCP_TOKEN`, pour une application sur un autre
   appareil). La sortie standard ne porte que le protocole ; le journal va sur la sortie d'erreur.
 
@@ -177,12 +184,14 @@ MCP de Video Frame Expedition pilotent alors Resolve par les scripts figés de l
 `build_timeline` construit une timeline neuve « … - vfe vN », `apply_markers` pose les
 marqueurs. L'assistant n'envoie que des données, jamais de code, et reçoit des résultats
 courts : il consomme bien moins de tokens qu'en écrivant et en relisant ses propres scripts.
-Aucune timeline existante n'est modifiée et le projet n'est pas enregistré (Ctrl+S dans Resolve
-si vous gardez le montage).
+Aucune timeline existante n'est modifiée et le projet n'est pas enregistré (Ctrl+S, ou Cmd+S sur
+un Mac, dans Resolve si vous gardez le montage).
 Aucun autre serveur n'est à brancher.
 
-**Le MCP de DaVinci Resolve Studio 21** (`C:\Program Files\Blackmagic Design\DaVinci
-Resolve\ResolveMCP.exe`, en stdio), pour tout ce que ces quatre outils ne couvrent pas
+**Le MCP de DaVinci Resolve Studio 21** (`ResolveMCP`, en stdio : sous Windows,
+`C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolveMCP.exe` ; sur un Mac, dans
+`/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/` ; la page Connexions
+montre où il se trouve), pour tout ce que ces quatre outils ne couvrent pas
 (fondus enchaînés, effets) : l'assistant y écrit ses scripts, et Video Frame Expedition lui fournit
 les plans (`find_clips` : chemins, points d'entrée et de sortie, timecodes). Branchez les deux au
 même assistant :
@@ -191,7 +200,14 @@ même assistant :
 claude mcp add --scope user davinci-resolve -- "C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolveMCP.exe"
 ```
 
-Pour Claude Desktop, ajoutez sous `mcpServers` :
+Sur un Mac :
+
+```sh
+claude mcp add --scope user davinci-resolve -- '/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/ResolveMCP'
+```
+
+Pour Claude Desktop, ajoutez sous `mcpServers` (sur un Mac, Resolve fournit aussi l'extension
+`DaVinciResolve.mcpb`, qu'un double-clic installe dans Claude Desktop) :
 
 ```json
 "davinci-resolve": {
@@ -227,6 +243,11 @@ réseau « privé » : sur un réseau classé « public », autorisez `fuscript.
 (dossier de DaVinci Resolve) pour ce réseau. Ce PC garde DaVinci Resolve installé (sans le
 lancer) : l'application utilise sa bibliothèque de scripts pour lire le Resolve du Mac.
 
+L'inverse marche de la même façon : l'application sur un Mac lit et pilote le Resolve d'un PC
+Windows ou d'un autre Mac. Les dossiers se donnent alors depuis le Mac (par exemple
+`/Volumes/cats 2026` ici et `D:\cats 2026` sur le PC), et le Mac garde DaVinci Resolve installé
+pour sa bibliothèque de scripts (`fusionscript.so`).
+
 Pour les sous-titres, le partage des rushs doit être **en lecture et écriture** : l'application
 écrit les pistes de la timeline à côté de sa première vidéo (`<timeline>_TIMELINE_FR.srt`), où
 Resolve les lit pour les poser, et les sous-titres de chaque vidéo à côté d'elle. Sur un partage
@@ -240,17 +261,19 @@ votre téléphone ouvrent l'interface et que leurs assistants utilisent le MCP.
 
 ### Activer
 
-1. Créez (ou complétez) le fichier `.env` à la racine du dépôt, à côté de `run.bat` :
+1. Créez (ou complétez) le fichier `.env` à la racine du dépôt, à côté de `run.bat` (ou de
+   `run.command`) :
 
    ```ini
    VFE_TAILSCALE=true
    ```
 
-   Pour un seul lancement : `run.bat tailscale`. On peut aussi donner des adresses précises :
+   Pour un seul lancement : `run.bat tailscale` (ou `run.command tailscale`). On peut aussi
+   donner des adresses précises :
    `VFE_EXTRA_HOSTS=100.64.12.34` (adresses IP uniquement, séparées par des virgules).
 
-2. Autorisez le port dans le pare-feu Windows, **une fois**, dans un PowerShell ouvert **en tant
-   qu'administrateur** (le tailnet est classé « Privé » par Windows) :
+2. **Sous Windows**, autorisez le port dans le pare-feu, **une fois**, dans un PowerShell ouvert
+   **en tant qu'administrateur** (le tailnet est classé « Privé » par Windows) :
 
    ```powershell
    New-NetFirewallRule -DisplayName "Video Frame Expedition (Tailscale)" -Direction Inbound -Protocol TCP -LocalPort 8765 -RemoteAddress 100.64.0.0/10 -Profile Private -Action Allow
@@ -261,6 +284,12 @@ votre téléphone ouvrent l'interface et que leurs assistants utilisent le MCP.
    d'autoriser Python et que vous avez refusé, une règle **de blocage** pour `python.exe` existe
    peut-être (elle l'emporte sur toute autorisation) : supprimez-la dans « Pare-feu Windows
    Defender avec fonctions avancées de sécurité » → « Règles de trafic entrant ».
+
+   **Sur un Mac**, si le coupe-feu de macOS est activé (Réglages Système › Réseau › Coupe-feu), il
+   demande **une fois**, quand l'application se met à écouter, si Python peut accepter les
+   connexions entrantes : cliquez sur « Autoriser ». Avec « Bloquer toutes les connexions
+   entrantes », vos autres appareils ne joignent pas l'application. Si vous avez refusé un jour,
+   changez la réponse dans les Options du coupe-feu, dans la liste des applications.
 
 3. Relancez l'application. La console affiche les adresses joignables depuis vos appareils, par
    exemple `http://100.64.12.34:8765` et `http://<machine>.<tailnet>.ts.net:8765` (nom MagicDNS).
@@ -274,8 +303,9 @@ Tailscale connecté.
 ### Le jeton
 
 Depuis un autre appareil, un **jeton d'accès** est demandé. Il est créé au premier démarrage avec
-l'accès à distance, dans le dossier de données (`%LOCALAPPDATA%\vfe-vision\api-token.txt`,
-lisible par votre compte Windows seulement), à moins que `VFE_API_TOKEN` ne soit défini.
+l'accès à distance, dans le dossier de données (`%LOCALAPPDATA%\vfe-vision\api-token.txt` sous
+Windows, `~/Library/Application Support/vfe-vision/api-token.txt` sur un Mac), lisible par votre
+compte seulement, à moins que `VFE_API_TOKEN` ne soit défini.
 
 - `vfe token` l'affiche (le jeton seul sur la sortie standard) ; en entier, depuis le dossier
   de l'application : `uv run --frozen --no-dev --project backend python -m vfe_vision token` ;
@@ -331,7 +361,7 @@ plus présenter le jeton. N'ajoutez au tailnet que des appareils de confiance, e
 
 | Symptôme | Cause probable |
 |---|---|
-| « Video Frame Expedition ne répond pas à … » | l'application n'est pas lancée (`run.bat`) |
+| « Video Frame Expedition ne répond pas à … » | l'application n'est pas lancée (`run.bat`, `run.command`) |
 | La page ne s'ouvre pas depuis le téléphone | règle de pare-feu absente, Tailscale déconnecté sur l'un des deux appareils, ou application lancée avant Tailscale |
 | « Jeton d'API requis » / 401 | jeton absent ou changé (`vfe token`) |
 | « Trop d'essais » / 429 | 10 mauvais jetons : attendre une minute |

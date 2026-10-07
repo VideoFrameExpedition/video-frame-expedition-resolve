@@ -20,7 +20,7 @@ from vfe_vision.core.errors import (
     PathNotAllowedError,
     VfeError,
 )
-from vfe_vision.core.paths import is_video_file
+from vfe_vision.core.paths import EXAMPLE_FOLDER, is_video_file
 from vfe_vision.db.models import (
     FrameAnalysis,
     Job,
@@ -336,7 +336,7 @@ def analyze_folder(
     """
     folder = Path(path).expanduser()
     if not folder.is_absolute():
-        raise InvalidInputError(r"Indiquez un chemin absolu, par exemple D:\Vidéos\Tournage.")
+        raise InvalidInputError(f"Indiquez un chemin absolu, par exemple {EXAMPLE_FOLDER}.")
     missing = f"Ce dossier n'existe pas ou n'est pas accessible : {folder}"
     with c.db.read() as session:
         chosen = files_root_at(session, folder)

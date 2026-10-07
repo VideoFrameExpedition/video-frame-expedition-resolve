@@ -60,11 +60,9 @@ def test_any_other_import_error_stands(tmp_path: Path) -> None:
 
 
 def test_a_file_windows_loads_is_not_refused() -> None:
-    if sys.platform != "win32":
-        assert refused_by_policy(Path("anything.pyd")) is False
-        return
-    kernel32 = Path(r"C:\Windows\System32\kernel32.dll")
-    assert refused_by_policy(kernel32) is False
+    if sys.platform == "win32":
+        kernel32 = Path(r"C:\Windows\System32\kernel32.dll")
+        assert refused_by_policy(kernel32) is False
     assert refused_by_policy(Path("no-such-file.pyd")) is False  # absent is not refused
 
 

@@ -16,8 +16,12 @@ export interface Target {
 
 const json = (value: unknown): string => JSON.stringify(value, null, 2);
 
-/** A Windows command line argument, quoted when it needs to be. */
-export function shellArg(value: string): string {
+/** A command line argument, quoted when it needs to be: double quotes for Windows (cmd,
+ * PowerShell), single quotes for the shells of macOS and Linux (`posix`). */
+export function shellArg(value: string, posix = false): string {
+  if (posix) {
+    return /^[\w./:=@%+,-]+$/.test(value) ? value : `'${value.replace(/'/g, "'\\''")}'`;
+  }
   return /[\s"&|<>^]/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value;
 }
 
@@ -95,16 +99,20 @@ export function codexStdio(stdio: StdioCommand, url: string): string {
 }
 
 /** The bridge as a single command line (any client that launches a stdio server). */
-export function stdioCommandLine(stdio: StdioCommand, { url, token }: Target): string {
+export function stdioCommandLine(
+  stdio: StdioCommand,
+  { url, token }: Target,
+  posix = false,
+): string {
   const parts = [stdio.command, ...stdio.args, "--url", url];
   if (token) {
     parts.push("--token", token);
   }
-  return parts.map(shellArg).join(" ");
+  return parts.map((part) => shellArg(part, posix)).join(" ");
 }
 
-export function resolveClaudeCode(path: string): string {
-  return `claude mcp add --scope user ${RESOLVE_NAME} -- ${shellArg(path)}`;
+export function resolveClaudeCode(path: string, posix = false): string {
+  return `claude mcp add --scope user ${RESOLVE_NAME} -- ${shellArg(path, posix)}`;
 }
 
 export function resolveClaudeDesktop(path: string): string {

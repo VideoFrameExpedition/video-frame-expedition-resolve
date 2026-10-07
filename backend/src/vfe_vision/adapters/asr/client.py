@@ -1,11 +1,13 @@
-"""Parent side of the ASR child: spawn, Job Object handshake, events, cancel, watchdog.
+"""Parent side of the ASR child: spawn, process job handshake, events, cancel, watchdog.
 
 The child is started with the current interpreter (``sys.executable``, already allowed by Smart
-App Control), below-normal priority and no console window. The venv's ``python.exe`` is a uv
-launcher that starts the real interpreter as its own child, possibly before the launcher joins
-our Job Object: the child's ``hello`` gives the real pid, which is checked (``IsProcessInJob``)
-and attached before the request is sent. Closing the job then kills the launcher, the
-interpreter and ffmpeg in about 0.5 s, whatever state they are in.
+App Control), below-normal priority and no console window. On Windows, the venv's ``python.exe``
+is a uv launcher that starts the real interpreter as its own child, possibly before the launcher
+joins our Job Object: the child's ``hello`` gives the real pid, which is checked
+(``IsProcessInJob``) and attached before the request is sent. Closing the job then kills the
+launcher, the interpreter and ffmpeg in about 0.5 s, whatever state they are in. On macOS and
+Linux the child runs in its own process group, killed as one, and watches the job's lifeline
+(``core.procs``): it ends by itself, ffmpeg included, if this process dies.
 
 A killed child can exit with code 0: success requires the ``done`` event.
 
@@ -136,8 +138,9 @@ class SubprocessRecognizer:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                env=self._child_env(request),
+                env=job.child_env(self._child_env(request)),
                 creationflags=CREATE_NO_WINDOW | BELOW_NORMAL_PRIORITY_CLASS,
+                **job.popen_kwargs(),
             )
         except OSError as exc:
             job.close()

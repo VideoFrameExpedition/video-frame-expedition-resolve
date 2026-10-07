@@ -125,7 +125,7 @@ function ResolveLinkForm({ host, folders }: { host: string | null; folders: Fold
             <Input
               aria-label={t("connections.resolveLink.hereFolder", { n: index + 1 })}
               value={pair.here}
-              placeholder="D:\cats 2026"
+              placeholder={t("connections.resolveLink.herePlaceholder")}
               onChange={(event) => {
                 setPair(index, "here", event.target.value);
               }}
@@ -134,7 +134,7 @@ function ResolveLinkForm({ host, folders }: { host: string | null; folders: Fold
             <Input
               aria-label={t("connections.resolveLink.thereFolder", { n: index + 1 })}
               value={pair.there}
-              placeholder="/Volumes/cats 2026"
+              placeholder={t("connections.resolveLink.therePlaceholder")}
               onChange={(event) => {
                 setPair(index, "there", event.target.value);
               }}

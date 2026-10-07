@@ -3,8 +3,8 @@ a new timeline from an edit list, and the fixed markers script.
 
 Run by ``adapters/resolve/editor.py`` with the application's Python, in isolated mode::
 
-    python -I timeline_editor.py <fusionscript.dll> edit     < request (JSON, ASCII)
-    python -I timeline_editor.py <fusionscript.dll> markers  < {"script": <fixed script>}
+    python -I timeline_editor.py <fusionscript library> edit     < request (JSON, ASCII)
+    python -I timeline_editor.py <fusionscript library> markers  < {"script": <fixed script>}
 
 ``edit``: ``name``, ``folder`` (the media pool bin that receives files not in the pool yet),
 ``width``/``height`` (optional: the new timeline's size), ``items`` in order

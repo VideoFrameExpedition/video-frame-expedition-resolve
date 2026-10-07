@@ -72,10 +72,12 @@ def fingerprint(path: Path, size: int) -> str:
 def still_copying(path: Path, stat: os.stat_result, *, now: float) -> bool:
     """True if the file looks like it is still being written.
 
-    Windows copies keep the source's modification time but get a fresh creation time
-    (``st_ctime``); recent files are re-checked after a short pause for a stable size.
+    A copy keeps the source's modification time but gets a fresh creation time (``st_ctime``
+    on Windows, ``st_birthtime`` on macOS); recent files are re-checked after a short pause for
+    a stable size.
     """
-    if now - max(stat.st_mtime, stat.st_ctime) > RECENT_WINDOW_S:
+    created = float(getattr(stat, "st_birthtime", stat.st_ctime))
+    if now - max(stat.st_mtime, stat.st_ctime, created) > RECENT_WINDOW_S:
         return False
     time.sleep(SETTLE_S)
     try:
