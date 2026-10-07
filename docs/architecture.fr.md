@@ -47,4 +47,6 @@ Les dépendances vont uniquement vers le bas ; `import-linter` le vérifie à ch
 Windows et macOS partagent ce code : ce qui dépend du système est une branche
 `sys.platform` dans l'adaptateur ou le module `core` concerné. Les processus enfants (worker,
 transcription, scripts de Resolve) sont tenus par un Job Object sous Windows, par un groupe de
-processus et un fil de vie ailleurs (`core/procs.py`).
+processus et un fil de vie ailleurs (`core/procs.py`). La langue des messages du terminal
+(français ou anglais : `VFE_LANG`, sinon celle du système) est choisie par `core/language.py`,
+et par les lanceurs eux-mêmes (`scripts/language.sh` sur un Mac).

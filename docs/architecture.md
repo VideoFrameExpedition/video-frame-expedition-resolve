@@ -47,4 +47,6 @@ Dependencies only go downwards; `import-linter` checks this on every `just check
 Windows and macOS share this code: what depends on the system is a `sys.platform` branch in the
 adapter or `core` module concerned. The child processes (worker, transcription, Resolve's
 scripts) are held by a Job Object on Windows, by a process group and a lifeline elsewhere
-(`core/procs.py`).
+(`core/procs.py`). The language of the terminal's messages (French or English: `VFE_LANG`,
+otherwise the system's) is chosen by `core/language.py`, and by the launchers themselves
+(`scripts/language.sh` on a Mac).

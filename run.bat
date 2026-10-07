@@ -4,6 +4,8 @@ rem   run.bat            starts the application and opens the browser
 rem   run.bat build      first rebuilds the web interface (after an update)
 rem   run.bat tailscale  also listens on this computer's Tailscale address (your other
 rem                      devices, token required); or VFE_TAILSCALE=true in the .env file
+rem The messages are in English, or in French on a Windows set to French; VFE_LANG=fr or en in
+rem the .env file decides.
 setlocal EnableExtensions
 chcp 65001 >nul
 title Video Frame Expedition for DaVinci Resolve
@@ -12,13 +14,20 @@ set "PORT=8765"
 set "URL=http://127.0.0.1:%PORT%"
 set "PYTHONUTF8=1"
 
+rem --- Language of the messages: VFE_LANG (variable or .env file), otherwise Windows' one -----
+rem (Passed on to the application: the window never mixes two languages.)
+if not defined VFE_LANG if exist ".env" for /f "usebackq eol=# tokens=1,* delims== " %%A in (".env") do if /i "%%A"=="VFE_LANG" set "VFE_LANG=%%B"
+if not defined VFE_LANG for /f %%L in ('powershell -NoProfile -Command "(Get-UICulture).TwoLetterISOLanguageName"') do set "VFE_LANG=%%L"
+if defined VFE_LANG set "VFE_LANG=%VFE_LANG:"=%"
+if /i "%VFE_LANG:~0,2%"=="fr" (set "VFE_LANG=fr") else (set "VFE_LANG=en")
+
 rem --- Already running? Just open the interface. ---------------------------------------------
 powershell -NoProfile -Command "if (Get-NetTCPConnection -LocalPort %PORT% -State Listen -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }"
 if not errorlevel 1 (
     echo.
-    echo  L'application tourne déjà : ouverture de %URL%
-    echo  Pour la voir dans une fenêtre ^(journal, Ctrl+C pour arrêter^), fermez d'abord
-    echo  l'instance en cours, puis relancez run.bat.
+    call :say " L'application tourne déjà : ouverture de %URL%" " The application is already running: opening %URL%"
+    call :say " Pour la voir dans une fenêtre (journal, Ctrl+C pour arrêter), fermez d'abord" " To see it in a window (log, Ctrl+C to stop), first close the instance that is"
+    call :say " l'instance en cours, puis relancez run.bat." " running, then start run.bat again."
     echo.
     if not defined VFE_NO_BROWSER start "" "%URL%"
     if not defined VFE_NO_BROWSER timeout /t 15
@@ -29,12 +38,12 @@ rem --- Required tools (PATH, otherwise their usual installation folders) ------
 call :find_tools
 where uv >nul 2>nul
 if errorlevel 1 (
-    echo [ERREUR] « uv » est introuvable. Installez-le avec : winget install astral-sh.uv
+    call :say "[ERREUR] « uv » est introuvable. Installez-le avec : winget install astral-sh.uv" "[ERROR] uv cannot be found. Install it with: winget install astral-sh.uv"
     pause
     exit /b 1
 )
-where ffmpeg >nul 2>nul || echo [ATTENTION] ffmpeg est introuvable : l'analyse des vidéos échouera.
-where exiftool >nul 2>nul || echo [ATTENTION] ExifTool est introuvable : pas de métadonnées ni de date de tournage.
+where ffmpeg >nul 2>nul || call :say "[ATTENTION] ffmpeg est introuvable : l'analyse des vidéos échouera." "[WARNING] ffmpeg cannot be found: the analysis of the videos will fail."
+where exiftool >nul 2>nul || call :say "[ATTENTION] ExifTool est introuvable : pas de métadonnées ni de date de tournage." "[WARNING] ExifTool cannot be found: no metadata nor shooting date."
 
 rem --- Options: "build" (interface rebuilt), "tailscale" (access from your devices) -----------
 set "BUILD="
@@ -49,9 +58,9 @@ if defined BUILD call :build_ui || goto :failed
 
 echo.
 echo  Video Frame Expedition for DaVinci Resolve  -  %URL%
-echo  Pensez à lancer LM Studio avec le modèle de vision chargé sur le GPU.
-echo  Assistants (Claude, Cursor...) et accès depuis vos autres appareils : page « Connexions ».
-echo  Pour arrêter l'application : fermez cette fenêtre ou appuyez sur Ctrl+C.
+call :say " Pensez à lancer LM Studio avec le modèle de vision chargé sur le GPU." " Remember to start LM Studio with the vision model loaded on the GPU."
+call :say " Assistants (Claude, Cursor...) et accès depuis vos autres appareils : page « Connexions »." " Assistants (Claude, Cursor...) and access from your other devices: Connections page."
+call :say " Pour arrêter l'application : fermez cette fenêtre ou appuyez sur Ctrl+C." " To stop the application: close this window or press Ctrl+C."
 echo.
 
 rem --- Opens the browser as soon as the server answers (in the background) --------------------
@@ -63,6 +72,13 @@ rem Python tools go through "python -m": Smart App Control blocks the .exe files
 rem --frozen: the versions of uv.lock, which is never rewritten; --no-dev: no development tools.
 uv run --frozen --no-dev --project backend python -m vfe_vision serve --port %PORT%
 if errorlevel 1 goto :failed
+exit /b 0
+
+:say
+rem Shows the first text in French, the second in English (VFE_LANG, set above).
+rem Outside any block in parentheses: a text may contain some.
+if not "%VFE_LANG%"=="fr" shift
+echo(%~1
 exit /b 0
 
 :find_tools
@@ -86,12 +102,12 @@ rem The build uses Node only: pnpm is an executable since its version 11, and Sm
 rem blocks it. pnpm only installs the dependencies, the first time (:install_ui).
 where node >nul 2>nul
 if errorlevel 1 (
-    echo [ERREUR] Node.js est introuvable : impossible de construire l'interface web.
-    echo          Installez-le avec : winget install OpenJS.NodeJS.LTS
+    call :say "[ERREUR] Node.js est introuvable : impossible de construire l'interface web." "[ERROR] Node.js cannot be found: the web interface cannot be built."
+    call :say "         Installez-le avec : winget install OpenJS.NodeJS.LTS" "        Install it with: winget install OpenJS.NodeJS.LTS"
     exit /b 1
 )
 if not exist "frontend\node_modules\vite\bin\vite.js" call :install_ui || exit /b 1
-echo Construction de l'interface web...
+call :say "Construction de l'interface web..." "Building the web interface..."
 pushd frontend
 node node_modules\typescript\bin\tsc -b && node node_modules\vite\bin\vite.js build
 set "BUILT=%errorlevel%"
@@ -104,28 +120,28 @@ exit /b 0
 rem An installed pnpm is tried first. Otherwise (a new PC), pnpm runs through Node (npx), in the
 rem version pinned by frontend\package.json: its lockfile, written as two documents, can only be
 rem read by pnpm 12 (pnpm 10 refuses it).
-echo Installation des dépendances de l'interface web...
+call :say "Installation des dépendances de l'interface web..." "Installing the web interface's dependencies..."
 where pnpm.cmd >nul 2>nul
 if not errorlevel 1 (
     call pnpm.cmd --dir frontend install --frozen-lockfile
     if not errorlevel 1 exit /b 0
-    echo [ATTENTION] pnpm a échoué ^(Windows l'a peut-être bloqué^) : nouvel essai par Node.
+    call :say "[ATTENTION] pnpm a échoué (Windows l'a peut-être bloqué) : nouvel essai par Node." "[WARNING] pnpm failed (Windows may have blocked it): trying again through Node."
 )
 where npx.cmd >nul 2>nul
 if errorlevel 1 (
-    echo [ERREUR] Ni pnpm ni npx : impossible d'installer les dépendances de l'interface.
-    echo          Installez Node.js avec : winget install OpenJS.NodeJS.LTS
+    call :say "[ERREUR] Ni pnpm ni npx : impossible d'installer les dépendances de l'interface." "[ERROR] Neither pnpm nor npx: the interface's dependencies cannot be installed."
+    call :say "         Installez Node.js avec : winget install OpenJS.NodeJS.LTS" "        Install Node.js with: winget install OpenJS.NodeJS.LTS"
     exit /b 1
 )
 call npx.cmd --yes pnpm@12.6.0 --dir frontend install --frozen-lockfile
 if errorlevel 1 (
-    echo [ERREUR] Les dépendances de l'interface web n'ont pas pu être installées.
+    call :say "[ERREUR] Les dépendances de l'interface web n'ont pas pu être installées." "[ERROR] The web interface's dependencies could not be installed."
     exit /b 1
 )
 exit /b 0
 
 :failed
 echo.
-echo [ERREUR] L'application s'est arrêtée sur une erreur (voir les messages ci-dessus).
+call :say "[ERREUR] L'application s'est arrêtée sur une erreur (voir les messages ci-dessus)." "[ERROR] The application stopped on an error (see the messages above)."
 pause
 exit /b 1

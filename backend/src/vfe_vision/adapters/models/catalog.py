@@ -32,6 +32,9 @@ class ModelSpec:
     licence: str
     source: str
     files: tuple[ModelFile, ...]
+    # As an English terminal shows them (``vfe models``); empty: the same as above.
+    label_en: str = ""
+    licence_en: str = ""
 
     @property
     def size(self) -> int:
@@ -87,6 +90,7 @@ CATALOG: tuple[ModelSpec, ...] = (
         kind="whisper",
         label="Whisper large-v3-turbo (transcription, CTranslate2)",
         licence="MIT (OpenAI Whisper, conversion CTranslate2)",
+        licence_en="MIT (OpenAI Whisper, CTranslate2 conversion)",
         source=f"{HF}/{_TURBO[0]}",
         files=(
             _hf(_TURBO, "config.json", "config.json", 2263,
@@ -106,6 +110,8 @@ CATALOG: tuple[ModelSpec, ...] = (
         kind="whisper",
         label="Whisper small (transcription rapide, moins précise)",
         licence="MIT (OpenAI Whisper, conversion CTranslate2)",
+        label_en="Whisper small (faster transcription, less accurate)",
+        licence_en="MIT (OpenAI Whisper, CTranslate2 conversion)",
         source=f"{HF}/{_SMALL[0]}",
         files=(
             _hf(_SMALL, "config.json", "config.json", 2370,
@@ -121,6 +127,8 @@ CATALOG: tuple[ModelSpec, ...] = (
         kind="whisper",
         label="Whisper tiny (essais uniquement)",
         licence="MIT (OpenAI Whisper, conversion CTranslate2)",
+        label_en="Whisper tiny (tests only)",
+        licence_en="MIT (OpenAI Whisper, CTranslate2 conversion)",
         source=f"{HF}/{_TINY[0]}",
         files=(
             _hf(_TINY, "config.json", "config.json", 2249,
@@ -136,6 +144,8 @@ CATALOG: tuple[ModelSpec, ...] = (
         kind="yamnet",
         label="YAMNet (sons et instruments, 521 classes AudioSet)",
         licence="Apache-2.0 (Google YAMNet, conversion ONNX) ; ontologie AudioSet CC BY-SA 4.0",
+        label_en="YAMNet (sounds and instruments, 521 AudioSet classes)",
+        licence_en="Apache-2.0 (Google YAMNet, ONNX conversion); AudioSet ontology CC BY-SA 4.0",
         source=f"{HF}/{_YAMNET[0]}",
         files=(
             _hf(_YAMNET, "yamnet.onnx", "yamnet.onnx", 16093603,
@@ -156,6 +166,8 @@ CATALOG: tuple[ModelSpec, ...] = (
         kind="sounds",
         label="CED-small (second avis sur les sons, 527 classes AudioSet)",
         licence="Apache-2.0 (CED, mispeech) ; liste des classes AudioSet CC BY 4.0",
+        label_en="CED-small (second opinion on sounds, 527 AudioSet classes)",
+        licence_en="Apache-2.0 (CED, mispeech); AudioSet class list CC BY 4.0",
         source=f"{HF}/{_CED[0]}",
         files=(
             _hf(_CED, "model.onnx", "model.onnx", 22785539,
@@ -168,6 +180,7 @@ CATALOG: tuple[ModelSpec, ...] = (
         id="ocr/pp-ocrv6-small",
         kind="ocr",
         label="PP-OCRv6 small (texte à l'écran, 50 langues)",
+        label_en="PP-OCRv6 small (on-screen text, 50 languages)",
         licence="Apache-2.0 (PaddlePaddle PP-OCRv6)",
         source=f"{HF}/{_OCR_DET[0]}",
         files=(
@@ -186,6 +199,8 @@ CATALOG: tuple[ModelSpec, ...] = (
         kind="detector",
         label="D-FINE S (personnes et animaux courants, COCO)",
         licence="Apache-2.0 (D-FINE, conversion ONNX onnx-community)",
+        label_en="D-FINE S (common people and animals, COCO)",
+        licence_en="Apache-2.0 (D-FINE, ONNX conversion by onnx-community)",
         source=f"{HF}/{_DFINE_S[0]}",
         files=(
             _hf(_DFINE_S, "onnx/model.onnx", "model.onnx", 41535197,
@@ -199,6 +214,8 @@ CATALOG: tuple[ModelSpec, ...] = (
         kind="runtime",
         label="cuBLAS 12.9 (NVIDIA, pour transcrire sur le GPU)",
         licence="NVIDIA CUDA Toolkit EULA (bibliothèque redistribuable, non modifiée)",
+        label_en="cuBLAS 12.9 (NVIDIA, to transcribe on the GPU)",
+        licence_en="NVIDIA CUDA Toolkit EULA (redistributable library, unmodified)",
         source="https://pypi.org/project/nvidia-cublas-cu12/12.9.2.10/",
         files=(
             _cublas("cublasLt64_12.dll", 668673536,
@@ -211,6 +228,7 @@ CATALOG: tuple[ModelSpec, ...] = (
         id="faces/yunet",
         kind="faces",
         label="YuNet (position des visages, sans identification)",
+        label_en="YuNet (where the faces are, no identification)",
         licence="MIT (OpenCV Zoo, YuNet 2023mar)",
         source=f"{HF}/{_YUNET[0]}",
         files=(
@@ -226,6 +244,9 @@ CATALOG: tuple[ModelSpec, ...] = (
         label="EmbeddingGemma-300m q4 (recherche par le sens, FR/EN, CPU)",
         licence="Gemma Terms of Use (Google, https://ai.google.dev/gemma/terms), "
         "conversion ONNX onnx-community",
+        label_en="EmbeddingGemma-300m q4 (search by meaning, FR/EN, CPU)",
+        licence_en="Gemma Terms of Use (Google, https://ai.google.dev/gemma/terms), "
+        "ONNX conversion by onnx-community",
         source=f"{HF}/{_GEMMA[0]}",
         files=(
             # The graph finds its weights by name: both keep the names of the repository.

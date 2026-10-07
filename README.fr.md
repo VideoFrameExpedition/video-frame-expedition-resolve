@@ -179,7 +179,9 @@ ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
    `-SansModeles` pour s'en passer). Il demande s'il faut installer LM Studio sur ce PC : le
    modèle de vision peut aussi tourner dans le LM Studio d'un autre ordinateur. `-AvecLMStudio`
    ou `-SansLMStudio` donne la réponse d'avance. Acceptez les demandes d'autorisation de Windows
-   (UAC).
+   (UAC). Ses messages sont en français sur un Windows en français, en anglais sinon ;
+   `VFE_LANG=fr` ou `VFE_LANG=en` dans le fichier `.env` impose l'une des deux langues, pour
+   `run.bat` et les commandes `vfe` aussi.
 2. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-8b`), chargez-le
    et activez le serveur local (voir plus bas quand il tourne sur un autre ordinateur).
 3. Double-cliquez sur `run.bat`. La première fois, il construit l'interface web (une à deux
@@ -198,6 +200,8 @@ ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
    2 Go, une seule fois ; `--sans-modeles` pour s'en passer). Il demande s'il faut installer
    LM Studio sur ce Mac ; `--avec-lm-studio` ou `--sans-lm-studio` donne la réponse d'avance.
    Homebrew lui-même est installé d'abord si le Mac ne l'a pas (il demande votre mot de passe).
+   Ses messages suivent la langue du Mac (français ou anglais), comme ceux de `run.command` ;
+   `VFE_LANG` dans le fichier `.env` peut l'imposer.
 2. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-4b`, ou
    `qwen/qwen3-vl-8b` avec 32 Go de mémoire), chargez-le et activez le serveur local.
 3. Double-cliquez sur `run.command`. La première fois, il construit l'interface web (une à deux
@@ -313,8 +317,8 @@ l'autorise. Tous les outils : [docs/mcp-tools.fr.md](docs/mcp-tools.fr.md).
 - [Le logo](docs/brand/README.fr.md)
 
 L'application a été développée en français. L'interface, sa page d'aide, cette page et les
-documents ci-dessus existent dans les deux langues ; les messages du lanceur et de la ligne de
-commande sont en français.
+documents ci-dessus existent dans les deux langues, comme les messages des lanceurs, des
+scripts d'installation et de la ligne de commande, qui suivent la langue du système.
 
 ## Licence
 

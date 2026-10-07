@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Annotated
 import typer
 
 from vfe_vision import __version__
+from vfe_vision.core.language import terminal_language, tr
 
 if TYPE_CHECKING:
     from vfe_vision.core.config import Settings
@@ -19,7 +20,10 @@ if TYPE_CHECKING:
 
 app = typer.Typer(
     name="vfe",
-    help="Video Frame Expedition for DaVinci Resolve — analyse locale de vidéos.",
+    help=tr(
+        "Video Frame Expedition for DaVinci Resolve — analyse locale de vidéos.",
+        "Video Frame Expedition for DaVinci Resolve — local video analysis.",
+    ),
     no_args_is_help=True,
     add_completion=False,
 )
@@ -30,19 +34,46 @@ def root() -> None:
     """Video Frame Expedition for DaVinci Resolve — analyse locale de vidéos."""
 
 
-@app.command()
+@app.command(help=tr("Affiche la version de l'application.", "Shows the application's version."))
 def version() -> None:
     """Affiche la version de l'application."""
     typer.echo(__version__)
 
 
-@app.command()
+@app.command(
+    help=tr(
+        "Lance l'application : API, interface web, serveur MCP et worker d'analyse.\n\n"
+        "Avec VFE_TAILSCALE=true (ou VFE_EXTRA_HOSTS), écoute aussi sur l'adresse Tailscale de "
+        "cet ordinateur, jeton obligatoire depuis les autres appareils (voir vfe token).",
+        "Starts the application: API, web interface, MCP server and analysis worker.\n\n"
+        "With VFE_TAILSCALE=true (or VFE_EXTRA_HOSTS), also listens on this computer's "
+        "Tailscale address, token required from the other devices (see vfe token).",
+    )
+)
 def serve(
-    host: Annotated[str | None, typer.Option(help="Adresse d'écoute (défaut : 127.0.0.1).")] = None,
-    port: Annotated[int | None, typer.Option(help="Port (défaut : 8765).")] = None,
-    reload: Annotated[bool, typer.Option(help="Rechargement automatique (développement).")] = False,
+    host: Annotated[
+        str | None,
+        typer.Option(
+            help=tr(
+                "Adresse d'écoute (défaut : 127.0.0.1).",
+                "Address to listen on (default: 127.0.0.1).",
+            )
+        ),
+    ] = None,
+    port: Annotated[
+        int | None, typer.Option(help=tr("Port (défaut : 8765).", "Port (default: 8765)."))
+    ] = None,
+    reload: Annotated[
+        bool,
+        typer.Option(
+            help=tr("Rechargement automatique (développement).", "Automatic reload (development).")
+        ),
+    ] = False,
     no_worker: Annotated[
-        bool, typer.Option("--no-worker", help="Ne pas lancer le worker.")
+        bool,
+        typer.Option(
+            "--no-worker", help=tr("Ne pas lancer le worker.", "Do not start the worker.")
+        ),
     ] = False,
 ) -> None:
     """Lance l'application : API, interface web, serveur MCP et worker d'analyse.
@@ -75,11 +106,15 @@ def serve(
         _serve_listening(settings)
         return
     if settings.tailscale or settings.extra_hosts:
-        typer.secho("--reload : écoute locale seulement (Tailscale ignoré).", err=True, fg="yellow")
-    typer.echo(
-        f"Video Frame Expedition {__version__} → {settings.base_url}"
-        f"  (MCP : {settings.base_url}/mcp)"
-    )
+        typer.secho(
+            tr(
+                "--reload : écoute locale seulement (Tailscale ignoré).",
+                "--reload: local listening only (Tailscale ignored).",
+            ),
+            err=True,
+            fg="yellow",
+        )
+    typer.echo(_started(settings.base_url))
     uvicorn.run(
         "vfe_vision.api.factory:app_from_env",
         factory=True,
@@ -107,17 +142,23 @@ def _serve_listening(settings: Settings) -> None:
         listeners = open_listeners(plan, settings.port)
     except OSError as exc:
         typer.secho(
-            f"Écoute impossible sur {settings.host}:{settings.port} : {exc.strerror or exc}",
-            err=True, fg="red",
-        )  # fmt: skip
+            tr(
+                f"Écoute impossible sur {settings.host}:{settings.port} : {exc.strerror or exc}",
+                f"Cannot listen on {settings.host}:{settings.port}: {exc.strerror or exc}",
+            ),
+            err=True,
+            fg="red",
+        )
         raise typer.Exit(1) from exc
     access = access_config(settings, plan, listeners)
-    typer.echo(
-        f"Video Frame Expedition {__version__} → {settings.base_url}"
-        f"  (MCP : {settings.base_url}/mcp)"
-    )
+    typer.echo(_started(settings.base_url))
     for url in access.remote_urls():
-        typer.echo(f"  depuis vos autres appareils → {url}  (MCP : {url}/mcp ; jeton : vfe token)")
+        typer.echo(
+            tr(
+                f"  depuis vos autres appareils → {url}  (MCP : {url}/mcp ; jeton : vfe token)",
+                f"  from your other devices → {url}  (MCP: {url}/mcp; token: vfe token)",
+            )
+        )
     for notice in access.notices:
         typer.secho(f"  {notice}", err=True, fg="yellow")
     config = uvicorn.Config(
@@ -138,10 +179,31 @@ def _serve_listening(settings: Settings) -> None:
         raise typer.Exit(3)
 
 
-@app.command()
+def _started(url: str) -> str:
+    return tr(
+        f"Video Frame Expedition {__version__} → {url}  (MCP : {url}/mcp)",
+        f"Video Frame Expedition {__version__} → {url}  (MCP: {url}/mcp)",
+    )
+
+
+@app.command(
+    help=tr(
+        "Affiche le jeton d'API demandé aux autres appareils (le crée s'il n'existe pas encore)."
+        "\n\nLe jeton seul va sur la sortie standard ; les explications sur la sortie d'erreur.",
+        "Shows the API token asked of the other devices (creates it when there is none yet)."
+        "\n\nThe token alone goes to the standard output; the explanations to the error output.",
+    )
+)
 def token(
     rotate: Annotated[
-        bool, typer.Option("--rotate", help="Remplace le jeton (les sessions ouvertes tombent).")
+        bool,
+        typer.Option(
+            "--rotate",
+            help=tr(
+                "Remplace le jeton (les sessions ouvertes tombent).",
+                "Replaces the token (open sessions are dropped).",
+            ),
+        ),
     ] = False,
 ) -> None:
     """Affiche le jeton d'API demandé aux autres appareils (le crée s'il n'existe pas encore).
@@ -155,35 +217,69 @@ def token(
     settings = get_settings()
     if rotate:
         if settings.api_token is not None:
-            typer.echo("Le jeton vient de VFE_API_TOKEN : changez-le à cet endroit.", err=True)
+            typer.echo(
+                tr(
+                    "Le jeton vient de VFE_API_TOKEN : changez-le à cet endroit.",
+                    "The token comes from VFE_API_TOKEN: change it there.",
+                ),
+                err=True,
+            )
             raise typer.Exit(1)
         settings.data_dir.mkdir(parents=True, exist_ok=True)
         fresh = write_new_token(settings.api_token_path)
         typer.echo(fresh)
         typer.echo(
-            f"Nouveau jeton enregistré dans {settings.api_token_path}. Redémarrez l'application "
-            "pour l'appliquer ; les appareils connectés devront se reconnecter.",
+            tr(
+                f"Nouveau jeton enregistré dans {settings.api_token_path}. Redémarrez "
+                "l'application pour l'appliquer ; les appareils connectés devront se reconnecter.",
+                f"New token saved in {settings.api_token_path}. Restart the application to apply "
+                "it; the connected devices will have to connect again.",
+            ),
             err=True,
         )
         return
     value, source = current_token(settings, create=True)
     typer.echo(value)
     where = "VFE_API_TOKEN" if source == "env" else str(settings.api_token_path)
-    typer.echo(f"Jeton d'accès depuis les autres appareils ({where}).", err=True)
+    typer.echo(
+        tr(
+            f"Jeton d'accès depuis les autres appareils ({where}).",
+            f"Access token for the other devices ({where}).",
+        ),
+        err=True,
+    )
 
 
-@app.command("mcp-stdio")
+@app.command(
+    "mcp-stdio",
+    help=tr(
+        "Pont MCP stdio → HTTP pour les clients qui lancent une commande (Claude Desktop).\n\n"
+        "Relaie les messages vers /mcp de l'application déjà lancée, sans jamais la démarrer ; "
+        "la sortie standard ne porte que le protocole (journal sur la sortie d'erreur).",
+        "MCP bridge from stdio to HTTP, for the clients that start a command (Claude Desktop)."
+        "\n\nRelays the messages to /mcp of the application already running, without ever "
+        "starting it; the standard output carries the protocol only (log on the error output).",
+    ),
+)
 def mcp_stdio(
     url: Annotated[
         str | None,
-        typer.Option(help="Adresse MCP de l'application (défaut : http://127.0.0.1:8765/mcp)."),
+        typer.Option(
+            help=tr(
+                "Adresse MCP de l'application (défaut : http://127.0.0.1:8765/mcp).",
+                "The application's MCP address (default: http://127.0.0.1:8765/mcp).",
+            )
+        ),
     ] = None,
     token: Annotated[
         str | None,
         typer.Option(
             envvar="VFE_MCP_TOKEN",
             show_default=False,
-            help="Jeton d'API, pour une application sur un autre appareil (ou VFE_MCP_TOKEN).",
+            help=tr(
+                "Jeton d'API, pour une application sur un autre appareil (ou VFE_MCP_TOKEN).",
+                "API token, for an application on another device (or VFE_MCP_TOKEN).",
+            ),
         ),
     ] = None,
 ) -> None:
@@ -257,15 +353,39 @@ def worker() -> None:
     anyio.run(main)
 
 
-@app.command()
+@app.command(
+    help=tr(
+        "Vérifie l'environnement : ffmpeg, ExifTool, LM Studio, GPU, modules natifs, stockage."
+        "\n\nAvec --vision, mesure d'abord comment le modèle de vision chargé écrit ses "
+        "positions : par l'application si elle tourne, sinon directement.",
+        "Checks the environment: ffmpeg, ExifTool, LM Studio, GPU, native modules, storage."
+        "\n\nWith --vision, first measures how the loaded vision model writes its positions: "
+        "through the application when it runs, otherwise directly.",
+    )
+)
 def doctor(
-    as_json: Annotated[bool, typer.Option("--json", help="Sortie JSON.")] = False,
+    as_json: Annotated[
+        bool, typer.Option("--json", help=tr("Sortie JSON.", "JSON output."))
+    ] = False,
     vision: Annotated[
         bool,
-        typer.Option("--vision", help="Calibre aussi le modèle de vision chargé (secondes)."),
+        typer.Option(
+            "--vision",
+            help=tr(
+                "Calibre aussi le modèle de vision chargé (secondes).",
+                "Also calibrates the loaded vision model (seconds).",
+            ),
+        ),
     ] = False,
     force: Annotated[
-        bool, typer.Option("--force", help="Avec --vision : recalibre même s'il l'est déjà.")
+        bool,
+        typer.Option(
+            "--force",
+            help=tr(
+                "Avec --vision : recalibre même s'il l'est déjà.",
+                "With --vision: calibrates again even when it is.",
+            ),
+        ),
     ] = False,
 ) -> None:
     """Vérifie l'environnement : ffmpeg, ExifTool, LM Studio, GPU, modules natifs, stockage.
@@ -308,9 +428,9 @@ def doctor(
     else:
         console = Console()
         table = Table(title=f"Video Frame Expedition {report.version} — Python {report.python}")
-        table.add_column("Vérification")
-        table.add_column("État")
-        table.add_column("Détail", overflow="fold")
+        table.add_column(tr("Vérification", "Check"))
+        table.add_column(tr("État", "Status"))
+        table.add_column(tr("Détail", "Detail"), overflow="fold")
         colors = {CheckStatus.OK: "green", CheckStatus.WARNING: "yellow", CheckStatus.ERROR: "red"}
         for check in report.checks:
             detail = check.detail + (f"\n[dim]{check.hint}[/dim]" if check.hint else "")
@@ -343,8 +463,13 @@ def _no_model(status: VisionStatus) -> str | None:
     if status.model is not None:
         return None
     if status.lmstudio_error is not None:
-        return f"LM Studio injoignable : {status.lmstudio_error}"
-    return "Aucun modèle de vision chargé dans LM Studio."
+        return tr(
+            f"LM Studio injoignable : {status.lmstudio_error}",
+            f"LM Studio cannot be reached: {status.lmstudio_error}",
+        )
+    return tr(
+        "Aucun modèle de vision chargé dans LM Studio.", "No vision model loaded in LM Studio."
+    )
 
 
 def _vision_doctor(settings: Settings, *, force: bool) -> _Calibration:
@@ -380,16 +505,31 @@ def _vision_through_app(settings: Settings, *, force: bool) -> _Calibration | No
                 return _Calibration(status, _no_model(status))
             if health.json().get("worker_pid") is None:
                 return _Calibration(
-                    status, "Le travailleur de l'application est arrêté : calibrage impossible."
+                    status,
+                    tr(
+                        "Le travailleur de l'application est arrêté : calibrage impossible.",
+                        "The application's worker is stopped: no calibration possible.",
+                    ),
                 )
-            typer.echo(f"Calibrage de {status.display_name} par l'application…", err=True)
+            typer.echo(
+                tr(
+                    f"Calibrage de {status.display_name} par l'application…",
+                    f"Calibrating {status.display_name} through the application…",
+                ),
+                err=True,
+            )
             answer = http.post("/system/vision-profile/probe")
             if answer.status_code >= 400:
-                return _Calibration(status, f"Calibrage refusé : {answer.json().get('detail')}")
+                detail = answer.json().get("detail")
+                return _Calibration(
+                    status, tr(f"Calibrage refusé : {detail}", f"Calibration refused: {detail}")
+                )
             job = answer.json()
-            error: str | None = (
+            error: str | None = tr(
                 f"Calibrage toujours en attente après {PROBE_WAIT_S // 60} min (tâche "
-                f"{job['id']}) : il se fera dès que l'application le pourra."
+                f"{job['id']}) : il se fera dès que l'application le pourra.",
+                f"Calibration still waiting after {PROBE_WAIT_S // 60} min (job "
+                f"{job['id']}): it will run as soon as the application can.",
             )
             deadline = time.monotonic() + PROBE_WAIT_S
             while time.monotonic() < deadline:
@@ -398,7 +538,10 @@ def _vision_through_app(settings: Settings, *, force: bool) -> _Calibration | No
                     error = (
                         None
                         if state["status"] == "succeeded"
-                        else f"Calibrage en échec : {state.get('error') or state['status']}"
+                        else tr(
+                            f"Calibrage en échec : {state.get('error') or state['status']}",
+                            f"Calibration failed: {state.get('error') or state['status']}",
+                        )
                     )
                     break
                 time.sleep(1.0)
@@ -427,13 +570,22 @@ async def _vision_inline(settings: Settings, force: bool) -> _Calibration:
             models = await container.lmstudio.list_models()
             picked = pick_vision_instance(models, prefs.vision_model)
             if picked is None:
-                return _Calibration(status, "Aucun modèle de vision chargé dans LM Studio.")
+                return _Calibration(
+                    status,
+                    tr(
+                        "Aucun modèle de vision chargé dans LM Studio.",
+                        "No vision model loaded in LM Studio.",
+                    ),
+                )
             model, instance = picked
-            typer.echo(f"Calibrage de {model.display_name}…", err=True)
+            typer.echo(
+                tr(f"Calibrage de {model.display_name}…", f"Calibrating {model.display_name}…"),
+                err=True,
+            )
             budget = TokenBudget(capacity=8192, max_concurrency=1)  # resized to the instance
             await vision_profile.measure(container.db, container.lmstudio, budget, model, instance)
         except VfeError as exc:
-            failed = f"Calibrage en échec : {exc.detail}"
+            failed = tr(f"Calibrage en échec : {exc.detail}", f"Calibration failed: {exc.detail}")
             return _Calibration(await vision_status(container), failed)
         return _Calibration(await vision_status(container), None)
     finally:
@@ -441,7 +593,10 @@ async def _vision_inline(settings: Settings, force: bool) -> _Calibration:
 
 
 def _decimal(value: float | None, digits: int = 2) -> str:
-    return "—" if value is None else f"{value:.{digits}f}".replace(".", ",")
+    if value is None:
+        return "—"
+    text = f"{value:.{digits}f}"
+    return text.replace(".", ",") if terminal_language() == "fr" else text
 
 
 def _vision_lines(status: VisionStatus) -> list[str]:
@@ -449,55 +604,94 @@ def _vision_lines(status: VisionStatus) -> list[str]:
 
     if status.model is None:
         return []  # said by the calibration's error
-    lines = [f"Modèle de vision : {status.display_name} ({status.model})"]
+    lines = [
+        tr(
+            f"Modèle de vision : {status.display_name} ({status.model})",
+            f"Vision model: {status.display_name} ({status.model})",
+        )
+    ]
     profile = status.profile
     if profile is None:
-        lines.append(
-            "Positions : convention connue (Qwen3-VL), non recalibrée"
-            if status.prior
-            else "Positions : non calibrées"
-        )
+        if status.prior:
+            lines.append(
+                tr(
+                    "Positions : convention connue (Qwen3-VL), non recalibrée",
+                    "Positions: known convention (Qwen3-VL), not calibrated again",
+                )
+            )
+        else:
+            lines.append(tr("Positions : non calibrées", "Positions: not calibrated"))
         return lines
     g = profile.grounding
+    seconds = _decimal(profile.wall_ms / 1000, 1)
+    tokens = f"{profile.prompt_tokens} + {profile.completion_tokens}"
+    reasoning = profile.reasoning_tokens_seen
+    if reasoning:
+        thinks = tr(
+            f"actif ({reasoning} jetons) : coupez-le dans LM Studio",
+            f"on ({reasoning} tokens): turn it off in LM Studio",
+        )
+    elif status.reasoning_capable:
+        thinks = tr("coupé", "off")
+    else:
+        thinks = tr("aucun", "none")
+    truncated = profile.truncated
     lines += [
-        (
-            f"Calibré le {profile.probed_at:%d/%m/%Y %H:%M} UTC en "
-            f"{_decimal(profile.wall_ms / 1000, 1)} s "
-            f"({profile.prompt_tokens} + {profile.completion_tokens} jetons, empreinte "
-            f"{profile.fingerprint})"
+        tr(
+            f"Calibré le {profile.probed_at:%d/%m/%Y %H:%M} UTC en {seconds} s ({tokens} jetons, "
+            f"empreinte {profile.fingerprint})",
+            f"Calibrated on {profile.probed_at:%Y-%m-%d %H:%M} UTC in {seconds} s ({tokens} "
+            f"tokens, fingerprint {profile.fingerprint})",
         ),
-        f"Réponses : {'tronquées' if profile.truncated else 'complètes'}",
-        "Raisonnement : "
-        + (
-            f"actif ({profile.reasoning_tokens_seen} jetons) : coupez-le dans LM Studio"
-            if profile.reasoning_tokens_seen
-            else ("coupé" if status.reasoning_capable else "aucun")
+        tr(
+            f"Réponses : {'tronquées' if truncated else 'complètes'}",
+            f"Answers: {'truncated' if truncated else 'complete'}",
         ),
+        tr(f"Raisonnement : {thinks}", f"Reasoning: {thinks}"),
     ]
     if g.enabled:
         scenes = ", ".join(
-            f"{'paysage' if k == 'landscape' else 'portrait'} {_decimal(v)}"
+            tr(
+                f"{'paysage' if k == 'landscape' else 'portrait'} {_decimal(v)}",
+                f"{k} {_decimal(v)}",
+            )
             for k, v in g.iou_by_scene.items()
         )
         found = min(g.matched_by_scene.values(), default=0)
+        iou = _decimal(g.mean_iou)
         lines.append(
-            f"Positions : vérifiées, {convention_text(profile)}, IoU {_decimal(g.mean_iou)} "
-            f"({scenes}), {found}/5 objets au moins par scène"
+            tr(
+                f"Positions : vérifiées, {convention_text(profile)}, IoU {iou} ({scenes}), "
+                f"{found}/5 objets au moins par scène",
+                f"Positions: checked, {convention_text(profile)}, IoU {iou} ({scenes}), "
+                f"{found}/5 objects at least per scene",
+            )
         )
     else:
-        lines.append(f"Positions : désactivées, {g.reason}")
+        lines.append(tr(f"Positions : désactivées, {g.reason}", f"Positions: off, {g.reason}"))
     lines.append(
-        "Conventions : "
+        tr("Conventions : ", "Conventions: ")
         + " · ".join(f"{r.convention.value} {_decimal(r.mean_iou)}" for r in g.ranking)
     )
     return lines
 
 
-models_app = typer.Typer(help="Données et modèles téléchargés (action en ligne, explicite).")
+models_app = typer.Typer(
+    help=tr(
+        "Données et modèles téléchargés (action en ligne, explicite).",
+        "Downloaded data and models (an explicit online action).",
+    )
+)
 app.add_typer(models_app, name="models")
 
 
-@models_app.command("geonames")
+@models_app.command(
+    "geonames",
+    help=tr(
+        "Télécharge GeoNames (CC BY 4.0) et construit le répertoire hors-ligne des lieux (~3 Mo).",
+        "Downloads GeoNames (CC BY 4.0) and builds the offline directory of places (~3 MB).",
+    ),
+)
 def models_geonames() -> None:
     """Télécharge GeoNames (CC BY 4.0) et construit le répertoire hors-ligne des lieux (~3 Mo)."""
     from vfe_vision.adapters.geo.geonames_build import download_gazetteer
@@ -505,9 +699,19 @@ def models_geonames() -> None:
 
     _online_or_exit()
     settings = get_settings()
-    typer.echo("Téléchargement de GeoNames (cities1000, ~14 Mo)…")
+    typer.echo(
+        tr(
+            "Téléchargement de GeoNames (cities1000, ~14 Mo)…",
+            "Downloading GeoNames (cities1000, ~14 MB)…",
+        )
+    )
     rows = download_gazetteer(settings.geonames_dir)
-    typer.echo(f"{rows} lieux enregistrés dans {settings.geonames_dir}")
+    typer.echo(
+        tr(
+            f"{rows} lieux enregistrés dans {settings.geonames_dir}",
+            f"{rows} places saved in {settings.geonames_dir}",
+        )
+    )
 
 
 def _online_or_exit() -> None:
@@ -525,7 +729,13 @@ def _online_or_exit() -> None:
     finally:
         db.dispose()
     if not online:
-        typer.echo("Services en ligne désactivés : téléchargement refusé (réglages).", err=True)
+        typer.echo(
+            tr(
+                "Services en ligne désactivés : téléchargement refusé (réglages).",
+                "Online services turned off: download refused (settings).",
+            ),
+            err=True,
+        )
         raise typer.Exit(1)
 
 
@@ -540,11 +750,22 @@ def _install(model_ids: list[str]) -> None:
     store = ModelStore(get_settings().models_dir)
     for model_id in model_ids:
         item = spec(model_id)
+        label = tr(item.label, item.label_en or item.label)
         if store.installed(item) is not None:
-            typer.echo(f"{item.label} : déjà installé ({store.path(item)})")
+            typer.echo(
+                tr(
+                    f"{label} : déjà installé ({store.path(item)})",
+                    f"{label}: already installed ({store.path(item)})",
+                )
+            )
             continue
+        size = item.download_size / 1_048_576
+        licence_en = item.licence_en or item.licence
         typer.echo(
-            f"{item.label} — {item.download_size / 1_048_576:.0f} Mo, licence {item.licence}"
+            tr(
+                f"{label} — {size:.0f} Mo, licence {item.licence}",
+                f"{label} — {size:.0f} MB, licence {licence_en}",
+            )
         )
         last = -1
 
@@ -560,35 +781,67 @@ def _install(model_ids: list[str]) -> None:
         except VfeError as exc:
             typer.echo(f"\n{exc.detail}", err=True)
             raise typer.Exit(1) from exc
-        typer.echo(f"\n  installé dans {folder}")
+        typer.echo(tr(f"\n  installé dans {folder}", f"\n  installed in {folder}"))
 
 
-@models_app.command("whisper")
+@models_app.command(
+    "whisper",
+    help=tr(
+        "Télécharge le modèle de transcription Whisper (turbo : 1,6 Go, MIT).",
+        "Downloads the Whisper transcription model (turbo: 1.6 GB, MIT).",
+    ),
+)
 def models_whisper(
     size: Annotated[
-        str, typer.Option(help="turbo (recommandé), small (plus rapide) ou tiny (essais).")
+        str,
+        typer.Option(
+            help=tr(
+                "turbo (recommandé), small (plus rapide) ou tiny (essais).",
+                "turbo (recommended), small (faster) or tiny (tests).",
+            )
+        ),
     ] = "turbo",
 ) -> None:
     """Télécharge le modèle de transcription Whisper (turbo : 1,6 Go, MIT)."""
     names = {"turbo": "whisper/large-v3-turbo", "small": "whisper/small", "tiny": "whisper/tiny"}
     if size not in names:
-        raise typer.BadParameter("turbo, small ou tiny")
+        raise typer.BadParameter(tr("turbo, small ou tiny", "turbo, small or tiny"))
     _install([names[size]])
 
 
-@models_app.command("yamnet")
+@models_app.command(
+    "yamnet",
+    help=tr(
+        "Télécharge YAMNet (sons et instruments, 16 Mo, Apache-2.0) et l'ontologie AudioSet.",
+        "Downloads YAMNet (sounds and instruments, 16 MB, Apache-2.0) and the AudioSet ontology.",
+    ),
+)
 def models_yamnet() -> None:
     """Télécharge YAMNet (sons et instruments, 16 Mo, Apache-2.0) et l'ontologie AudioSet."""
     _install(["yamnet"])
 
 
-@models_app.command("sounds")
+@models_app.command(
+    "sounds",
+    help=tr(
+        "Télécharge YAMNet et CED-small (sons entendus, 39 Mo, Apache-2.0).",
+        "Downloads YAMNet and CED-small (sounds heard, 39 MB, Apache-2.0).",
+    ),
+)
 def models_sounds() -> None:
     """Télécharge YAMNet et CED-small (sons entendus, 39 Mo, Apache-2.0)."""
     _install(["yamnet", "sounds/ced-small"])
 
 
-@models_app.command("cuda-runtime")
+@models_app.command(
+    "cuda-runtime",
+    help=tr(
+        "Télécharge cuBLAS 12 (NVIDIA, 553 Mo) pour transcrire sur le GPU quand il est libre "
+        "(Windows seulement : sur Mac, la transcription reste sur le processeur).",
+        "Downloads cuBLAS 12 (NVIDIA, 553 MB) to transcribe on the GPU when it is free "
+        "(Windows only: on a Mac, the transcription stays on the processor).",
+    ),
+)
 def models_cuda_runtime() -> None:
     """Télécharge cuBLAS 12 (NVIDIA, 553 Mo) pour transcrire sur le GPU quand il est libre
     (Windows seulement : sur Mac, la transcription reste sur le processeur)."""
@@ -596,40 +849,77 @@ def models_cuda_runtime() -> None:
         _install(["runtime/cublas-12.9"])
     else:
         typer.echo(
-            "La transcription sur le GPU (cuBLAS, cartes NVIDIA) n'existe que sous Windows : sur "
-            "cet ordinateur, la transcription reste sur le processeur.",
+            tr(
+                "La transcription sur le GPU (cuBLAS, cartes NVIDIA) n'existe que sous Windows : "
+                "sur cet ordinateur, la transcription reste sur le processeur.",
+                "Transcription on the GPU (cuBLAS, NVIDIA cards) exists on Windows only: on this "
+                "computer, the transcription stays on the processor.",
+            ),
             err=True,
         )
         raise typer.Exit(1)
 
 
-@models_app.command("ocr")
+@models_app.command(
+    "ocr",
+    help=tr(
+        "Télécharge PP-OCRv6 small (texte à l'écran, 30 Mo, Apache-2.0).",
+        "Downloads PP-OCRv6 small (on-screen text, 30 MB, Apache-2.0).",
+    ),
+)
 def models_ocr() -> None:
     """Télécharge PP-OCRv6 small (texte à l'écran, 30 Mo, Apache-2.0)."""
     _install(["ocr/pp-ocrv6-small"])
 
 
-@models_app.command("subjects")
+@models_app.command(
+    "subjects",
+    help=tr(
+        "Télécharge D-FINE S (personnes et animaux, 42 Mo, Apache-2.0) et YuNet (visages, MIT).",
+        "Downloads D-FINE S (people and animals, 42 MB, Apache-2.0) and YuNet (faces, MIT).",
+    ),
+)
 def models_subjects() -> None:
     """Télécharge D-FINE S (personnes et animaux, 42 Mo, Apache-2.0) et YuNet (visages, MIT)."""
     _install(["detector/d-fine-s-coco", "faces/yunet"])
 
 
-@models_app.command("search")
+@models_app.command(
+    "search",
+    help=tr(
+        "Télécharge EmbeddingGemma-300m q4 (recherche par le sens, FR/EN, 208 Mo, licence Gemma).",
+        "Downloads EmbeddingGemma-300m q4 (search by meaning, FR/EN, 208 MB, Gemma licence).",
+    ),
+)
 def models_search() -> None:
     """Télécharge EmbeddingGemma-300m q4 (recherche par le sens, FR/EN, 208 Mo, licence Gemma)."""
     _install(["embeddings/embeddinggemma-300m-q4"])
 
 
-@models_app.command("audio-text")
+@models_app.command(
+    "audio-text",
+    help=tr(
+        "Télécharge d'un coup Whisper turbo, YAMNet, CED-small et PP-OCRv6 (~1,7 Go).",
+        "Downloads Whisper turbo, YAMNet, CED-small and PP-OCRv6 at once (~1.7 GB).",
+    ),
+)
 def models_audio_text() -> None:
     """Télécharge d'un coup Whisper turbo, YAMNet, CED-small et PP-OCRv6 (~1,7 Go)."""
     _install(["whisper/large-v3-turbo", "yamnet", "sounds/ced-small", "ocr/pp-ocrv6-small"])
 
 
-@models_app.command("list")
+@models_app.command(
+    "list",
+    help=tr(
+        "Liste les modèles téléchargeables et ceux qui sont installés.",
+        "Lists the downloadable models and the installed ones.",
+    ),
+)
 def models_list(
-    verify: Annotated[bool, typer.Option(help="Recalcule les empreintes sha256.")] = False,
+    verify: Annotated[
+        bool,
+        typer.Option(help=tr("Recalcule les empreintes sha256.", "Computes the sha256 again.")),
+    ] = False,
 ) -> None:
     """Liste les modèles téléchargeables et ceux qui sont installés."""
     from vfe_vision.adapters.models.store import ModelStore
@@ -640,9 +930,10 @@ def models_list(
     for status in store.statuses():
         if status.spec.kind == "runtime" and sys.platform != "win32":
             continue  # cuBLAS: Windows and NVIDIA only
-        mark = "installé" if status.installed else "absent"
-        typer.echo(f"{status.spec.id:<24} {mark:<9} {status.spec.size / 1_048_576:7.0f} Mo  "
-                   f"{status.spec.label}")  # fmt: skip
+        mark = tr("installé", "installed") if status.installed else tr("absent", "missing")
+        size = status.spec.size / 1_048_576
+        label = tr(status.spec.label, status.spec.label_en or status.spec.label)
+        typer.echo(f"{status.spec.id:<24} {mark:<9} {size:7.0f} {tr('Mo', 'MB')}  {label}")
         if verify and status.installed:
             problems = store.verify(status.spec)
             failed |= bool(problems)
@@ -651,9 +942,16 @@ def models_list(
     raise typer.Exit(1 if failed else 0)
 
 
-@app.command()
+@app.command(
+    help=tr(
+        "Exporte le schéma OpenAPI (source du client TypeScript).",
+        "Exports the OpenAPI schema (source of the TypeScript client).",
+    ),
+)
 def openapi(
-    output: Annotated[Path, typer.Option(help="Fichier de sortie.")] = Path("openapi.json"),
+    output: Annotated[Path, typer.Option(help=tr("Fichier de sortie.", "Output file."))] = Path(
+        "openapi.json"
+    ),
 ) -> None:
     """Exporte le schéma OpenAPI (source du client TypeScript)."""
     from vfe_vision.api.app import create_app
@@ -663,7 +961,7 @@ def openapi(
     output.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(schema, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
     output.write_bytes(text.encode("utf-8"))  # LF on every platform (stable diffs)
-    typer.echo(f"Schéma OpenAPI écrit dans {output}")
+    typer.echo(tr(f"Schéma OpenAPI écrit dans {output}", f"OpenAPI schema written to {output}"))
 
 
 def main() -> None:
@@ -697,9 +995,14 @@ def _start_again_without(error: ImportError) -> int:
     if aside is None:
         raise error
     typer.echo(
-        f"Windows (Smart App Control) refuse l'extension compilée « {error.name} » : "
-        f"l'application emploie désormais sa version en Python, plus lente et équivalente. "
-        f"Fichier mis de côté : {aside}",
+        tr(
+            f"Windows (Smart App Control) refuse l'extension compilée « {error.name} » : "
+            f"l'application emploie désormais sa version en Python, plus lente et équivalente. "
+            f"Fichier mis de côté : {aside}",
+            f"Windows (Smart App Control) refuses the compiled extension “{error.name}”: the "
+            f"application now uses its Python version, slower and equivalent. File set aside: "
+            f"{aside}",
+        ),
         err=True,
     )
     with subprocess.Popen([sys.executable, "-m", "vfe_vision", *sys.argv[1:]]) as again:

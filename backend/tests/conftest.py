@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -18,6 +19,10 @@ from vfe_vision.adapters.lmstudio.client import LmStudioClient
 from vfe_vision.core.config import Settings
 from vfe_vision.db.migrate import upgrade_database
 from vfe_vision.db.session import Database
+
+# The terminal's messages in French whatever the system's language (core.language): the tests
+# read them, and the help texts are chosen when the command-line module is imported.
+os.environ["VFE_LANG"] = "fr"
 
 FIXTURES = Path(__file__).parent / "fixtures"
 GENERATED = FIXTURES / "generated"

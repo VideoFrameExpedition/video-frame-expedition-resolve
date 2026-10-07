@@ -167,9 +167,11 @@ or GitHub's "Code › Download ZIP" button, then unzip it.
 
    The script uses `winget` to install what is missing (uv, Node.js, FFmpeg, ExifTool), then
    the application's Python packages and its models (about 2 GB, downloaded once;
-   `-SansModeles` skips them). It asks whether to install LM Studio on this PC: the vision model
-   can also run in the LM Studio of another computer. `-AvecLMStudio` or `-SansLMStudio` gives
-   the answer in advance. Accept the Windows (UAC) prompts. Its messages are in French.
+   `-NoModels` skips them). It asks whether to install LM Studio on this PC: the vision model
+   can also run in the LM Studio of another computer. `-WithLMStudio` or `-NoLMStudio` gives
+   the answer in advance. Accept the Windows (UAC) prompts. Its messages are in English, or in
+   French on a Windows set to French; `VFE_LANG=en` or `VFE_LANG=fr` in the `.env` file decides,
+   for `run.bat` and the `vfe` commands too.
 2. In LM Studio, download a vision model (for example `qwen/qwen3-vl-8b`), load it and start the
    local server (see below when it runs on another computer).
 3. Double-click `run.bat`. The first time, it builds the web interface (one or two minutes),
@@ -185,10 +187,11 @@ or GitHub's "Code › Download ZIP" button, then unzip it.
 
    The script uses [Homebrew](https://brew.sh) to install what is missing (uv, Node.js, the full
    build of FFmpeg, ExifTool), then the application's Python packages and its models (about
-   2 GB, downloaded once; `--sans-modeles` skips them). It asks whether to install LM Studio on
-   this Mac; `--avec-lm-studio` or `--sans-lm-studio` gives the answer in advance. Homebrew
+   2 GB, downloaded once; `--no-models` skips them). It asks whether to install LM Studio on
+   this Mac; `--with-lm-studio` or `--without-lm-studio` gives the answer in advance. Homebrew
    itself is installed first when the Mac does not have it (it asks for your password). Its
-   messages are in French.
+   messages follow the Mac's language (English or French), like those of `run.command`;
+   `VFE_LANG` in the `.env` file can decide.
 2. In LM Studio, download a vision model (for example `qwen/qwen3-vl-4b`, or `qwen/qwen3-vl-8b`
    with 32 GB of memory), load it and start the local server.
 3. Double-click `run.command`. The first time, it builds the web interface (one or two
@@ -304,8 +307,8 @@ All the tools: [docs/mcp-tools.md](docs/mcp-tools.md).
 - [The logo](docs/brand/README.md)
 
 The application was developed in French. The interface, its help page, this page and the
-documents above exist in both languages; the messages of the launcher and of the command line
-are in French.
+documents above exist in both languages, and so do the messages of the launchers, of the
+installation scripts and of the command line, which follow the system's language.
 
 ## Licence
 

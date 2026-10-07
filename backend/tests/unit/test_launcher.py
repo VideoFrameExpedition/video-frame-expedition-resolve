@@ -56,3 +56,35 @@ def test_the_launcher_and_the_installer_look_in_homebrew_folders() -> None:
         text = (ROOT / name).read_text(encoding="utf-8")
         assert "/opt/homebrew/bin" in text, name
         assert "/usr/local/bin" in text, name
+
+
+QUOTED = r'"(?:[^"\\`]|[\\`].)*"'  # a double-quoted text, escapes of sh (\") and PowerShell (`")
+
+
+def _statements(text: str) -> str:
+    """One statement per line: the lines continued with a backslash joined."""
+    return re.sub(r"\\\n\s*", " ", text)
+
+
+def test_every_message_of_the_launchers_and_installers_exists_in_both_languages() -> None:
+    """French on a French system, English otherwise (core.language): a message given in one
+    language only would show up untranslated."""
+    bat = (ROOT / "run.bat").read_text(encoding="utf-8")
+    calls = re.findall(r"call :say\b.*", bat)
+    assert calls
+    for call in calls:
+        assert re.fullmatch(rf"call :say {QUOTED} +{QUOTED}", call.strip()), call
+
+    for name in ("run.command", "scripts/bootstrap.sh"):
+        text = _statements((ROOT / name).read_text(encoding="utf-8"))
+        uses = re.findall(r"(?<![\w-])say\s.*", text)
+        assert uses, name
+        for use in uses:
+            assert re.match(rf"say {QUOTED} +{QUOTED}", use), (name, use)
+        assert ". scripts/language.sh" in text, name
+
+    ps1 = (ROOT / "scripts" / "bootstrap.ps1").read_text(encoding="utf-8-sig")
+    uses = re.findall(r"\(T\s.*", ps1)
+    assert uses
+    for use in uses:
+        assert re.match(rf"\(T {QUOTED} +{QUOTED}\)", use), use

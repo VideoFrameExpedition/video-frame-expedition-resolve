@@ -2,24 +2,54 @@
 # (through winget), the application's Python packages, then its models.
 #
 #   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1
-#   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -SansModeles
-#   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -AvecLMStudio
-#   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -SansLMStudio
+#   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -NoModels       (or -SansModeles)
+#   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -WithLMStudio   (or -AvecLMStudio)
+#   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -NoLMStudio     (or -SansLMStudio)
 #
 # LM Studio, which runs the vision model, is installed only when the person running the script
-# wants it: the question is asked unless -AvecLMStudio or -SansLMStudio answered it in advance,
+# wants it: the question is asked unless -WithLMStudio or -NoLMStudio answered it in advance,
 # and LM Studio is left out when nobody is at the keyboard. The vision model can also come from
 # the LM Studio of another computer (System page of the application).
 #
+# The messages are in English, or in French on a Windows set to French. VFE_LANG=fr or en (an
+# environment variable, or a line of the .env file next to run.bat) decides.
+#
 # Safe to run again: what is already there is left as it is. Neither pnpm nor just is needed:
 # run.bat builds the interface with Node only (Smart App Control blocks their executables on
-# some PCs). The messages on screen are in French.
+# some PCs).
 #Requires -Version 5.1
-param([switch]$SansModeles, [switch]$AvecLMStudio, [switch]$SansLMStudio)
+param(
+    [Alias("SansModeles")][switch]$NoModels,
+    [Alias("AvecLMStudio")][switch]$WithLMStudio,
+    [Alias("SansLMStudio")][switch]$NoLMStudio
+)
 $ErrorActionPreference = "Stop"
+$Root = Split-Path $PSScriptRoot -Parent
 
-if ($AvecLMStudio -and $SansLMStudio) {
-    throw "Choisissez -AvecLMStudio ou -SansLMStudio, pas les deux."
+function Get-MessageLanguage {
+    $lang = $env:VFE_LANG
+    $envFile = Join-Path $Root ".env"
+    if (-not $lang -and (Test-Path $envFile)) {
+        $line = Get-Content $envFile -Encoding UTF8 |
+            Where-Object { $_ -match '^\s*VFE_LANG\s*=' } | Select-Object -Last 1
+        if ($line) { $lang = ($line -split '=', 2)[1].Trim().Trim('"', "'") }
+    }
+    if (-not $lang) { $lang = (Get-UICulture).TwoLetterISOLanguageName }
+    if ($lang -like "fr*") { return "fr" }
+    return "en"
+}
+
+# Passed on to the application's commands started below: one language on screen.
+$env:VFE_LANG = Get-MessageLanguage
+
+# The text in the language of the messages: the first in French, the second in English.
+function T([string]$Fr, [string]$En) {
+    if ($env:VFE_LANG -eq "fr") { return $Fr }
+    return $En
+}
+
+if ($WithLMStudio -and $NoLMStudio) {
+    throw (T "Choisissez -AvecLMStudio ou -SansLMStudio, pas les deux." "Choose -WithLMStudio or -NoLMStudio, not both.")
 }
 
 function Update-Path {
@@ -32,19 +62,29 @@ function Install-IfMissing([string]$Name, [scriptblock]$IsThere, [string]$Winget
         Write-Host "[ok] $Name"
         return
     }
-    Write-Host "[..] Installation de $Name ($WingetId)"
+    Write-Host (T "[..] Installation de $Name ($WingetId)" "[..] Installing $Name ($WingetId)")
     # winget's own catalogue only: the Microsoft Store one may be missing (Store blocked in a
     # company, Windows Sandbox) and make the search fail before anything is installed.
     winget install --id $WingetId -e --source winget `
         --accept-package-agreements --accept-source-agreements --silent
     if ($LASTEXITCODE -ne 0) {
-        throw "winget n'a pas pu installer $Name (code $LASTEXITCODE)."
+        throw (T "winget n'a pas pu installer $Name (code $LASTEXITCODE)." "winget could not install $Name (code $LASTEXITCODE).")
     }
     Update-Path
 }
 
 function Test-Command([string]$Command) {
     return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+# LM Studio is installed for the user (its own installer) or for the whole computer (winget, a
+# deployment by an administrator): it is looked for in both places.
+function Find-LMStudio {
+    foreach ($exe in (Join-Path $env:LOCALAPPDATA "Programs\LM Studio\LM Studio.exe"),
+                     (Join-Path $env:ProgramFiles "LM Studio\LM Studio.exe")) {
+        if (Test-Path $exe) { return $exe }
+    }
+    return $null
 }
 
 function Test-Keyboard {
@@ -60,10 +100,10 @@ function Test-Keyboard {
 
 function Read-LMStudioChoice {
     Write-Host ""
-    Write-Host "LM Studio fait tourner le modèle de vision. Il peut être installé sur ce PC, ou rester"
-    Write-Host "sur un autre ordinateur du réseau (son adresse se donne dans l'application, page Système)."
+    Write-Host (T "LM Studio fait tourner le modèle de vision. Il peut être installé sur ce PC, ou rester" "LM Studio runs the vision model. It can be installed on this PC, or stay on another")
+    Write-Host (T "sur un autre ordinateur du réseau (son adresse se donne dans l'application, page Système)." "computer of the network (its address is given in the application, System page).")
     try {
-        $answer = Read-Host "Installer LM Studio sur ce PC ? [o/N]"
+        $answer = Read-Host (T "Installer LM Studio sur ce PC ? [o/N]" "Install LM Studio on this PC? [y/N]")
     } catch {
         return $false
     }
@@ -71,7 +111,7 @@ function Read-LMStudioChoice {
 }
 
 if (-not (Test-Command "winget")) {
-    throw "winget est introuvable : installez « App Installer » depuis le Microsoft Store, puis relancez."
+    throw (T "winget est introuvable : installez « App Installer » depuis le Microsoft Store, puis relancez." "winget cannot be found: install App Installer from the Microsoft Store, then run this again.")
 }
 
 Install-IfMissing "uv" { Test-Command "uv" } "astral-sh.uv"
@@ -79,46 +119,43 @@ Install-IfMissing "Node.js" { Test-Command "node" } "OpenJS.NodeJS.LTS"
 Install-IfMissing "FFmpeg" { Test-Command "ffmpeg" } "Gyan.FFmpeg"
 Install-IfMissing "ExifTool" { Test-Command "exiftool" } "OliverBetz.ExifTool"
 
-$LMStudioExe = Join-Path $env:LOCALAPPDATA "Programs\LM Studio\LM Studio.exe"
-if (Test-Path $LMStudioExe) {
+if (Find-LMStudio) {
     Write-Host "[ok] LM Studio"
 } else {
-    $install = [bool]$AvecLMStudio
-    if (-not $AvecLMStudio -and -not $SansLMStudio -and (Test-Keyboard)) {
+    $install = [bool]$WithLMStudio
+    if (-not $WithLMStudio -and -not $NoLMStudio -and (Test-Keyboard)) {
         $install = Read-LMStudioChoice
     }
     if ($install) {
-        Install-IfMissing "LM Studio" { Test-Path $LMStudioExe } "ElementLabs.LMStudio"
+        Install-IfMissing "LM Studio" { [bool](Find-LMStudio) } "ElementLabs.LMStudio"
     } else {
-        Write-Host "[--] LM Studio n'est pas installé sur ce PC"
+        Write-Host (T "[--] LM Studio n'est pas installé sur ce PC" "[--] LM Studio is not installed on this PC")
     }
 }
 
-Set-Location (Split-Path $PSScriptRoot -Parent)
+Set-Location $Root
 
-# Exactly the versions of uv.lock (--locked), without the development tools (--no-dev);
-# --inexact leaves alone what a developer installed on top.
-Write-Host "[..] Paquets Python de l'application"
+Write-Host (T "[..] Paquets Python de l'application" "[..] The application's Python packages")
 uv sync --locked --no-dev --inexact --project backend
-if ($LASTEXITCODE -ne 0) { throw "uv sync a échoué (code $LASTEXITCODE)." }
+if ($LASTEXITCODE -ne 0) { throw (T "uv sync a échoué (code $LASTEXITCODE)." "uv sync failed (code $LASTEXITCODE).") }
 
-if (-not $SansModeles) {
+if (-not $NoModels) {
     # Offline places, sounds, speech and on-screen text, subjects, search by meaning: ~2 GB.
     foreach ($pack in "geonames", "audio-text", "subjects", "search") {
-        Write-Host "[..] Modèles : $pack"
+        Write-Host (T "[..] Modèles : $pack" "[..] Models: $pack")
         uv run --frozen --no-dev --project backend python -m vfe_vision models $pack
-        if ($LASTEXITCODE -ne 0) { throw "Le téléchargement des modèles « $pack » a échoué." }
+        if ($LASTEXITCODE -ne 0) { throw (T "Le téléchargement des modèles « $pack » a échoué." "Downloading the $pack models failed.") }
     }
 }
 
 Write-Host ""
-if (Test-Path $LMStudioExe) {
-    Write-Host "Terminé. Dans LM Studio, téléchargez un modèle de vision (par exemple qwen/qwen3-vl-8b),"
-    Write-Host "chargez-le et activez le serveur local, puis double-cliquez sur run.bat."
+if (Find-LMStudio) {
+    Write-Host (T "Terminé. Dans LM Studio, téléchargez un modèle de vision (par exemple qwen/qwen3-vl-8b)," "Done. In LM Studio, download a vision model (for example qwen/qwen3-vl-8b),")
+    Write-Host (T "chargez-le et activez le serveur local, puis double-cliquez sur run.bat." "load it and start the local server, then double-click run.bat.")
 } else {
-    Write-Host "Terminé. Sur l'ordinateur qui a LM Studio, chargez un modèle de vision et laissez son"
-    Write-Host "serveur accepter le réseau local (Developer › Server Settings › « Serve on Local Network »)."
-    Write-Host "Double-cliquez ensuite sur run.bat ; dans l'application, page Système, carte"
-    Write-Host "« LM Studio » : choisissez « Sur un autre ordinateur » et tapez son adresse."
-    Write-Host "Pour installer LM Studio sur ce PC plus tard : relancez ce script avec -AvecLMStudio."
+    Write-Host (T "Terminé. Sur l'ordinateur qui a LM Studio, chargez un modèle de vision et laissez son" "Done. On the computer that has LM Studio, load a vision model and let its server accept")
+    Write-Host (T "serveur accepter le réseau local (Developer › Server Settings › « Serve on Local Network »)." "the local network (Developer › Server Settings › `"Serve on Local Network`").")
+    Write-Host (T "Double-cliquez ensuite sur run.bat ; dans l'application, page Système, carte" "Then double-click run.bat; in the application, System page, `"LM Studio`" card:")
+    Write-Host (T "« LM Studio » : choisissez « Sur un autre ordinateur » et tapez son adresse." "choose `"On another computer`" and type its address.")
+    Write-Host (T "Pour installer LM Studio sur ce PC plus tard : relancez ce script avec -AvecLMStudio." "To install LM Studio on this PC later: run this script again with -WithLMStudio.")
 }
