@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from vfe_vision.core import native_modules
 from vfe_vision.core.errors import VfeError
 from vfe_vision.core.logging import get_logger
 
@@ -96,6 +97,15 @@ def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(Exception)
     async def _unexpected(request: Request, exc: Exception) -> JSONResponse:
         log.error("unhandled error", path=request.url.path, exc_info=exc)
+        refusal = native_modules.describe(exc)  # a compiled module imported on demand
+        if refusal is not None:
+            return problem(
+                503,
+                "Fichier refusé par Windows",
+                refusal,
+                code="refused_by_windows",
+                instance=request.url.path,
+            )
         return problem(
             500,
             "Erreur interne",

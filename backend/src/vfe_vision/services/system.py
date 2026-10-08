@@ -7,6 +7,7 @@ import platform
 import re
 import shutil
 import sys
+from collections.abc import Iterable
 from enum import StrEnum
 
 import anyio
@@ -17,6 +18,7 @@ from vfe_vision import __version__
 from vfe_vision.adapters.lmstudio.catalog import ModelInfo, pick_vision_instance
 from vfe_vision.adapters.models.catalog import DEFAULTS, spec
 from vfe_vision.adapters.models.store import ModelStore
+from vfe_vision.core import native_modules
 from vfe_vision.core.errors import (
     ConflictError,
     ExternalToolError,
@@ -74,14 +76,12 @@ def _tool_version(label: str, args: list[str], check_id: str, hint: str) -> Chec
     return Check(id=check_id, label=label, status=CheckStatus.OK, detail=text[0] if text else "ok")
 
 
-_SMART_APP_CONTROL_HINT = (
-    "Windows Smart App Control peut bloquer une DLL inconnue le temps de vérifier sa réputation : "
-    "relancez la commande ; si le blocage persiste, réinstallez le paquet concerné. Une exclusion "
-    "de l'antivirus Defender n'a aucun effet sur Smart App Control."
-)
+# Imported for real by the check: the analyses need them (av and tokenizers are the native
+# parts of faster-whisper, the transcription child; xxhash identifies the files).
+NEEDED_MODULES = ("cv2", "onnxruntime", "ctranslate2", "av", "tokenizers", "numpy", "xxhash")
 
 
-def _failed_imports(modules: list[str]) -> list[str]:
+def _failed_imports(modules: Iterable[str]) -> list[str]:
     failed: list[str] = []
     for name in modules:
         try:
@@ -91,40 +91,46 @@ def _failed_imports(modules: list[str]) -> list[str]:
     return failed
 
 
-def _native_modules() -> Check:
-    """Import native extensions early: on Windows, Smart App Control may block unknown
-    DLLs.
+def binaries() -> Check:
+    """The compiled files the application runs with, as Windows sees them, then the
+    modules the analyses need, imported for real (a missing library shows there too).
 
-    ``win32job`` (pywin32, pulled in by the MCP SDK) only serves the SDK's stdio client, which
-    the app does not use (its own Job Objects go through ``ctypes``): a block is a warning.
+    A refused file is a warning when the application goes on without it (its plain Python twin,
+    or a package that does without its compiled part), an error otherwise.
     """
-    # av and tokenizers are the native parts of faster-whisper (the transcription child).
-    required = ["cv2", "onnxruntime", "ctranslate2", "av", "tokenizers", "numpy"]
-    optional = ["win32job"] if sys.platform == "win32" else []
-    hint = _SMART_APP_CONTROL_HINT if sys.platform == "win32" else None
-    failed = _failed_imports(required)
-    if failed:
+    failed = _failed_imports(NEEDED_MODULES)
+    checked, refused = native_modules.scan()
+    outcomes = [(native_modules.named(r), native_modules.consequence(r)) for r in refused]
+    serious = [name for name, consequence in outcomes if consequence is None]
+    tolerated = [f"{name} : {consequence}" for name, consequence in outcomes if consequence]
+    hint = native_modules.HINT if refused else None
+    if failed or serious:
+        parts = [
+            *(["Refusés par Windows : " + ", ".join(serious)] if serious else []),
+            *(["Chargement impossible : " + "; ".join(failed)] if failed else []),
+            *(["L'application s'en passe : " + "; ".join(tolerated)] if tolerated else []),
+        ]
         return Check(
             id="native",
             label="Modules natifs",
             status=CheckStatus.ERROR,
-            detail="Chargement impossible : " + "; ".join(failed),
+            detail=" — ".join(parts),
             hint=hint,
         )
-    failed = _failed_imports(optional)
-    if failed:
+    if tolerated:
         return Check(
             id="native",
             label="Modules natifs",
             status=CheckStatus.WARNING,
-            detail="Module facultatif bloqué : " + "; ".join(failed),
+            detail="Refusés par Windows, l'application s'en passe : " + "; ".join(tolerated),
             hint=hint,
         )
+    files = f"{checked} fichiers compilés acceptés par Windows ; " if checked else ""
     return Check(
         id="native",
         label="Modules natifs",
         status=CheckStatus.OK,
-        detail=", ".join(required + optional),
+        detail=files + ", ".join(NEEDED_MODULES),
     )
 
 
@@ -585,7 +591,7 @@ async def doctor(c: AppContainer) -> DoctorReport:
             _tool_version("ExifTool", [s.exiftool_path, "-ver"], "exiftool",
                           _install_hint("ExifTool", "OliverBetz.ExifTool", "exiftool",
                                         "VFE_EXIFTOOL_PATH")),
-            _native_modules(),
+            binaries(),
             _gpu(),
             _gpu_transcription(c),
             _models(c),

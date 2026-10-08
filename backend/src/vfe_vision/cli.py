@@ -388,34 +388,59 @@ def doctor(
             ),
         ),
     ] = False,
+    binaries_only: Annotated[
+        bool,
+        typer.Option(
+            "--binaries",
+            help=tr(
+                "Vérifie seulement les fichiers compilés de l'application : Windows (Smart App "
+                "Control) les accepte-t-il ?",
+                "Only checks the application's compiled files: does Windows (Smart App Control) "
+                "accept them?",
+            ),
+        ),
+    ] = False,
 ) -> None:
     """Vérifie l'environnement : ffmpeg, ExifTool, LM Studio, GPU, modules natifs, stockage.
 
     Avec --vision, mesure d'abord comment le modèle de vision chargé écrit ses positions :
-    par l'application si elle tourne, sinon directement."""
+    par l'application si elle tourne, sinon directement. Avec --binaries, seulement les fichiers
+    compilés (fin de l'installation)."""
+    import platform
+
     import anyio
     from rich.console import Console
     from rich.table import Table
 
-    from vfe_vision.core.config import get_settings
-    from vfe_vision.db.migrate import upgrade_database
-    from vfe_vision.services.container import AppContainer
-    from vfe_vision.services.system import CheckStatus, DoctorReport, doctor
+    from vfe_vision.services.system import CheckStatus, DoctorReport, binaries, doctor
 
-    settings = get_settings()
-    settings.ensure_dirs()
-    upgrade_database(settings.db_path, settings.backups_dir)
-    # Before the checks, so that the positions check shows what was just measured.
-    calibration = _vision_doctor(settings, force=force) if vision else None
-    container = AppContainer.create(settings)
+    calibration: _Calibration | None = None
+    if binaries_only:
+        report = DoctorReport(
+            version=__version__,
+            python=platform.python_version(),
+            platform=platform.platform(),
+            checks=[binaries()],
+        )
+    else:
+        from vfe_vision.core.config import get_settings
+        from vfe_vision.db.migrate import upgrade_database
+        from vfe_vision.services.container import AppContainer
 
-    async def run() -> DoctorReport:
-        try:
-            return await doctor(container)
-        finally:
-            await container.aclose()
+        settings = get_settings()
+        settings.ensure_dirs()
+        upgrade_database(settings.db_path, settings.backups_dir)
+        # Before the checks, so that the positions check shows what was just measured.
+        calibration = _vision_doctor(settings, force=force) if vision else None
+        container = AppContainer.create(settings)
 
-    report = anyio.run(run)
+        async def run() -> DoctorReport:
+            try:
+                return await doctor(container)
+            finally:
+                await container.aclose()
+
+        report = anyio.run(run)
     if as_json:
         if calibration is None:
             typer.echo(report.model_dump_json(indent=2))
@@ -1005,10 +1030,14 @@ def _never_fail_on_a_character() -> None:
             stream.reconfigure(errors="replace")
 
 
+ISSUES_URL = "https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/issues"
+
+
 def _start_again_without(error: ImportError) -> int:
     """Windows' Smart App Control refused a compiled extension that the package also has in
-    plain Python: set the extension aside and run the same command again. Any other
-    import error stands."""
+    plain Python: set the extension aside and run the same command again. Refused
+    with nothing to stand in for it: say which file, and stop. Any other import error
+    stands."""
     import subprocess
     import sys
 
@@ -1016,7 +1045,10 @@ def _start_again_without(error: ImportError) -> int:
 
     aside = native_modules.set_aside(error)
     if aside is None:
-        raise error
+        if not native_modules.is_refusal(error):
+            raise error
+        typer.echo(_refusal_message(error), err=True)
+        return native_modules.REFUSED_EXIT
     typer.echo(
         tr(
             f"Windows (Smart App Control) refuse l'extension compilée « {error.name} » : "
@@ -1034,3 +1066,39 @@ def _start_again_without(error: ImportError) -> int:
                 return again.wait()
             except KeyboardInterrupt:  # Ctrl+C reached the new process too: wait for its end
                 continue
+
+
+def _refusal_message(error: ImportError) -> str:
+    """What Windows refused, why, and what to do, instead of a traceback."""
+    from vfe_vision.core import native_modules
+
+    found = native_modules.refused_behind(error)
+    files = (
+        "\n".join(
+            f"  {refused.path}" + (f"  ({refused.package})" if refused.package else "")
+            for refused in found
+        )
+        or f"  {error}"
+    )
+    return tr(
+        "Windows a refusé de charger un fichier de l'application (Smart App Control) :\n"
+        f"{files}\n"
+        "Smart App Control bloque un fichier non signé que Microsoft ne connaît pas encore\n"
+        "assez ; cela ne veut pas dire qu'il est dangereux, et son verdict peut changer.\n"
+        "Que faire :\n"
+        "  1. Relancez dans quelques minutes : Windows revoit parfois son verdict.\n"
+        "  2. Relancez install.bat, avec la dernière version de l'application : elle peut\n"
+        "     choisir un fichier que Windows accepte.\n"
+        "  3. Sinon, signalez-le en joignant ce message :\n"
+        f"     {ISSUES_URL}",
+        "Windows refused to load a file of the application (Smart App Control):\n"
+        f"{files}\n"
+        "Smart App Control blocks an unsigned file that Microsoft does not know well enough yet;\n"
+        "this does not mean it is harmful, and its verdict can change.\n"
+        "What to do:\n"
+        "  1. Start again in a few minutes: Windows sometimes reviews its verdict.\n"
+        "  2. Run install.bat again, with the latest version of the application: it may pick\n"
+        "     a file that Windows accepts.\n"
+        "  3. Otherwise, report it with this message:\n"
+        f"     {ISSUES_URL}",
+    )

@@ -1,6 +1,6 @@
 [project]
 name = "vfe-vision"
-version = "1.2.0"
+version = "1.2.1"
 description = "Video Frame Expedition for DaVinci Resolve — local-first video analysis with a local vision model (LM Studio), web UI and MCP server."
 readme = "README.md"
 license = "Apache-2.0"
@@ -25,7 +25,6 @@ dependencies = [
     "nvidia-ml-py>=13.615.71",
     "onnxruntime>=1.30.0",
     "opencv-python-headless>=5.0.0.93",
-    "orjson>=3.12.0",
     "pillow>=12.3.0",
     "platformdirs>=4.11.15",
     "pydantic>=2.13.5",
@@ -36,6 +35,9 @@ dependencies = [
     "structlog>=26.1.0",
     "tenacity>=9.1.4",
     "timezonefinder>=9.0.0",
+    # timezonefinder's h3: 4.5.0 is too recent for Smart App Control, which refuses its compiled
+    # modules (no reputation yet); 4.4.2 loads.
+    "h3>=4,<4.5",
     "tokenizers>=0.23.2",  # EmbeddingGemma's tokenizer (already a faster-whisper dependency)
     "typer>=0.27.2",
     "tzdata>=2026.4",

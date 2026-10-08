@@ -23,6 +23,7 @@ from vfe_vision.adapters.lmstudio.catalog import pick_vision_instance
 from vfe_vision.adapters.lmstudio.client import LmStudioClient
 from vfe_vision.adapters.models.store import ModelStore
 from vfe_vision.adapters.weather.open_meteo import OpenMeteoClient
+from vfe_vision.core import native_modules
 from vfe_vision.core.cancel import CancelToken
 from vfe_vision.core.config import Settings
 from vfe_vision.core.errors import CancelledError, ConflictError, VfeError
@@ -351,7 +352,8 @@ class Worker:
             job_log.warning("job failed", error=exc.detail)
         except Exception as exc:  # noqa: BLE001 - a job bug must not kill the worker
             job_log.exception("job crashed")
-            status, error = JobStatus.FAILED, f"{type(exc).__name__}: {exc}"
+            refusal = native_modules.describe(exc)  # a compiled module Windows refuses
+            status, error = JobStatus.FAILED, refusal or f"{type(exc).__name__}: {exc}"
         finally:
             self._running.pop(job.id, None)
 

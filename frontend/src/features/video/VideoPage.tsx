@@ -256,9 +256,11 @@ export function VideoPage() {
               value={tab}
               onValueChange={(value) => {
                 if ((VIDEO_TABS as readonly string[]).includes(value)) {
+                  // The tab is in the address; the page stays where the user scrolled it.
                   void navigate({
                     search: (prev) => ({ ...prev, tab: value as VideoTab }),
                     replace: true,
+                    resetScroll: false,
                   });
                 }
               }}

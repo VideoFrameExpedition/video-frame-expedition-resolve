@@ -44,6 +44,7 @@ from vfe_vision.adapters.asr.runner import (
     device_env,
     encode_request,
 )
+from vfe_vision.core import native_modules
 from vfe_vision.core.cancel import CancelToken
 from vfe_vision.core.errors import CancelledError, ExternalToolError
 from vfe_vision.core.procs import BELOW_NORMAL_PRIORITY_CLASS, CREATE_NO_WINDOW, KillOnCloseJob
@@ -71,10 +72,8 @@ _STDERR_LINES = 60
 _EOF = None
 
 SMART_APP_CONTROL_HINT = (
-    "Windows Smart App Control a peut-être bloqué une DLL du moteur de transcription le temps de "
-    "vérifier sa réputation : relancez l'analyse ; si le blocage persiste, réinstallez le paquet "
-    "concerné (faster-whisper, ctranslate2, av, tokenizers). Une exclusion de l'antivirus "
-    "Defender n'a aucun effet sur Smart App Control."
+    "Windows refuse un fichier du moteur de transcription (ctranslate2, av, tokenizers) ; la page "
+    "Système dit lequel. " + native_modules.HINT
 )
 
 # Phase -> (overall fraction, message). Loading covers 0-5 %, language detection 5-10 %, the
@@ -264,7 +263,7 @@ class _Session:
 
     def _failure(self, detail: str) -> ExternalToolError:
         blob = detail + "\n" + "\n".join(self.stderr_tail)
-        hint = SMART_APP_CONTROL_HINT if "DLL load failed" in blob else None
+        hint = SMART_APP_CONTROL_HINT if native_modules.refusal_in(blob) else None
         message = f"{detail} — {hint}" if hint else detail
         return ExternalToolError(message, tool="asr", hint=hint, returncode=self.proc.poll())
 

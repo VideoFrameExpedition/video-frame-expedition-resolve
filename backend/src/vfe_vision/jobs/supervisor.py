@@ -12,6 +12,7 @@ from collections import deque
 
 from vfe_vision.core.config import Settings
 from vfe_vision.core.logging import get_logger
+from vfe_vision.core.native_modules import REFUSED_EXIT
 from vfe_vision.core.procs import KillOnCloseJob
 
 log = get_logger(__name__)
@@ -88,6 +89,9 @@ class WorkerSupervisor:
                 return
             code = proc.wait()
             if self._stopping.is_set():
+                return
+            if code == REFUSED_EXIT:  # Windows refuses one of its files: starting again won't do
+                log.critical("worker refused by Windows (Smart App Control), analyses stopped")
                 return
             now = time.monotonic()
             self._restarts.append(now)

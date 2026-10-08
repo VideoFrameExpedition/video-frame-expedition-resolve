@@ -62,6 +62,7 @@ export function SearchPage() {
         void navigate({
           search: (prev) => ({ ...prev, q: query.trim() || undefined }),
           replace: true,
+          resetScroll: false,
         });
       }
     }, 300);
@@ -74,6 +75,7 @@ export function SearchPage() {
     void navigate({
       search: (prev: SearchPageSearch) => (clear ? withoutFilters(prev) : { ...prev, ...patch }),
       replace: true,
+      resetScroll: false,
     });
   };
 
@@ -164,6 +166,7 @@ export function SearchPage() {
           void navigate({
             search: (prev) => ({ ...prev, q: query.trim() || undefined }),
             replace: true,
+            resetScroll: false,
           });
         }}
       >

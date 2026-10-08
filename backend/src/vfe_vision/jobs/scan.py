@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Literal
 
 import sqlalchemy as sa
-import xxhash
 
 from vfe_vision.core.cancel import CancelToken
 from vfe_vision.core.errors import ConflictError, NotFoundError
@@ -60,6 +59,10 @@ class ScanReport:
 
 def fingerprint(path: Path, size: int) -> str:
     """xxh3-128 of the size and three 4 MiB samples (start, middle, end): fast and stable."""
+    # Compiled: imported here, so that Windows refusing it stops the analyses, not the
+    # application.
+    import xxhash
+
     digest = xxhash.xxh3_128()
     digest.update(size.to_bytes(8, "little"))
     with path.open("rb") as handle:

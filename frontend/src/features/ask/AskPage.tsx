@@ -123,6 +123,7 @@ export function AskPage() {
         void navigate({
           search: (prev: AskPageSearch) => ({ ...prev, id: result.id }),
           replace: true,
+          resetScroll: false,
         });
       }
       // A stopped answer is kept once the server notices the closed connection.
@@ -150,6 +151,7 @@ export function AskPage() {
         return kept;
       },
       replace: true,
+      resetScroll: false,
     });
   };
 
@@ -158,7 +160,11 @@ export function AskPage() {
     if (!text || busy || blocked) {
       return;
     }
-    void navigate({ search: (prev: AskPageSearch) => filtersOf(prev), replace: true });
+    void navigate({
+      search: (prev: AskPageSearch) => filtersOf(prev),
+      replace: true,
+      resetScroll: false,
+    });
     void stream.ask({
       question: text,
       filters: askFilters(filters),
@@ -173,15 +179,20 @@ export function AskPage() {
     }
   };
 
+  // Another answer: back to the top, where it starts (the history is below it on a phone).
   const open = (id: string): void => {
     stream.reset();
-    void navigate({ search: (prev: AskPageSearch) => ({ ...prev, id }), replace: true });
+    void navigate({
+      search: (prev: AskPageSearch) => ({ ...prev, id }),
+      replace: true,
+      resetScroll: true,
+    });
   };
 
   const askAgain = (text: string, from: AskFilters): void => {
     stream.reset();
     setQuestion(text);
-    void navigate({ search: () => fromAskFilters(from), replace: true });
+    void navigate({ search: () => fromAskFilters(from), replace: true, resetScroll: true });
     input.current?.focus();
   };
 
@@ -190,7 +201,11 @@ export function AskPage() {
       onSuccess: () => {
         if (id === search.id || id === liveId) {
           stream.reset();
-          void navigate({ search: (prev: AskPageSearch) => filtersOf(prev), replace: true });
+          void navigate({
+            search: (prev: AskPageSearch) => filtersOf(prev),
+            replace: true,
+            resetScroll: false,
+          });
         }
       },
     });

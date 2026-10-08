@@ -168,7 +168,10 @@ or GitHub's "Code › Download ZIP" button, then unzip it.
    The script uses `winget` to install what is missing (uv, Node.js, FFmpeg, ExifTool; Node.js
    and ExifTool from their official ZIP when their installer is refused), then
    the application's Python packages and its models (about 2 GB, downloaded once;
-   `-NoModels` skips them), and adds "Video Frame Expedition" to the Start menu. It asks
+   `-NoModels` skips them), and adds "Video Frame Expedition" to the Start menu. When Smart
+   App Control (Windows 11) is on or in evaluation, it also installs Python 3.12 from
+   python.org, signed, on which the application runs; then it asks Windows whether it refuses
+   any of the application's compiled files, and names those. It asks
    whether to install LM Studio on this PC: the vision model
    can also run in the LM Studio of another computer. `-WithLMStudio` or `-NoLMStudio` gives
    the answer in advance. Accept the Windows (UAC) prompts. Its messages are in English, or in
@@ -231,7 +234,8 @@ uv run --frozen --no-dev --project backend python -m vfe_vision <command>
 ```
 
 For example, `vfe doctor` checks FFmpeg, ExifTool, LM Studio and the GPU (on a Mac, the chip
-and its memory).
+and its memory); `vfe doctor --binaries` only what Windows (Smart App Control) thinks of the
+application's compiled files.
 
 ## Quick start
 

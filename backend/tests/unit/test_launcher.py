@@ -90,11 +90,32 @@ def test_node_comes_from_its_zip_when_its_installer_is_refused() -> None:
     # Under Smart App Control, Node.js's ZIP comes first; ExifTool's only when winget fails.
     assert '"OpenJS.NodeJS.LTS" { Install-NodeFromZip } -OtherwiseFirst:$Sac' in script
     assert '"OliverBetz.ExifTool" { Install-ExifToolFromZip }\n' in script
-    assert "VerifiedAndReputablePolicyState -eq 1" in script
+    assert "$states -contains $policy.VerifiedAndReputablePolicyState" in script
     assert "SHASUMS256.txt" in script
     assert "exiftool.org/checksums.txt" in script
     assert "Get-FileHash $zip -Algorithm SHA256" in script
     assert r"%LOCALAPPDATA%\Programs\nodejs" in (ROOT / "run.bat").read_text(encoding="utf-8")
+
+
+def test_the_windows_installation_asks_windows_about_every_compiled_file() -> None:
+    """Smart App Control may refuse a compiled file of a package: the installation says which,
+    right after the packages, rather than the first start."""
+    script = (ROOT / "scripts" / "bootstrap.ps1").read_text(encoding="utf-8-sig")
+    check = script.index("python -m vfe_vision doctor --binaries")
+    assert script.index("uv sync ") < check < script.index("models $pack")
+    assert "$Refused = $LASTEXITCODE -ne 0" in script
+    assert "if ($Refused) {" in script
+
+
+def test_under_smart_app_control_the_application_runs_on_a_signed_python() -> None:
+    """The Python uv downloads is not signed, and a build a few days old may be refused in part
+    (its _sqlite3.pyd, 08/10): under Smart App Control, on or in evaluation, python.org's."""
+    script = (ROOT / "scripts" / "bootstrap.ps1").read_text(encoding="utf-8-sig")
+    assert "if (Test-SmartAppControl -OrEvaluation) {" in script
+    assert '"Python.Python.3.12" -Scope user' in script
+    assert '(Get-AuthenticodeSignature $python).Status -eq "Valid"' in script
+    assert "--project backend --python $SignedPython" in script
+    assert "@(1, 2)" in script  # evaluation: Windows may turn it on by itself
 
 
 def test_the_windows_installation_puts_the_application_in_the_start_menu() -> None:

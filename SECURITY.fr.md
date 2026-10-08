@@ -55,6 +55,12 @@ sur `127.0.0.1` par défaut. Il peut aussi écouter sur l'adresse Tailscale de l
   extension d'un paquet Python qui existe aussi en Python pur, l'application renomme ce fichier
   dans son propre environnement (`….pyd.refused`) et se relance. Elle n'exécute jamais un
   fichier refusé et ne modifie aucun réglage de Windows.
+- **Fichiers compilés vérifiés** : à la fin de l'installation, et dans la page Système,
+  l'application demande à Windows s'il refuse chacun des fichiers compilés (`.pyd`, `.dll`)
+  des paquets dont elle se sert et de Python lui-même. Pour cela, Windows projette le fichier
+  comme il le ferait pour l'exécuter, sans en exécuter le code ni charger ce dont il dépend
+  (`DONT_RESOLVE_DLL_REFERENCES`). Un refus est nommé (fichier et paquet) ; l'application ne
+  le contourne pas.
 - **Appels réseau** : une fois l'application installée, les analyses n'en font que deux. Nominatim
   (OpenStreetMap) reçoit une position arrondie à trois décimales (à 70 mètres près environ), pour
   nommer le lieu ; Open-Meteo reçoit une position arrondie à deux décimales (à 700 mètres près
@@ -74,7 +80,9 @@ sur `127.0.0.1` par défaut. Il peut aussi écouter sur l'adresse Tailscale de l
   l'accord de l'administrateur quand il le faut, puis téléchargent les modèles. Sous Windows,
   quand Smart App Control est actif, Node.js vient de son ZIP officiel (nodejs.org), et ExifTool
   du sien (exiftool.org) quand winget n'a pas pu l'installer : chacun est vérifié par son
-  empreinte SHA-256 publiée et installé pour l'utilisateur seul.
+  empreinte SHA-256 publiée et installé pour l'utilisateur seul. Quand Smart App Control est
+  actif ou en évaluation, Python 3.12 vient de python.org (signé, par winget, pour
+  l'utilisateur) plutôt que du téléchargement d'uv, qui n'est pas signé.
   `install.bat`
   retire la marque du Web des fichiers du dossier de l'application, `install.command` leur
   marque de quarantaine, et rien en dehors de ce dossier. Sur un Mac, l'installation ajoute

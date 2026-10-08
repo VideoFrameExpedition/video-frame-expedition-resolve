@@ -179,6 +179,9 @@ ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
    et ExifTool depuis leur ZIP officiel quand leur installeur est refusé), puis les
    paquets Python de l'application et ses modèles (environ 2 Go, une seule fois ;
    `-SansModeles` pour s'en passer), et ajoute « Video Frame Expedition » au menu Démarrer.
+   Quand Smart App Control (Windows 11) est actif ou en évaluation, il installe aussi le
+   Python 3.12 de python.org, signé, sur lequel l'application tourne ; puis il demande à
+   Windows s'il refuse l'un des fichiers compilés de l'application, et nomme ceux-là.
    Il demande s'il faut installer LM Studio sur ce PC : le
    modèle de vision peut aussi tourner dans le LM Studio d'un autre ordinateur. `-AvecLMStudio`
    ou `-SansLMStudio` donne la réponse d'avance. Acceptez les demandes d'autorisation de Windows
@@ -246,7 +249,8 @@ uv run --frozen --no-dev --project backend python -m vfe_vision <commande>
 ```
 
 Par exemple, `vfe doctor` vérifie FFmpeg, ExifTool, LM Studio et le GPU (sur un Mac, la puce
-et sa mémoire).
+et sa mémoire) ; `vfe doctor --binaries`, seulement ce que Windows (Smart App Control) pense
+des fichiers compilés de l'application.
 
 ## Démarrage rapide
 

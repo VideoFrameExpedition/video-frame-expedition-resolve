@@ -4,15 +4,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, timedelta
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 import sqlalchemy as sa
-from timezonefinder import TimezoneFinder
 
 from vfe_vision.adapters.exiftool.normalize import NormalizedMetadata, TrackSample, normalize
 from vfe_vision.adapters.exiftool.sidecars import find_sidecars, parse_dji_srt, parse_gpx
+from vfe_vision.adapters.geo import zones
 from vfe_vision.core.errors import ExternalToolError
 from vfe_vision.db.models import GpsPoint, Video, VideoMetadata
 from vfe_vision.domain.capture_time import (
@@ -33,15 +32,12 @@ SPEED_CHANGE = 0.1
 MAX_RECORDING_S = 7 * 24 * 3600  # longer "durations" come from corrupted headers
 
 
-@lru_cache(maxsize=1)
-def _timezones() -> TimezoneFinder:
-    return TimezoneFinder(in_memory=True)
-
-
 def timezone_at(point: GeoPoint | None) -> str | None:
+    """The zone of the GPS point; None without one, or without the polygons: the
+    video's own zone then stands."""
     if point is None:
         return None
-    return _timezones().timezone_at(lat=point.latitude, lng=point.longitude)
+    return zones.zone_at(point.latitude, point.longitude)
 
 
 def _downsample(samples: list[TrackSample], limit: int) -> list[TrackSample]:

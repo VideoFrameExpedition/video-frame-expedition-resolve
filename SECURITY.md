@@ -49,6 +49,11 @@ Video Frame Expedition for DaVinci Resolve is a **local** application: the serve
   extension of a Python package that also exists in pure Python, the application renames that
   file in its own environment (`….pyd.refused`) and restarts. It never runs a refused file and
   changes no Windows setting.
+- **Compiled files checked**: at the end of the installation, and on the System page, the
+  application asks Windows whether it refuses each of the compiled files (`.pyd`, `.dll`) of
+  the packages it uses and of Python itself. To do so, Windows maps the file as it would to run
+  it, without running its code or loading what it depends on (`DONT_RESOLVE_DLL_REFERENCES`).
+  A refusal is named (file and package); the application does not work around it.
 - **Network calls**: once installed, the analyses make only two. Nominatim (OpenStreetMap)
   receives a position rounded to three decimal places (within about 70 metres), to name the
   place; Open-Meteo receives a position rounded to two decimal places (within about
@@ -67,7 +72,9 @@ Video Frame Expedition for DaVinci Resolve is a **local** application: the serve
   administrator's consent themselves when needed, then download the models. On Windows, when
   Smart App Control is on, Node.js comes from its official ZIP (nodejs.org), and ExifTool from
   its own (exiftool.org) when winget could not install it: each is checked against its
-  published SHA-256 checksum and installed for the user only.
+  published SHA-256 checksum and installed for the user only. When Smart App Control is on or
+  in evaluation, Python 3.12 comes from python.org (signed, through winget, for the user)
+  rather than from uv's download, which is not signed.
   `install.bat`
   removes the mark of the Web from the files of the application's folder, `install.command`
   their quarantine mark, and nothing outside that folder. On a Mac, the installation also adds

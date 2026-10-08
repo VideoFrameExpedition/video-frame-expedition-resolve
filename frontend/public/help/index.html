@@ -2867,12 +2867,17 @@
                     Le script installe par <code>winget</code> ce qui manque (uv, Node.js, FFmpeg,
                     ExifTool), puis les paquets Python de l'application et ses modèles (environ
                     2&nbsp;Go, une seule fois&nbsp;; <code>-SansModeles</code> pour s'en passer), et
-                    ajoute «&nbsp;Video Frame Expedition&nbsp;» au menu Démarrer. Il demande s'il
-                    faut installer LM&nbsp;Studio sur ce PC&nbsp;: le modèle de vision peut aussi
-                    tourner dans le LM&nbsp;Studio d'un autre ordinateur.
-                    <code>-AvecLMStudio</code> ou <code>-SansLMStudio</code> donne la réponse
-                    d'avance. Acceptez les demandes d'autorisation de Windows (UAC). Ses messages
-                    suivent la langue de Windows (français ou anglais).
+                    ajoute «&nbsp;Video Frame Expedition&nbsp;» au menu Démarrer. Quand Smart App
+                    Control (Windows&nbsp;11) est actif ou en évaluation, il installe aussi le
+                    Python&nbsp;3.12 de python.org, signé, sur lequel l'application tourne, puis
+                    demande à Windows s'il refuse l'un des fichiers compilés de l'application et
+                    nomme ceux-là&nbsp;; la <a href="#systeme">page Système</a> le redit
+                    (vérification «&nbsp;Modules natifs&nbsp;»). Il demande s'il faut installer
+                    LM&nbsp;Studio sur ce PC&nbsp;: le modèle de vision peut aussi tourner dans le
+                    LM&nbsp;Studio d'un autre ordinateur. <code>-AvecLMStudio</code> ou
+                    <code>-SansLMStudio</code> donne la réponse d'avance. Acceptez les demandes
+                    d'autorisation de Windows (UAC). Ses messages suivent la langue de Windows
+                    (français ou anglais).
                   </span>
                   <span class="fr-only mac-only">
                     La ligne télécharge l'application dans
@@ -2896,9 +2901,13 @@
                     The script installs through <code>winget</code> what is missing (uv, Node.js,
                     FFmpeg, ExifTool), then the application's Python packages and its models (about
                     2&nbsp;GB, once only; <code>-NoModels</code> to do without them), and adds
-                    "Video Frame Expedition" to the Start menu. It asks whether to install
-                    LM&nbsp;Studio on this PC: the vision model can also run in the LM&nbsp;Studio
-                    of another computer. <code>-WithLMStudio</code> or
+                    "Video Frame Expedition" to the Start menu. When Smart App Control
+                    (Windows&nbsp;11) is on or in evaluation, it also installs Python&nbsp;3.12 from
+                    python.org, signed, on which the application runs, then asks Windows whether it
+                    refuses any of the application's compiled files and names those; the
+                    <a href="#systeme">System page</a> says it again (the "Modules natifs" check).
+                    It asks whether to install LM&nbsp;Studio on this PC: the vision model can also
+                    run in the LM&nbsp;Studio of another computer. <code>-WithLMStudio</code> or
                     <code>-NoLMStudio</code> gives the answer in advance. Accept the Windows (UAC)
                     prompts. Its messages follow the language of Windows (English or French).
                   </span>

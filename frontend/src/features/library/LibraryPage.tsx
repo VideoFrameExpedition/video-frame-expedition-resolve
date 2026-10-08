@@ -63,7 +63,11 @@ export function LibraryPage() {
   useEffect(() => {
     const handle = window.setTimeout(() => {
       if ((search.q ?? "") !== query) {
-        void navigate({ search: (prev) => ({ ...prev, q: query || undefined }), replace: true });
+        void navigate({
+          search: (prev) => ({ ...prev, q: query || undefined }),
+          replace: true,
+          resetScroll: false,
+        });
       }
     }, 300);
     return () => {
@@ -95,6 +99,7 @@ export function LibraryPage() {
       void navigate({
         search: (prev) => ({ ...prev, root: undefined, folder: undefined, timeline: undefined }),
         replace: true,
+        resetScroll: false,
       });
     }
   }, [orphan, orphanTimeline, navigate]);
@@ -178,6 +183,7 @@ export function LibraryPage() {
                 light: value === ALL ? undefined : (value as LibraryLight),
               }),
               replace: true,
+              resetScroll: false,
             });
           }}
         >
@@ -202,6 +208,7 @@ export function LibraryPage() {
                 status: value === ALL ? undefined : (value as VideoStatus),
               }),
               replace: true,
+              resetScroll: false,
             })
           }
         >
@@ -226,6 +233,7 @@ export function LibraryPage() {
                 sort: value === TIMELINE_ORDER ? undefined : (value as LibrarySort),
               }),
               replace: true,
+              resetScroll: false,
             })
           }
         >

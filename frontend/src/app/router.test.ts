@@ -44,3 +44,24 @@ describe("validateLibrarySearch", () => {
     ).toEqual({ root: "r1", folder: "apv", sort: "name" });
   });
 });
+
+// The router scrolls back to the top on every navigation, unless told otherwise.
+const pages = import.meta.glob<string>("../features/**/*.tsx", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+});
+
+describe("a page that rewrites its own address", () => {
+  it("says each time whether it keeps the scroll", () => {
+    const rewrites = Object.entries(pages).filter(([, source]) => source.includes("replace: true"));
+    expect(rewrites.length).toBeGreaterThan(3);
+    for (const [path, source] of rewrites) {
+      expect(source.split("resetScroll: ").length, path).toBe(source.split("replace: true").length);
+    }
+  });
+
+  it("keeps it on a video's tabs, where the user has already scrolled down", () => {
+    expect(pages["../features/video/VideoPage.tsx"]).toContain("resetScroll: false");
+  });
+});

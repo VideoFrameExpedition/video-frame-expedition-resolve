@@ -7,7 +7,9 @@ point, so Menton is not Monaco, and the country is the *place's* own one. A zone
 Asia/Bangkok also covers north Vietnam, Europe/Belgrade six countries, and Kosovo, East Jerusalem
 or the Golan sit in another country's zone. Without a locality, a country is only named when the
 zone belongs to a single one (tzdata ``zone1970.tab``). Without the downloaded extract
-(``vfe models geonames``), only that country and « at sea » are known.
+(``vfe models geonames``), only that country and « at sea » are known. Without the polygons
+(Windows refused their compiled part), the nearest place is taken across borders and
+the open sea is not recognised.
 """
 
 from __future__ import annotations
@@ -20,8 +22,8 @@ from importlib import resources
 from pathlib import Path
 
 import numpy as np
-from timezonefinder import TimezoneFinder
 
+from vfe_vision.adapters.geo import zones
 from vfe_vision.domain.place import Place
 
 EARTH_RADIUS_KM = 6371.0088
@@ -31,11 +33,6 @@ AREAS_FILE = "areas.tsv.gz"  # country code, admin1 name, admin2 name
 SOURCE_FILE = "SOURCE.txt"
 CANDIDATES = 64  # nearest rows checked against the time-zone polygon of the point
 COUNTRY_SUPPLEMENT = {"XK": "Kosovo"}  # GeoNames codes missing from tzdata's iso3166.tab
-
-
-@cache
-def _timezones() -> TimezoneFinder:
-    return TimezoneFinder(in_memory=True)
 
 
 @cache
@@ -116,9 +113,9 @@ class GeoNamesGazetteer:
             return self._index
 
     def nearest(self, latitude: float, longitude: float) -> Place:
-        finder = _timezones()
-        zone = finder.timezone_at(lat=latitude, lng=longitude)
-        at_sea = zone is None or zone.startswith("Etc/")
+        borders = zones.available()
+        zone = zones.zone_at(latitude, longitude)
+        at_sea = borders and (zone is None or zone.startswith("Etc/"))
         code = None if at_sea else _single_country(zone)
         country_only = Place(
             locality=None,
@@ -140,9 +137,8 @@ class GeoNamesGazetteer:
             distance = 2 * EARTH_RADIUS_KM * math.asin(math.sqrt(min(float(h[i]), 1.0)))
             if distance > MAX_LOCALITY_KM:
                 break
-            row_zone = finder.timezone_at(lat=index.lat_deg[i], lng=index.lon_deg[i])
-            if row_zone != zone:  # across a border (or a zone boundary): not this place
-                continue
+            if borders and zones.zone_at(index.lat_deg[i], index.lon_deg[i]) != zone:
+                continue  # across a border (or a zone boundary): not this place
             area_code, admin1, admin2 = index.areas[int(index.area[i])]
             return Place(
                 locality=index.names[i],

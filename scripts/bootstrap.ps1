@@ -59,8 +59,8 @@ function Update-Path {
 }
 
 # $Otherwise: another way to install it, when winget fails; -OtherwiseFirst takes it first,
-# without trying winget.
-function Install-IfMissing([string]$Name, [scriptblock]$IsThere, [string]$WingetId, [scriptblock]$Otherwise, [switch]$OtherwiseFirst) {
+# without trying winget. -Scope user: for this user only.
+function Install-IfMissing([string]$Name, [scriptblock]$IsThere, [string]$WingetId, [scriptblock]$Otherwise, [switch]$OtherwiseFirst, [string]$Scope) {
     if (& $IsThere) {
         Write-Host "[ok] $Name"
         return
@@ -72,7 +72,8 @@ function Install-IfMissing([string]$Name, [scriptblock]$IsThere, [string]$Winget
         Write-Host (T "[..] Installation de $Name ($WingetId)" "[..] Installing $Name ($WingetId)")
         # winget's own catalogue only: the Microsoft Store one may be missing (Store blocked in a
         # company, Windows Sandbox) and make the search fail before anything is installed.
-        winget install --id $WingetId -e --source winget `
+        $scopeArgs = if ($Scope) { @("--scope", $Scope) } else { @() }
+        winget install --id $WingetId -e --source winget @scopeArgs `
             --accept-package-agreements --accept-source-agreements --silent
         $code = $LASTEXITCODE
         if ($code -ne 0 -and $Otherwise) {
@@ -91,9 +92,24 @@ function Install-IfMissing([string]$Name, [scriptblock]$IsThere, [string]$Winget
 # Smart App Control on (1; 2 = evaluation, 0 = off): it refuses Node.js's installer (error 1723:
 # the temporary DLL of its "SetInstallScope" action, nodejs/node#63005), while node.exe, signed,
 # is accepted: Node.js's official ZIP is then used directly.
-function Test-SmartAppControl {
+# -OrEvaluation: on, or in evaluation (Windows may then turn it on by itself).
+function Test-SmartAppControl([switch]$OrEvaluation) {
     $policy = Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy" -ErrorAction SilentlyContinue
-    return [bool]($policy -and $policy.VerifiedAndReputablePolicyState -eq 1)
+    $states = if ($OrEvaluation) { @(1, 2) } else { @(1) }
+    return [bool]($policy -and $states -contains $policy.VerifiedAndReputablePolicyState)
+}
+
+# Python from python.org, signed, for this user or for all. The one uv downloads
+# (python-build-standalone) is not, and Smart App Control may refuse part of a build a few days
+# old (its _sqlite3.pyd, for instance). Returns its path, or $null.
+function Find-SignedPython {
+    foreach ($folder in (Join-Path $env:LOCALAPPDATA "Programs\Python\Python312"), (Join-Path $env:ProgramFiles "Python312")) {
+        $python = Join-Path $folder "python.exe"
+        if ((Test-Path $python) -and (Get-AuthenticodeSignature $python).Status -eq "Valid") {
+            return $python
+        }
+    }
+    return $null
 }
 
 # An official ZIP, checked against its published SHA-256 checksum: the content of its $Inner
@@ -217,6 +233,11 @@ if (-not (Test-Command "winget")) {
 
 $Sac = Test-SmartAppControl
 Install-IfMissing "uv" { Test-Command "uv" } "astral-sh.uv"
+$SignedPython = $null
+if (Test-SmartAppControl -OrEvaluation) {
+    Install-IfMissing "Python 3.12 (python.org)" { [bool](Find-SignedPython) } "Python.Python.3.12" -Scope user
+    $SignedPython = Find-SignedPython
+}
 Install-IfMissing "Node.js" { Test-Command "node" } "OpenJS.NodeJS.LTS" { Install-NodeFromZip } -OtherwiseFirst:$Sac
 Install-IfMissing "FFmpeg" { Test-Command "ffmpeg" } "Gyan.FFmpeg"
 Install-IfMissing "ExifTool" { Test-Command "exiftool" } "OliverBetz.ExifTool" { Install-ExifToolFromZip }
@@ -238,8 +259,21 @@ if (Find-LMStudio) {
 Set-Location $Root
 
 Write-Host (T "[..] Paquets Python de l'application" "[..] The application's Python packages")
-uv sync --locked --no-dev --inexact --project backend
+if ($SignedPython) {
+    # Under Smart App Control, the application's environment rests on this signed Python (an
+    # environment made with another Python is made again).
+    uv sync --locked --no-dev --inexact --project backend --python $SignedPython
+} else {
+    uv sync --locked --no-dev --inexact --project backend
+}
 if ($LASTEXITCODE -ne 0) { throw (T "uv sync a échoué (code $LASTEXITCODE)." "uv sync failed (code $LASTEXITCODE).") }
+
+# Smart App Control (Windows 11) may refuse a compiled file of a package: better to know it here,
+# with its name, than at the first start. A refusal the application can do without leaves a
+# warning; the others are repeated at the end.
+Write-Host (T "[..] Fichiers compilés de l'application (Smart App Control)" "[..] The application's compiled files (Smart App Control)")
+uv run --frozen --no-dev --project backend python -m vfe_vision doctor --binaries
+$Refused = $LASTEXITCODE -ne 0
 
 if (-not $NoModels) {
     # Offline places, sounds, speech and on-screen text, subjects, search by meaning: ~2 GB.
@@ -266,6 +300,11 @@ try {
 }
 
 Write-Host ""
+if ($Refused) {
+    Write-Host (T "Attention : Windows (Smart App Control) refuse un fichier dont l'application a besoin (tableau" "Warning: Windows (Smart App Control) refuses a file the application needs (table above).") -ForegroundColor Yellow
+    Write-Host (T "plus haut). Son verdict peut changer : relancez install.bat dans quelques minutes." "Its verdict can change: run install.bat again in a few minutes.") -ForegroundColor Yellow
+    Write-Host ""
+}
 if (Find-LMStudio) {
     Write-Host (T "Terminé. Dans LM Studio, téléchargez un modèle de vision (par exemple qwen/qwen3-vl-8b)," "Done. In LM Studio, download a vision model (for example qwen/qwen3-vl-8b),")
     Write-Host (T "chargez-le et activez le serveur local, puis ouvrez « Video Frame Expedition » (menu" "load it and start the local server, then open `"Video Frame Expedition`" (Start menu)")
