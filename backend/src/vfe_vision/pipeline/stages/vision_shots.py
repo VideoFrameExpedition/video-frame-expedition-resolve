@@ -169,8 +169,8 @@ class VisionShotsStage(Stage):
             return settled
         picked = await pick_vision_model(ctx)
         if picked is None:
-            return StageOutcome.skipped(
-                "LM Studio injoignable ou aucun modèle de vision chargé", retryable=True
+            return StageOutcome.waiting_for_lmstudio(
+                "LM Studio injoignable ou aucun modèle de vision chargé"
             )
         model, instance = picked
         await ctx.tools.lm_budget.resize(

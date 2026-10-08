@@ -153,17 +153,17 @@ prefer a 4-billion one and a short context.
 
 ## Installation
 
+### On Windows
+
 First get the application:
 `git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve.git`,
 or GitHub's "Code › Download ZIP" button, then unzip it.
 
-### On Windows
-
-1. In PowerShell, from the application's folder:
-
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1
-   ```
+1. Double-click `install.bat`, in the application's folder. Windows may warn that it comes
+   from the Internet: "More info", then "Run anyway". It removes that mark from every file of
+   the folder, then runs `scripts\bootstrap.ps1` (in PowerShell, from the folder:
+   `powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1`, which takes the same
+   options). At the end, it offers to start the application in the same window.
 
    The script uses `winget` to install what is missing (uv, Node.js, FFmpeg, ExifTool), then
    the application's Python packages and its models (about 2 GB, downloaded once;
@@ -175,28 +175,39 @@ or GitHub's "Code › Download ZIP" button, then unzip it.
 2. In LM Studio, download a vision model (for example `qwen/qwen3-vl-8b`), load it and start the
    local server (see below when it runs on another computer).
 3. Double-click `run.bat`. The first time, it builds the web interface (one or two minutes),
-   then opens the browser.
+   then opens the browser. Started before the installation, it offers to do it.
 
 ### On a Mac
 
-1. In the Terminal, from the application's folder:
+1. Open the Terminal (⌘ Space, then type "Terminal"), paste this line and press Return:
 
    ```sh
-   sh scripts/bootstrap.sh
+   /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/VideoFrameExpedition/video-frame-expedition-resolve/main/install.sh)"
    ```
 
-   The script uses [Homebrew](https://brew.sh) to install what is missing (uv, Node.js, the full
-   build of FFmpeg, ExifTool), then the application's Python packages and its models (about
-   2 GB, downloaded once; `--no-models` skips them). It asks whether to install LM Studio on
-   this Mac; `--with-lm-studio` or `--without-lm-studio` gives the answer in advance. Homebrew
-   itself is installed first when the Mac does not have it (it asks for your password). Its
-   messages follow the Mac's language (English or French), like those of `run.command`;
-   `VFE_LANG` in the `.env` file can decide.
+   It downloads the application into `~/video-frame-expedition-resolve`, uses
+   [Homebrew](https://brew.sh) to install what is missing (Homebrew itself first, when the Mac
+   does not have it: it asks for your password; then uv, Node.js, the full build of FFmpeg,
+   ExifTool), the application's Python packages and its models (about 2 GB, downloaded once),
+   and adds "Video Frame Expedition" to your Applications folder. It asks whether to install
+   LM Studio on this Mac and, at the end, offers to start the application in the same window.
+   Run again, the same line updates the application. Its messages follow the Mac's language
+   (English or French).
+
+   Already have the application's folder (`git clone` or ZIP)? Double-click `install.command`:
+   the same installation, from that folder, with nothing downloaded again. Coming from a ZIP,
+   macOS refuses to open it the first time: System Settings › Privacy & Security › "Open
+   Anyway". It then removes the quarantine mark from the whole folder. Its options
+   (`--no-models`, `--with-lm-studio`, `--without-lm-studio`) are given in the Terminal:
+   `sh install.sh --without-lm-studio`. `VFE_LANG` in the `.env` file can decide the language
+   of the messages.
 2. In LM Studio, download a vision model (for example `qwen/qwen3-vl-4b`, or `qwen/qwen3-vl-8b`
    with 32 GB of memory), load it and start the local server.
-3. Double-click `run.command`. The first time, it builds the web interface (one or two
-   minutes), then opens the browser. macOS may ask whether the Terminal may access your Movies,
-   your Documents or an external disk: accept, the application reads your videos there.
+3. Open "Video Frame Expedition" from Launchpad, Spotlight or the Applications folder (or
+   double-click `run.command` in the application's folder): it starts the application in a
+   Terminal window. The first time, it builds the web interface (one or two minutes), then
+   opens the browser; started before the installation, it offers to do it. macOS may ask whether the Terminal may access your Movies, your Documents
+   or an external disk: accept, the application reads your videos there.
 
    If macOS refuses to open `run.command` the first time (a file downloaded as a ZIP carries a
    quarantine mark; a folder obtained with `git clone` does not), allow it in System Settings ›
@@ -223,9 +234,10 @@ and its memory).
 
 **Day to day: double-click `run.bat` (Windows) or `run.command` (Mac).** It starts the
 application (interface, MCP and analyses) and opens the browser on http://127.0.0.1:8765. If the
-application is already running, it simply opens the interface. `run.bat build` (or
-`run.command build`) first rebuilds the web interface after an update. To stop the application,
-close its window (on a Mac, the Terminal's, or press Ctrl+C).
+application is already running, it simply opens the interface. After an update, it first
+rebuilds the web interface; `run.bat build` (or `run.command build`) rebuilds it even when
+nothing has changed. To stop the application, close its window (on a Mac, the Terminal's, or
+press Ctrl+C).
 
 **The "Help" page** in the sidebar is the complete guide: twelve parts, the seven tabs of a video
 one by one, some fifty screenshots of the French interface, with the text in French and in

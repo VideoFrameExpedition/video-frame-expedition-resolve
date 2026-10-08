@@ -2682,21 +2682,22 @@
                 </ul>
                 <p>
                   <span class="fr-only win-only"
-                    ><code>scripts\bootstrap.ps1</code> les installe s'ils manquent&nbsp;: voir
+                    ><code>install.bat</code> les installe s'ils manquent&nbsp;: voir
                     <a href="#installation">l'installation</a>, juste après.</span
                   >
                   <span class="fr-only mac-only"
-                    ><code>scripts/bootstrap.sh</code> les installe s'ils manquent (par
-                    Homebrew)&nbsp;: voir <a href="#installation">l'installation</a>, juste
-                    après.</span
+                    >La ligne d'installation, ou <code>install.command</code>, les installe s'ils
+                    manquent (par Homebrew)&nbsp;: voir <a href="#installation">l'installation</a>,
+                    juste après.</span
                   >
                   <span class="en-only win-only"
-                    ><code>scripts\bootstrap.ps1</code> installs them if they are missing: see
+                    ><code>install.bat</code> installs them if they are missing: see
                     <a href="#installation">the installation</a>, just below.</span
                   >
                   <span class="en-only mac-only"
-                    ><code>scripts/bootstrap.sh</code> installs them if they are missing (through
-                    Homebrew): see <a href="#installation">the installation</a>, just below.</span
+                    >The installation line, or <code>install.command</code>, installs them if they
+                    are missing (through Homebrew): see
+                    <a href="#installation">the installation</a>, just below.</span
                   >
                 </p>
               </div>
@@ -2818,34 +2819,50 @@
             <div class="block-body">
               <ol style="color: var(--fg-muted); font-size: 15.5px">
                 <li>
-                  <span class="fr-only">
+                  <span class="fr-only win-only">
                     <strong>Récupérez l'application</strong>&nbsp;: clonez son dépôt, ou
                     téléchargez-la sur GitHub par le bouton «&nbsp;Code&nbsp;› Download ZIP&nbsp;»,
                     puis décompressez-la.
                   </span>
-                  <span class="en-only">
+                  <span class="fr-only mac-only">
+                    <strong>Ouvrez le Terminal</strong> (⌘&nbsp;Espace, puis
+                    «&nbsp;Terminal&nbsp;»), collez cette ligne et appuyez sur Entrée&nbsp;:
+                  </span>
+                  <span class="en-only win-only">
                     <strong>Get the application</strong>: clone its repository, or download it from
                     GitHub with the "Code&nbsp;› Download ZIP" button, then unzip it.
                   </span>
-                  <pre><code>git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve.git</code></pre>
-                </li>
-                <li>
-                  <span class="fr-only win-only">
-                    <strong>Dans PowerShell, depuis le dossier de l'application</strong>&nbsp;:
-                  </span>
-                  <span class="fr-only mac-only">
-                    <strong>Dans le Terminal, depuis le dossier de l'application</strong>&nbsp;:
-                  </span>
-                  <span class="en-only win-only">
-                    <strong>In PowerShell, from the application's folder</strong>:
-                  </span>
                   <span class="en-only mac-only">
-                    <strong>In the Terminal, from the application's folder</strong>:
+                    <strong>Open the Terminal</strong> (⌘&nbsp;Space, then "Terminal"), paste this
+                    line and press Return:
                   </span>
                   <pre
                     class="win-only"
-                  ><code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code></pre>
-                  <pre class="mac-only"><code>sh scripts/bootstrap.sh</code></pre>
+                  ><code>git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve.git</code></pre>
+                  <pre
+                    class="mac-only"
+                  ><code>/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/VideoFrameExpedition/video-frame-expedition-resolve/main/install.sh)"</code></pre>
+                </li>
+                <li>
+                  <span class="fr-only win-only">
+                    <strong>Double-cliquez sur <code>install.bat</code></strong
+                    >, dans le dossier de l'application. Windows peut prévenir qu'il vient
+                    d'Internet&nbsp;: «&nbsp;Informations complémentaires&nbsp;», puis
+                    «&nbsp;Exécuter quand même&nbsp;». Il retire cette marque de tous les fichiers
+                    du dossier, puis lance <code>scripts\bootstrap.ps1</code> (dans PowerShell,
+                    depuis le dossier&nbsp;:
+                    <code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code>,
+                    avec les mêmes options).
+                  </span>
+                  <span class="en-only win-only">
+                    <strong>Double-click <code>install.bat</code></strong
+                    >, in the application's folder. Windows may warn that it comes from the
+                    Internet: "More info", then "Run anyway". It removes that mark from every file
+                    of the folder, then runs <code>scripts\bootstrap.ps1</code> (in PowerShell, from
+                    the folder:
+                    <code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code>,
+                    with the same options).
+                  </span>
                   <span class="fr-only win-only">
                     Le script installe par <code>winget</code> ce qui manque (uv, Node.js, FFmpeg,
                     ExifTool), puis les paquets Python de l'application et ses modèles (environ
@@ -2854,38 +2871,52 @@
                     peut aussi tourner dans le LM&nbsp;Studio d'un autre ordinateur.
                     <code>-AvecLMStudio</code> ou <code>-SansLMStudio</code> donne la réponse
                     d'avance. Acceptez les demandes d'autorisation de Windows (UAC). Ses messages
-                    sont toujours en français.
+                    suivent la langue de Windows (français ou anglais).
                   </span>
                   <span class="fr-only mac-only">
-                    Le script installe par <a href="https://brew.sh">Homebrew</a> ce qui manque (uv,
-                    Node.js, FFmpeg en version complète, ExifTool), puis les paquets Python de
-                    l'application et ses modèles (environ 2&nbsp;Go, une seule fois&nbsp;;
-                    <code>--sans-modeles</code> pour s'en passer). Il demande s'il faut installer
+                    La ligne télécharge l'application dans
+                    <code>~/video-frame-expedition-resolve</code>, installe par
+                    <a href="https://brew.sh">Homebrew</a> ce qui manque (Homebrew lui-même d'abord,
+                    s'il n'est pas là&nbsp;: il demande votre mot de passe&nbsp;; puis uv, Node.js,
+                    FFmpeg en version complète, ExifTool), les paquets Python de l'application et
+                    ses modèles (environ 2&nbsp;Go, une seule fois), et ajoute «&nbsp;Video Frame
+                    Expedition&nbsp;» à votre dossier Applications. Elle demande s'il faut installer
                     LM&nbsp;Studio sur ce Mac&nbsp;: le modèle de vision peut aussi tourner dans le
-                    LM&nbsp;Studio d'un autre ordinateur. <code>--avec-lm-studio</code> ou
-                    <code>--sans-lm-studio</code> donne la réponse d'avance. Homebrew lui-même est
-                    installé d'abord si le Mac ne l'a pas (il demande votre mot de passe). Ses
-                    messages sont toujours en français.
+                    LM&nbsp;Studio d'un autre ordinateur. La même ligne, relancée, met l'application
+                    à jour. Ses messages suivent la langue du Mac (français ou anglais). Vous avez
+                    déjà le dossier de l'application (<code>git clone</code> ou ZIP)&nbsp;?
+                    Double-cliquez sur <code>install.command</code>&nbsp;: la même installation,
+                    depuis ce dossier, sans rien télécharger de nouveau. Venu d'un ZIP, macOS refuse
+                    de l'ouvrir la première fois&nbsp;: Réglages Système › Confidentialité et
+                    sécurité › «&nbsp;Ouvrir quand même&nbsp;». Il retire ensuite la marque de
+                    quarantaine de tout le dossier.
                   </span>
                   <span class="en-only win-only">
                     The script installs through <code>winget</code> what is missing (uv, Node.js,
                     FFmpeg, ExifTool), then the application's Python packages and its models (about
-                    2&nbsp;GB, once only; <code>-SansModeles</code> to do without them). It asks
+                    2&nbsp;GB, once only; <code>-NoModels</code> to do without them). It asks
                     whether to install LM&nbsp;Studio on this PC: the vision model can also run in
-                    the LM&nbsp;Studio of another computer. <code>-AvecLMStudio</code> or
-                    <code>-SansLMStudio</code> gives the answer in advance. Accept the Windows (UAC)
-                    prompts. Its messages are always in French.
+                    the LM&nbsp;Studio of another computer. <code>-WithLMStudio</code> or
+                    <code>-NoLMStudio</code> gives the answer in advance. Accept the Windows (UAC)
+                    prompts. Its messages follow the language of Windows (English or French).
                   </span>
                   <span class="en-only mac-only">
-                    The script installs through <a href="https://brew.sh">Homebrew</a> what is
-                    missing (uv, Node.js, the full build of FFmpeg, ExifTool), then the
-                    application's Python packages and its models (about 2&nbsp;GB, once only;
-                    <code>--sans-modeles</code> to do without them). It asks whether to install
-                    LM&nbsp;Studio on this Mac: the vision model can also run in the LM&nbsp;Studio
-                    of another computer. <code>--avec-lm-studio</code> or
-                    <code>--sans-lm-studio</code> gives the answer in advance. Homebrew itself is
-                    installed first when the Mac does not have it (it asks for your password). Its
-                    messages are always in French.
+                    The line downloads the application into
+                    <code>~/video-frame-expedition-resolve</code>, installs through
+                    <a href="https://brew.sh">Homebrew</a> what is missing (Homebrew itself first,
+                    when the Mac does not have it: it asks for your password; then uv, Node.js, the
+                    full build of FFmpeg, ExifTool), the application's Python packages and its
+                    models (about 2&nbsp;GB, once only), and adds "Video Frame Expedition" to your
+                    Applications folder. It asks whether to install LM&nbsp;Studio on this Mac: the
+                    vision model can also run in the LM&nbsp;Studio of another computer. Run again,
+                    the same line updates the application. Its messages follow the language of the
+                    Mac (English or French). Already have the application's folder (<code
+                      >git clone</code
+                    >
+                    or ZIP)? Double-click <code>install.command</code>: the same installation, from
+                    that folder, with nothing downloaded again. Coming from a ZIP, macOS refuses to
+                    open it the first time: System Settings › Privacy &amp; Security › "Open
+                    Anyway". It then removes the quarantine mark from the whole folder.
                   </span>
                 </li>
                 <li>
@@ -2930,31 +2961,36 @@
                   <span class="fr-only win-only">
                     <strong>Double-cliquez sur <code>run.bat</code></strong
                     >. La première fois, il construit l'interface web (une à deux minutes), puis
-                    ouvre le navigateur.
+                    ouvre le navigateur. Lancé avant l'installation, il propose de la faire.
                   </span>
                   <span class="fr-only mac-only">
-                    <strong>Double-cliquez sur <code>run.command</code></strong
-                    >. La première fois, il construit l'interface web (une à deux minutes), puis
-                    ouvre le navigateur. macOS peut demander si le Terminal peut accéder à vos
-                    Vidéos, à vos Documents ou à un disque externe&nbsp;: acceptez, l'application y
-                    lit vos vidéos. S'il refuse d'ouvrir le fichier (téléchargé en ZIP, il porte une
-                    marque de quarantaine), autorisez-le dans Réglages Système › Confidentialité et
-                    sécurité, ou tapez dans le Terminal, depuis le dossier de l'application&nbsp;:
+                    <strong>Ouvrez «&nbsp;Video Frame Expedition&nbsp;»</strong> depuis le
+                    Launchpad, Spotlight ou le dossier Applications (ou double-cliquez sur
+                    <code>run.command</code> dans le dossier de l'application)&nbsp;: il lance
+                    l'application dans une fenêtre du Terminal. La première fois, il construit
+                    l'interface web (une à deux minutes), puis ouvre le navigateur. macOS peut
+                    demander si le Terminal peut accéder à vos Vidéos, à vos Documents ou à un
+                    disque externe&nbsp;: acceptez, l'application y lit vos vidéos. Un dossier
+                    téléchargé en ZIP porte une marque de quarantaine&nbsp;: si macOS refuse
+                    d'ouvrir <code>run.command</code>, autorisez-le dans Réglages Système ›
+                    Confidentialité et sécurité, ou tapez dans le Terminal, depuis ce dossier&nbsp;:
                     <code>xattr -dr com.apple.quarantine .</code>
                   </span>
                   <span class="en-only win-only">
                     <strong>Double-click <code>run.bat</code></strong
                     >. The first time, it builds the web interface (one or two minutes), then opens
-                    the browser.
+                    the browser. Started before the installation, it offers to do it.
                   </span>
                   <span class="en-only mac-only">
-                    <strong>Double-click <code>run.command</code></strong
-                    >. The first time, it builds the web interface (one or two minutes), then opens
-                    the browser. macOS may ask whether the Terminal may access your Movies, your
-                    Documents or an external disk: accept, the application reads your videos there.
-                    If it refuses to open the file (downloaded as a ZIP, it carries a quarantine
-                    mark), allow it in System Settings › Privacy &amp; Security, or type in the
-                    Terminal, from the application's folder:
+                    <strong>Open "Video Frame Expedition"</strong> from Launchpad, Spotlight or the
+                    Applications folder (or double-click <code>run.command</code> in the
+                    application's folder): it starts the application in a Terminal window. The first
+                    time, it builds the web interface (one or two minutes), then opens the browser.
+                    macOS may ask whether the Terminal may access your Movies, your Documents or an
+                    external disk: accept, the application reads your videos there. A folder
+                    downloaded as a ZIP carries a quarantine mark: if macOS refuses to open
+                    <code>run.command</code>, allow it in System Settings › Privacy &amp; Security,
+                    or type in the Terminal, from that folder:
                     <code>xattr -dr com.apple.quarantine .</code>
                   </span>
                 </li>
@@ -2993,19 +3029,20 @@
                 </p>
                 <p>
                   <span class="fr-only win-only"
-                    ><code>run.bat build</code> reconstruit d'abord l'interface, après une mise à
-                    jour.</span
+                    >Après une mise à jour, il reconstruit d'abord l'interface, tout seul.
+                    <code>run.bat build</code> la reconstruit même quand rien n'a changé.</span
                   >
                   <span class="fr-only mac-only"
-                    ><code>run.command build</code> reconstruit d'abord l'interface, après une mise
-                    à jour.</span
+                    >Après une mise à jour, il reconstruit d'abord l'interface, tout seul.
+                    <code>run.command build</code> la reconstruit même quand rien n'a changé.</span
                   >
                   <span class="en-only win-only"
-                    ><code>run.bat build</code> rebuilds the interface first, after an update.</span
+                    >After an update, it rebuilds the interface first, on its own.
+                    <code>run.bat build</code> rebuilds it even when nothing has changed.</span
                   >
                   <span class="en-only mac-only"
-                    ><code>run.command build</code> rebuilds the interface first, after an
-                    update.</span
+                    >After an update, it rebuilds the interface first, on its own.
+                    <code>run.command build</code> rebuilds it even when nothing has changed.</span
                   >
                 </p>
               </div>
@@ -6890,14 +6927,17 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
                     C'est presque toujours un modèle absent ou LM&nbsp;Studio qui ne répond pas.
                     Ouvrez la page Système&nbsp;: elle dit ligne par ligne ce qui manque. Une
                     analyse partielle se relance depuis la page Tâches, et ne refait que ce qui
-                    avait échoué. Le panneau « Étapes d'analyse » d'une vidéo dit précisément quelle
-                    étape a manqué.
+                    avait échoué. Quand c'était LM&nbsp;Studio, rien à relancer&nbsp;: ce qu'il
+                    manquait se complète tout seul dès qu'un modèle de vision répond. Le panneau «
+                    Étapes d'analyse » d'une vidéo dit précisément quelle étape a manqué.
                   </span>
                   <span class="en-only">
                     It is almost always a missing model, or LM&nbsp;Studio not answering. Open the
                     System page: it says line by line what is missing. A partial analysis restarts
-                    from the Jobs page, and redoes only what failed. A video's "Analysis stages"
-                    panel says exactly which stage fell over.
+                    from the Jobs page, and redoes only what failed. When it was LM&nbsp;Studio,
+                    there is nothing to restart: what was missing is completed on its own as soon as
+                    a vision model answers. A video's "Analysis stages" panel says exactly which
+                    stage fell over.
                   </span>
                 </p>
               </div>

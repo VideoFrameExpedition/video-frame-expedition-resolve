@@ -62,6 +62,15 @@ Video Frame Expedition for DaVinci Resolve is a **local** application: the serve
   lifeline on a Mac): if it goes away, they stop with it, and nothing of them goes on in the
   background. On a Mac, the application also runs `osascript` (the window to choose a folder),
   `diskutil`, `sysctl` and `pgrep`, to read only.
+- **Installation**: `install.bat`, `install.command` and the Mac's installation line
+  (`install.sh`) install what is missing through winget or Homebrew, which ask for the
+  administrator's consent themselves when needed, then download the models. `install.bat`
+  removes the mark of the Web from the files of the application's folder, `install.command`
+  their quarantine mark, and nothing outside that folder. On a Mac, the installation also adds
+  "Video Frame Expedition" to the user's Applications folder: a small application made on the
+  spot, signed on the spot (ad hoc signature), that opens `run.command`. The Mac's line runs a
+  script downloaded from GitHub: it can be read first (`install.sh`, at the root of the
+  repository).
 
 ## Access from other devices
 

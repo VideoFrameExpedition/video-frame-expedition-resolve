@@ -1,7 +1,8 @@
 @echo off
 rem Video Frame Expedition for DaVinci Resolve - Windows launcher (double-click).
 rem   run.bat            starts the application and opens the browser
-rem   run.bat build      first rebuilds the web interface (after an update)
+rem   run.bat build      first rebuilds the web interface, even when its sources have not
+rem                      changed (after an update, it is rebuilt anyway)
 rem   run.bat tailscale  also listens on this computer's Tailscale address (your other
 rem                      devices, token required); or VFE_TAILSCALE=true in the .env file
 rem The messages are in English, or in French on a Windows set to French; VFE_LANG=fr or en in
@@ -37,8 +38,10 @@ if not errorlevel 1 (
 rem --- Required tools (PATH, otherwise their usual installation folders) ----------------------
 call :find_tools
 where uv >nul 2>nul
+if errorlevel 1 call :offer_install
+where uv >nul 2>nul
 if errorlevel 1 (
-    call :say "[ERREUR] « uv » est introuvable. Installez-le avec : winget install astral-sh.uv" "[ERROR] uv cannot be found. Install it with: winget install astral-sh.uv"
+    call :say "[ERREUR] « uv » est introuvable : double-cliquez sur install.bat." "[ERROR] uv cannot be found: double-click install.bat."
     pause
     exit /b 1
 )
@@ -52,8 +55,12 @@ for %%A in (%*) do (
     if /i "%%~A"=="tailscale" set "VFE_TAILSCALE=true"
 )
 
-rem --- Web interface: built when missing, or on request (run.bat build) -----------------------
+rem --- Web interface: built when missing, when its sources changed since (an update), or on
+rem request (run.bat build) --------------------------------------------------------------------
 if not exist "backend\src\vfe_vision\web\dist\index.html" set "BUILD=1"
+if not defined BUILD (
+    uv run --project backend python scripts\copy_frontend_build.py --up-to-date || set "BUILD=1"
+)
 if defined BUILD call :build_ui || goto :failed
 
 echo.
@@ -79,6 +86,20 @@ rem Shows the first text in French, the second in English (VFE_LANG, set above).
 rem Outside any block in parentheses: a text may contain some.
 if not "%VFE_LANG%"=="fr" shift
 echo(%~1
+exit /b 0
+
+:offer_install
+rem Not installed yet: install.bat is offered, then the application starts.
+call :say "L'application n'est pas encore installée sur ce PC (« uv » est introuvable)." "The application is not installed on this PC yet (uv cannot be found)."
+if "%VFE_LANG%"=="fr" (set "ASK=L'installer maintenant ? [O/n] ") else (set "ASK=Install it now? [Y/n] ")
+rem Return alone keeps the default answer (yes): the variable is never empty.
+set "REPONSE=o"
+set /p "REPONSE=%ASK%"
+if /i "%REPONSE:~0,1%"=="n" exit /b 0
+set "VFE_NO_PAUSE=1"
+call "%~dp0install.bat"
+set "VFE_NO_PAUSE="
+call :find_tools
 exit /b 0
 
 :find_tools

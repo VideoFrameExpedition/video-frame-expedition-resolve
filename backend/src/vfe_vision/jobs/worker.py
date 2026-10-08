@@ -33,7 +33,7 @@ from vfe_vision.db.preferences import load_preferences
 from vfe_vision.db.session import Database
 from vfe_vision.domain.enums import JobKind, JobStatus, VideoStatus
 from vfe_vision.domain.lmstudio_link import is_local
-from vfe_vision.jobs import bench, queue
+from vfe_vision.jobs import bench, queue, resume
 from vfe_vision.jobs.events import DbEventSink
 from vfe_vision.jobs.relink import relink_videos
 from vfe_vision.jobs.scan import scan_root
@@ -162,6 +162,7 @@ class Worker:
                 tg.start_soon(self._heartbeat_loop, db, stop)
                 self._scan_token = CancelToken()
                 tg.start_soon(self._auto_scan_loop, db, sink, stop, self._scan_token)
+                tg.start_soon(self._resume_loop, db, sink, lmstudio, stop)
                 while not stop.is_set():
                     limit = self.settings.max_concurrent_videos
                     heavy = sum(1 for r in self._running.values() if r.kind not in LIGHT_KINDS)
@@ -242,6 +243,33 @@ class Worker:
                 if report.changes:
                     log.info("automatic scan found changes", root_id=root_id, new=report.new)
                     sink.emit("library.scanned", data={"root_id": root_id, "automatic": True})
+
+    @staticmethod
+    async def _resume_loop(
+        db: Database, sink: DbEventSink, lmstudio: LmStudioClient, stop: anyio.Event
+    ) -> None:
+        """Analyses left waiting for LM Studio (``jobs.resume``), completed as soon as a vision
+        model answers. Quiet: LM Studio is not asked anything while no video waits for it."""
+        resumed: set[str] = set()  # waiting runs already resumed by this worker
+        while not stop.is_set():
+            with anyio.move_on_after(resume.RESUME_INTERVAL_S):
+                await stop.wait()
+            if stop.is_set():
+                return
+            try:
+                waiting = await anyio.to_thread.run_sync(
+                    partial(resume.waiting_videos, db, besides=resumed)
+                )
+                if not waiting or not await resume.model_answers(db, lmstudio):
+                    continue
+                queued = await anyio.to_thread.run_sync(resume.queue_completions, db, waiting)
+            except Exception:  # a failing pass never stops the worker and its analyses
+                log.exception("resuming the analyses waiting for lm studio failed")
+                continue
+            for run_ids in waiting.values():
+                resumed.update(run_ids)
+            log.info("lm studio answers: waiting analyses completed", videos=queued)
+            sink.emit("analysis.resumed", data={"videos": queued})
 
     async def _heartbeat_loop(self, db: Database, stop: anyio.Event) -> None:
         while not stop.is_set():

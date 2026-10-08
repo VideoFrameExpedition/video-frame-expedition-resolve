@@ -39,6 +39,11 @@ class Resource(StrEnum):
     ASR = "asr"  # speech recognition: one child process at a time (all CPU cores, 2-4 GB RAM)
 
 
+# A skip that only waits for LM Studio (``StageOutcome.waiting_for_lmstudio``): the worker
+# completes the analysis on its own once a vision model answers (``jobs.resume``).
+WAITS_FOR_LMSTUDIO = "lmstudio"
+
+
 class StageFamily(StrEnum):
     """What a stage looks at, to group the stages where people pick them."""
 
@@ -73,6 +78,12 @@ class StageOutcome:
         if permanent:
             summary = {**summary, "permanent": True}
         return cls(StageStatus.SKIPPED, summary, reason, retryable)
+
+    @classmethod
+    def waiting_for_lmstudio(cls, reason: str) -> StageOutcome:
+        """Skipped for now: LM Studio does not answer, or has no model loaded. Retried by the
+        next analysis, and by the worker itself as soon as a vision model answers."""
+        return cls.skipped(reason, retryable=True, waits_for=WAITS_FOR_LMSTUDIO)
 
     @classmethod
     def provisional(cls, note: str | None = None, **summary: Any) -> StageOutcome:

@@ -138,9 +138,7 @@ class TranslationStage(Stage):
             return StageOutcome.ok(texts=len(set(texts)), asked=0)
         picked = await pick_vision_model(ctx)
         if picked is None:
-            return StageOutcome.skipped(
-                "LM Studio injoignable ou aucun modèle chargé", retryable=True
-            )
+            return StageOutcome.waiting_for_lmstudio("LM Studio injoignable ou aucun modèle chargé")
         model, instance = picked
         await ctx.tools.lm_budget.resize(
             int((instance.context_length or 8192) * 0.9), instance.parallel or 1

@@ -568,6 +568,29 @@ def test_its_own_file_is_brought_up_to_date(client: TestClient, tmp_path: Path) 
     assert write_subtitles(db, "v1", video, said).path.name == "clip.mp4_FR.srt"
 
 
+def test_a_file_holding_what_would_be_written_is_taken_as_ours(
+    client: TestClient, tmp_path: Path
+) -> None:
+    db = _container(client).db
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(b"")
+    said = SubtitleTrack("transcript", "Transcription", (Cue(1.0, 2.0, ("Bonjour",)),), "fr")
+    later = SubtitleTrack("transcript", "Transcription", (Cue(1.0, 2.0, ("Bonsoir",)),), "fr")
+    # Written by the application on another computer sharing the folder: no record here.
+    there = tmp_path / "clip_FR.srt"
+    there.write_bytes(b"1\n00:00:01,000 --> 00:00:02,000\nBonjour\n")
+    assert write_subtitles(db, "v1", video, said).status == WriteStatus.WRITTEN
+    # Ours from then on: brought up to date.
+    assert write_subtitles(db, "v1", video, later).status == WriteStatus.WRITTEN
+    assert there.read_bytes().endswith(b"Bonsoir\n")
+    # One holding something else is left as it is.
+    other = SubtitleTrack("shots", "Plans", (Cue(0.0, 5.0, ("Un port",)),), "fr")
+    users = tmp_path / "clip_SHOTS_FR.srt"
+    users.write_bytes(b"1\n00:00:00,000 --> 00:00:05,000\nA moi\n")
+    assert write_subtitles(db, "v1", video, other).status == WriteStatus.CONFLICT
+    assert users.read_bytes().endswith(b"A moi\n")
+
+
 def test_a_file_named_without_its_language_goes_when_replaced(
     client: TestClient, tmp_path: Path
 ) -> None:

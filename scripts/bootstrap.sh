@@ -141,13 +141,23 @@ fi
 chmod +x run.command 2>/dev/null || true
 echo
 
+# How to start the application: what the one-line installer (install.sh) added to the
+# Applications folder, otherwise run.command.
+if [ -n "${VFE_LAUNCHER:-}" ]; then
+  START_FR="ouvrez « $VFE_LAUNCHER » (Launchpad, Spotlight ou dossier Applications)"
+  START_EN="open \"$VFE_LAUNCHER\" (Launchpad, Spotlight or the Applications folder)"
+else
+  START_FR="double-cliquez sur run.command"
+  START_EN="double-click run.command"
+fi
+
 if [ ! -d "$LM_STUDIO_APP" ]; then
   say "Terminé. Sur l'ordinateur qui a LM Studio, chargez un modèle de vision et laissez son" \
     "Done. On the computer that has LM Studio, load a vision model and let its server accept"
   say "serveur accepter le réseau local (Developer › Server Settings › « Serve on Local Network »)." \
     "the local network (Developer › Server Settings › \"Serve on Local Network\")."
-  say "Double-cliquez ensuite sur run.command ; dans l'application, page Système, carte" \
-    "Then double-click run.command; in the application, System page, \"LM Studio\" card:"
+  say "Ensuite, $START_FR ; dans l'application, page Système, carte" \
+    "Then $START_EN; in the application, System page, \"LM Studio\" card:"
   say "« LM Studio » : choisissez « Sur un autre ordinateur » et tapez son adresse." \
     "choose \"On another computer\" and type its address."
   say "Pour installer LM Studio sur ce Mac plus tard : sh scripts/bootstrap.sh --avec-lm-studio" \
@@ -166,8 +176,8 @@ else
 fi
 say "Terminé. Dans LM Studio, téléchargez un modèle de vision (par exemple $MODELE)," \
   "Done. In LM Studio, download a vision model (for example $MODELE),"
-say "chargez-le et activez le serveur local, puis double-cliquez sur run.command." \
-  "load it and start the local server, then double-click run.command."
+say "chargez-le et activez le serveur local, puis $START_FR." \
+  "load it and start the local server, then $START_EN."
 say "Le modèle peut aussi venir du LM Studio d'un autre ordinateur : donnez alors son adresse" \
   "The model can also come from the LM Studio of another computer: then give its address"
 say "dans l'application, page Système, carte « LM Studio »." \

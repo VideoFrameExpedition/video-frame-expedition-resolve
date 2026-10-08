@@ -22,6 +22,7 @@ const EVENT_TYPES = [
   "worker.started",
   "sidecar.imported",
   "timeline.synced",
+  "analysis.resumed",
 ] as const;
 
 /** Batch invalidations so that a burst of events triggers a single refetch per query. */
@@ -78,6 +79,11 @@ export function useLiveEvents(): void {
         invalidator.add(queryKeys.folders);
         invalidator.add(queryKeys.videosAll);
         invalidator.add(queryKeys.timelines); // the videos a timeline finds in the library
+      }
+      if (event.type === "analysis.resumed") {
+        // Analyses left waiting for LM Studio queued again: their videos are « en file ».
+        invalidator.add(queryKeys.videosAll);
+        invalidator.add(queryKeys.roots);
       }
       if (event.type === "timeline.synced") {
         // A Resolve timeline brought in or updated: its files, the folders of files

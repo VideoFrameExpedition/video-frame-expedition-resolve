@@ -1,10 +1,12 @@
-import { FolderOpen, FolderPlus } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { AlertTriangle, FolderOpen, FolderPlus } from "lucide-react";
 import { useId, useState, type SyntheticEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { errorMessage } from "@/api/client";
-import { useAddRoot, usePickFolder } from "@/api/queries";
+import { useAddRoot, useLmModels, usePickFolder } from "@/api/queries";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,6 +33,11 @@ export function AddRootDialog({ trigger }: { trigger?: React.ReactNode }) {
   const [autoAnalyze, setAutoAnalyze] = useState(true);
   const addRoot = useAddRoot();
   const picker = usePickFolder();
+  // Added without a vision model, the videos are analysed without it and completed on their own
+  // once one answers: said before adding, with where to set LM Studio first.
+  const models = useLmModels();
+  const visionLoaded = models.data?.some((m) => m.vision && m.loaded_instances.length > 0);
+  const lmStudioMissing = models.isError || (models.isSuccess && !visionLoaded);
 
   // The desktop's folder dialog opens on this computer; the path comes back filled in, even when
   // this form was closed and reopened meanwhile (one dialog at a time: never a second request).
@@ -71,7 +78,9 @@ export function AddRootDialog({ trigger }: { trigger?: React.ReactNode }) {
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (next && !path && !picker.isPending) browse(); // choosing the folder comes first
+        // Choosing the folder comes first, unless there is LM Studio to read about: the
+        // desktop's folder dialog would come over the warning.
+        if (next && !path && !picker.isPending && !lmStudioMissing) browse();
       }}
     >
       <DialogTrigger asChild>
@@ -88,6 +97,29 @@ export function AddRootDialog({ trigger }: { trigger?: React.ReactNode }) {
             <DialogTitle>{t("addRoot.title")}</DialogTitle>
             <DialogDescription>{t("addRoot.description")}</DialogDescription>
           </DialogHeader>
+          {lmStudioMissing ? (
+            <Alert>
+              <AlertTriangle className="text-warning-ink size-4" aria-hidden />
+              <AlertTitle>
+                {models.isError ? t("addRoot.lmStudio.offline") : t("addRoot.lmStudio.noVision")}
+              </AlertTitle>
+              <AlertDescription>
+                <p>
+                  {t("addRoot.lmStudio.body")}{" "}
+                  <Link
+                    to="/system"
+                    className="underline underline-offset-2"
+                    onClick={() => {
+                      setOpen(false);
+                    }}
+                  >
+                    {t("addRoot.lmStudio.link")}
+                  </Link>
+                  .
+                </p>
+              </AlertDescription>
+            </Alert>
+          ) : null}
           <div className="grid gap-2">
             <Label htmlFor={ids.path}>{t("addRoot.path")}</Label>
             <div className="flex gap-2">

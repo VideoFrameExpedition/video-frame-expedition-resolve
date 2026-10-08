@@ -216,10 +216,24 @@ function BuildForm({
         }
         const left = result.subtitle_files.filter((file) => file.status !== "written");
         if (left.length > 0) {
+          // A file of that name the application did not write: said in the interface's
+          // language, with how to have it written.
+          const conflicts = left.filter((file) => file.status === "conflict").length;
+          const lines = left.map((file) =>
+            t("timelineBuild.subtitleLeft", {
+              file: file.file,
+              folder: file.folder,
+              reason:
+                file.status === "conflict"
+                  ? t("timelineBuild.subtitleConflict")
+                  : (file.detail ?? ""),
+            }),
+          );
+          if (conflicts > 0) {
+            lines.push(t("timelineBuild.subtitleConflictHint", { count: conflicts }));
+          }
           toast.warning(t("timelineBuild.subtitlesLeft", { count: left.length }), {
-            description: left
-              .map((file) => `${file.file} (${file.folder}) : ${file.detail ?? ""}`)
-              .join("\n"),
+            description: lines.join("\n"),
             duration: 20_000,
           });
         }

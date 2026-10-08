@@ -157,7 +157,13 @@
     "success": "Folder added: scanning now.",
     "browse": "Browse…",
     "browsing": "Dialog open…",
-    "autoAnalyzeHelp": "The folder is watched: videos added or changed are found and analysed with nothing to do."
+    "autoAnalyzeHelp": "The folder is watched: videos added or changed are found and analysed with nothing to do.",
+    "lmStudio": {
+      "offline": "LM Studio does not answer",
+      "noVision": "No vision model loaded in LM Studio",
+      "body": "You can add the folder now: its videos will be analysed without the vision model, then completed on their own as soon as it answers. To set LM Studio first, on this computer or another one:",
+      "link": "System page, “LM Studio” card"
+    }
   },
   "video": {
     "back": "Library",
@@ -1393,6 +1399,10 @@
     "subtitlesLaidHint": "One track per kind. They are also written next to each video (<name>_FR.srt for the speech, <name>_SHOTS_EN.srt for the shots).",
     "subtitlesLeft_one": "A subtitle file was not written",
     "subtitlesLeft_other": "{{count}} subtitle files were not written",
+    "subtitleLeft": "{{file}} ({{folder}}): {{reason}}",
+    "subtitleConflict": "a file of this name, which the application did not write or which has changed since, is left as it is",
+    "subtitleConflictHint_one": "To have it written, delete or rename this file, then create the timeline again.",
+    "subtitleConflictHint_other": "To have them written, delete or rename these files, then create the timeline again.",
     "missing_one": "DaVinci Resolve could not open {{count}} file",
     "missing_other": "DaVinci Resolve could not open {{count}} files",
     "projectRate": "Resolve kept the project's frame rate for this timeline: {{fps}} fps."

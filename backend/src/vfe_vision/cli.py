@@ -692,13 +692,35 @@ app.add_typer(models_app, name="models")
         "Downloads GeoNames (CC BY 4.0) and builds the offline directory of places (~3 MB).",
     ),
 )
-def models_geonames() -> None:
-    """Télécharge GeoNames (CC BY 4.0) et construit le répertoire hors-ligne des lieux (~3 Mo)."""
+def models_geonames(
+    refresh: Annotated[
+        bool,
+        typer.Option(
+            "--refresh",
+            help=tr(
+                "Le télécharger à nouveau même s'il est déjà là (mise à jour des lieux).",
+                "Download it again even when it is already there (an update of the places).",
+            ),
+        ),
+    ] = False,
+) -> None:
+    """Télécharge GeoNames (CC BY 4.0) et construit le répertoire hors-ligne des lieux (~3 Mo).
+    Déjà là, il est laissé tel quel, comme les modèles : une installation relancée ne le
+    télécharge pas une deuxième fois."""
     from vfe_vision.adapters.geo.geonames_build import download_gazetteer
+    from vfe_vision.adapters.geo.offline import GeoNamesGazetteer
     from vfe_vision.core.config import get_settings
 
-    _online_or_exit()
     settings = get_settings()
+    if not refresh and GeoNamesGazetteer(settings.geonames_dir).available:
+        typer.echo(
+            tr(
+                f"GeoNames : déjà installé ({settings.geonames_dir})",
+                f"GeoNames: already installed ({settings.geonames_dir})",
+            )
+        )
+        return
+    _online_or_exit()
     typer.echo(
         tr(
             "Téléchargement de GeoNames (cities1000, ~14 Mo)…",

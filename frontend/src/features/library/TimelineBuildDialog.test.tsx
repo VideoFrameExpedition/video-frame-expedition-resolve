@@ -244,7 +244,12 @@ describe("TimelineBuildDialog", () => {
     );
     expect(toast.warning).toHaveBeenCalledWith(
       "Un fichier de sous-titres n'a pas été écrit",
-      expect.objectContaining({ description: "e_SHOTS.srt (D:\\cats 2026) : laissé tel quel" }),
+      expect.objectContaining({
+        description:
+          "e_SHOTS.srt (D:\\cats 2026) : un fichier de ce nom, que l'application n'a pas écrit " +
+          "ou qui a changé depuis, est laissé tel quel\nPour qu'il soit écrit, supprimez ou " +
+          "renommez ce fichier, puis créez la timeline à nouveau.",
+      }),
     );
     expect(toast.warning).toHaveBeenCalledWith("DaVinci Resolve n'a pas pu ouvrir 1 fichier", {
       description: "D:\\cats 2026\\e.mp4",

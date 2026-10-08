@@ -157,7 +157,13 @@
     "success": "Dossier ajouté : le scan démarre.",
     "browse": "Parcourir…",
     "browsing": "Fenêtre ouverte…",
-    "autoAnalyzeHelp": "Le dossier est surveillé : les vidéos ajoutées ou modifiées sont trouvées et analysées sans rien faire."
+    "autoAnalyzeHelp": "Le dossier est surveillé : les vidéos ajoutées ou modifiées sont trouvées et analysées sans rien faire.",
+    "lmStudio": {
+      "offline": "LM Studio ne répond pas",
+      "noVision": "Aucun modèle de vision chargé dans LM Studio",
+      "body": "Vous pouvez ajouter le dossier maintenant : ses vidéos seront analysées sans le modèle de vision, puis complétées toutes seules dès qu'il répondra. Pour régler LM Studio d'abord, sur cet ordinateur ou sur un autre :",
+      "link": "page Système, carte « LM Studio »"
+    }
   },
   "video": {
     "back": "Bibliothèque",
@@ -1393,6 +1399,10 @@
     "subtitlesLaidHint": "Une piste par sorte. Ils sont aussi écrits à côté de chaque vidéo (<nom>_FR.srt pour la parole, <nom>_SHOTS_FR.srt pour les plans).",
     "subtitlesLeft_one": "Un fichier de sous-titres n'a pas été écrit",
     "subtitlesLeft_other": "{{count}} fichiers de sous-titres n'ont pas été écrits",
+    "subtitleLeft": "{{file}} ({{folder}}) : {{reason}}",
+    "subtitleConflict": "un fichier de ce nom, que l'application n'a pas écrit ou qui a changé depuis, est laissé tel quel",
+    "subtitleConflictHint_one": "Pour qu'il soit écrit, supprimez ou renommez ce fichier, puis créez la timeline à nouveau.",
+    "subtitleConflictHint_other": "Pour qu'ils soient écrits, supprimez ou renommez ces fichiers, puis créez la timeline à nouveau.",
     "missing_one": "DaVinci Resolve n'a pas pu ouvrir {{count}} fichier",
     "missing_other": "DaVinci Resolve n'a pas pu ouvrir {{count}} fichiers",
     "projectRate": "Resolve a gardé la cadence du projet pour cette timeline : {{fps}} i/s."

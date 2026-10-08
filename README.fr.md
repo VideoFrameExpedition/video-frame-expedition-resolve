@@ -162,17 +162,18 @@ de vision de 8 milliards de paramètres à côté de Resolve ; avec 16 Go, préf
 
 ## Installation
 
+### Sous Windows
+
 Récupérez d'abord l'application :
 `git clone https://github.com/VideoFrameExpedition/video-frame-expedition-resolve.git`,
 ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
 
-### Sous Windows
-
-1. Dans PowerShell, depuis le dossier de l'application :
-
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1
-   ```
+1. Double-cliquez sur `install.bat`, dans le dossier de l'application. Windows peut prévenir
+   qu'il vient d'Internet : « Informations complémentaires », puis « Exécuter quand même ». Il
+   retire cette marque de tous les fichiers du dossier, puis lance `scripts\bootstrap.ps1`
+   (dans PowerShell, depuis le dossier :
+   `powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1`, qui prend les mêmes
+   options). À la fin, il propose de démarrer l'application dans la même fenêtre.
 
    Le script installe par `winget` ce qui manque (uv, Node.js, FFmpeg, ExifTool), puis les
    paquets Python de l'application et ses modèles (environ 2 Go, une seule fois ;
@@ -185,28 +186,42 @@ ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
 2. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-8b`), chargez-le
    et activez le serveur local (voir plus bas quand il tourne sur un autre ordinateur).
 3. Double-cliquez sur `run.bat`. La première fois, il construit l'interface web (une à deux
-   minutes), puis ouvre le navigateur.
+   minutes), puis ouvre le navigateur. Lancé avant l'installation, il propose de la faire.
 
 ### Sur un Mac
 
-1. Dans le Terminal, depuis le dossier de l'application :
+1. Ouvrez le Terminal (⌘ Espace, puis tapez « Terminal »), collez cette ligne et appuyez sur
+   Entrée :
 
    ```sh
-   sh scripts/bootstrap.sh
+   /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/VideoFrameExpedition/video-frame-expedition-resolve/main/install.sh)"
    ```
 
-   Le script installe par [Homebrew](https://brew.sh) ce qui manque (uv, Node.js, FFmpeg en
-   version complète, ExifTool), puis les paquets Python de l'application et ses modèles (environ
-   2 Go, une seule fois ; `--sans-modeles` pour s'en passer). Il demande s'il faut installer
-   LM Studio sur ce Mac ; `--avec-lm-studio` ou `--sans-lm-studio` donne la réponse d'avance.
-   Homebrew lui-même est installé d'abord si le Mac ne l'a pas (il demande votre mot de passe).
-   Ses messages suivent la langue du Mac (français ou anglais), comme ceux de `run.command` ;
-   `VFE_LANG` dans le fichier `.env` peut l'imposer.
+   Elle télécharge l'application dans `~/video-frame-expedition-resolve`, installe par
+   [Homebrew](https://brew.sh) ce qui manque (Homebrew lui-même d'abord, s'il n'est pas là : il
+   demande votre mot de passe ; puis uv, Node.js, FFmpeg en version complète, ExifTool), les
+   paquets Python de l'application et ses modèles (environ 2 Go, une seule fois), et ajoute
+   « Video Frame Expedition » à votre dossier Applications. Elle demande s'il faut installer
+   LM Studio sur ce Mac et, à la fin, propose de démarrer l'application dans la même fenêtre.
+   La même ligne, relancée, met l'application à jour. Ses messages suivent la langue du Mac
+   (français ou anglais).
+
+   Vous avez déjà le dossier de l'application (`git clone` ou ZIP) ? Double-cliquez sur
+   `install.command` : la même installation, depuis ce dossier, sans rien télécharger de
+   nouveau. Venu d'un ZIP, macOS refuse de l'ouvrir la première fois : Réglages Système ›
+   Confidentialité et sécurité › « Ouvrir quand même ». Il retire ensuite la marque de
+   quarantaine de tout le dossier. Ses options (`--sans-modeles`, `--avec-lm-studio`,
+   `--sans-lm-studio`) se donnent dans le Terminal : `sh install.sh --sans-lm-studio`.
+   `VFE_LANG` dans le fichier `.env` peut imposer la langue des messages.
 2. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-4b`, ou
    `qwen/qwen3-vl-8b` avec 32 Go de mémoire), chargez-le et activez le serveur local.
-3. Double-cliquez sur `run.command`. La première fois, il construit l'interface web (une à deux
-   minutes), puis ouvre le navigateur. macOS peut demander si le Terminal peut accéder à vos
-   Vidéos, à vos Documents ou à un disque externe : acceptez, l'application y lit vos vidéos.
+3. Ouvrez « Video Frame Expedition » depuis le Launchpad, Spotlight ou le dossier Applications
+   (ou double-cliquez sur `run.command` dans le dossier de l'application) : il lance
+   l'application dans une fenêtre du Terminal. La première fois, il construit l'interface web
+   (une à deux minutes), puis ouvre le navigateur ; lancé avant l'installation, il propose de
+   la faire. macOS peut demander si le Terminal peut
+   accéder à vos Vidéos, à vos Documents ou à un disque externe : acceptez, l'application y lit
+   vos vidéos.
 
    Si macOS refuse d'ouvrir `run.command` la première fois (un fichier téléchargé en ZIP porte
    une marque de quarantaine ; un dossier obtenu par `git clone` n'en a pas), autorisez-le dans
@@ -234,8 +249,9 @@ et sa mémoire).
 
 **Au quotidien : double-cliquez sur `run.bat` (Windows) ou `run.command` (Mac).** Il démarre
 l'application (interface, MCP et analyses) et ouvre le navigateur sur http://127.0.0.1:8765.
-S'il est déjà lancé, il ouvre simplement l'interface. `run.bat build` (ou `run.command build`)
-reconstruit d'abord l'interface web après une mise à jour. Pour arrêter l'application, fermez
+S'il est déjà lancé, il ouvre simplement l'interface. Après une mise à jour, il reconstruit
+d'abord l'interface web ; `run.bat build` (ou `run.command build`) la reconstruit même quand
+rien n'a changé. Pour arrêter l'application, fermez
 sa fenêtre (sur Mac, celle du Terminal, ou Ctrl+C).
 
 **La page « Aide »** de la barre latérale est le guide complet : douze parties, les sept onglets

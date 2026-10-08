@@ -125,8 +125,8 @@ class GroundingStage(Stage):
     async def execute(self, ctx: StageContext) -> StageOutcome:
         picked = await pick_vision_model(ctx)
         if picked is None:
-            return StageOutcome.skipped(
-                "LM Studio injoignable ou aucun modèle de vision chargé", retryable=True
+            return StageOutcome.waiting_for_lmstudio(
+                "LM Studio injoignable ou aucun modèle de vision chargé"
             )
         model, instance = picked
         try:

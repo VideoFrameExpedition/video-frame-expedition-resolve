@@ -221,9 +221,7 @@ class SynthesisStage(Stage):
             return skip
         picked = await pick_vision_model(ctx)
         if picked is None:
-            return StageOutcome.skipped(
-                "LM Studio injoignable ou aucun modèle chargé", retryable=True
-            )
+            return StageOutcome.waiting_for_lmstudio("LM Studio injoignable ou aucun modèle chargé")
         model, instance = picked
         language = ctx.prefs.language
         plan = await anyio.to_thread.run_sync(build_plan, facts, language)

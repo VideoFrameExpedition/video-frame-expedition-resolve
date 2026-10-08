@@ -1,7 +1,8 @@
 #!/bin/bash
 # Video Frame Expedition for DaVinci Resolve - macOS launcher (double-click in the Finder).
 #   run.command            starts the application and opens the browser
-#   run.command build      first rebuilds the web interface (after an update)
+#   run.command build      first rebuilds the web interface, even when its sources have not
+#                          changed (after an update, it is rebuilt anyway)
 #   run.command tailscale  also listens on this computer's Tailscale address (your other
 #                          devices, token required); or VFE_TAILSCALE=true in the .env file
 # The messages on screen are in English, or in French on a Mac set to French
@@ -45,10 +46,31 @@ if lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
   exit 0
 fi
 
+# --- Not installed yet: offered (install.command does the same) ------------------------------
+if ! command -v uv >/dev/null 2>&1; then
+  say "L'application n'est pas encore installée sur ce Mac (« uv » est introuvable)." \
+    "The application is not installed on this Mac yet (\"uv\" cannot be found)."
+  if [ -t 0 ]; then
+    printf '%s' "$(say "L'installer maintenant ? [O/n] " "Install it now? [Y/n] ")"
+    read -r reponse || reponse=n
+    case "$reponse" in
+      [nN]*) ;;
+      *) VFE_NO_OPEN=1 /bin/sh ./install.sh || fail "l'installation a échoué (voir ci-dessus)." \
+        "the installation failed (see above)." ;;
+    esac
+    for dir in /opt/homebrew/bin /usr/local/bin "$HOME/.local/bin"; do # Homebrew just installed
+      case ":$PATH:" in
+        *":$dir:"*) ;;
+        *) [ -d "$dir" ] && PATH="$PATH:$dir" ;;
+      esac
+    done
+  fi
+fi
+
 # --- Required tools -------------------------------------------------------------------------
 command -v uv >/dev/null 2>&1 \
-  || fail "« uv » est introuvable. Installez-le avec : brew install uv (ou lancez : sh scripts/bootstrap.sh)" \
-    "\"uv\" cannot be found. Install it with: brew install uv (or run: sh scripts/bootstrap.sh)"
+  || fail "« uv » est introuvable : double-cliquez sur install.command (ou lancez : sh install.sh)." \
+    "\"uv\" cannot be found: double-click install.command (or run: sh install.sh)."
 command -v ffmpeg >/dev/null 2>&1 \
   || say "[ATTENTION] ffmpeg est introuvable : l'analyse des vidéos échouera (brew install ffmpeg)." \
     "[WARNING] ffmpeg cannot be found: the analysis of the videos will fail (brew install ffmpeg)."
@@ -65,8 +87,16 @@ for arg in "$@"; do
   esac
 done
 
-# --- Web interface: built when missing, or on request (run.command build) -------------------
-[ -f backend/src/vfe_vision/web/dist/index.html ] || BUILD=1
+# --- Web interface: built when missing, when its sources changed since (an update), or on
+# request (run.command build) ------------------------------------------------------------------
+if [ -z "$BUILD" ]; then
+  if [ ! -f backend/src/vfe_vision/web/dist/index.html ]; then
+    BUILD=1
+  elif ! uv run --frozen --no-dev --project backend \
+    python scripts/copy_frontend_build.py --up-to-date; then
+    BUILD=1
+  fi
+fi
 if [ -n "$BUILD" ]; then
   command -v node >/dev/null 2>&1 \
     || fail "Node.js est introuvable : impossible de construire l'interface web. Installez-le avec : brew install node" \

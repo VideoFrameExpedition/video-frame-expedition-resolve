@@ -1,5 +1,6 @@
-"""The launchers (run.bat on Windows, run.command on macOS) and the macOS installer
-(scripts/bootstrap.sh): what a new computer runs at the first start."""
+"""The launchers (run.bat on Windows, run.command on macOS) and the macOS installers
+(install.sh, the one line typed in the Terminal; scripts/bootstrap.sh): what a new computer
+runs at the first start."""
 
 from __future__ import annotations
 
@@ -8,7 +9,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).parents[3]
-SCRIPTS = ("run.command", "scripts/bootstrap.sh")
+SCRIPTS = ("run.command", "scripts/bootstrap.sh", "install.sh")
 
 
 def test_a_new_pc_installs_with_the_pnpm_of_the_project() -> None:
@@ -43,6 +44,45 @@ def test_the_scripts_start_with_a_shebang_and_use_unix_line_endings() -> None:
         assert b"\r" not in raw, name
 
 
+def test_the_readme_gives_the_line_that_installs_on_a_mac() -> None:
+    """The one line of the README fetches install.sh from the repository's main branch, and
+    install.sh hands over to scripts/bootstrap.sh, then adds the application to the
+    Applications folder."""
+    installer = (ROOT / "install.sh").read_text(encoding="utf-8")
+    line = re.search(r'/bin/sh -c "\$\(curl -fsSL (\S+)\)"', installer)
+    assert line
+    assert line.group(1).endswith("/main/install.sh")
+    for readme in ("README.md", "README.fr.md"):
+        if (ROOT / readme).is_file():
+            assert line.group(0) in (ROOT / readme).read_text(encoding="utf-8"), readme
+    assert 'sh "$DIR/scripts/bootstrap.sh" "$@"' in installer
+    assert "osacompile" in installer
+
+
+def test_the_installers_to_double_click_hand_over_to_the_scripts() -> None:
+    """install.bat and install.command, next to run.bat and run.command, for the application's
+    folder downloaded as a ZIP or cloned: the same installation as the scripts, nothing
+    downloaded again; run.bat and run.command offer them when nothing is installed yet."""
+    command = (ROOT / "install.command").read_bytes()
+    assert command.startswith(b"#!/bin/bash")
+    assert b"\r" not in command
+    assert b'exec /bin/sh ./install.sh "$@"' in command
+    assert "*install.sh)" in (ROOT / "install.sh").read_text(encoding="utf-8")  # run as a file
+
+    bat = (ROOT / "install.bat").read_bytes()
+    assert bat.count(b"\n") == bat.count(b"\r\n")  # a batch file with LF lines loses its labels
+    assert b'-File "scripts\\bootstrap.ps1" %*' in bat
+    assert b"Unblock-File" in bat  # the mark of the Web of a ZIP, removed
+    # Once installed, the application starts in the same window if wanted.
+    assert b'"%~dp0run.bat"' in bat
+    assert 'exec /bin/bash "$DIR/run.command"' in (ROOT / "install.sh").read_text(encoding="utf-8")
+
+    assert "VFE_NO_OPEN=1 /bin/sh ./install.sh" in (ROOT / "run.command").read_text(
+        encoding="utf-8"
+    )
+    assert 'call "%~dp0install.bat"' in (ROOT / "run.bat").read_text(encoding="utf-8")
+
+
 def test_stopping_the_launcher_with_ctrl_c_is_not_an_error() -> None:
     """The server ends on the signal it caught (Ctrl+C: 130, a stop request: 143): run.command
     must not show its error message and wait for Enter then."""
@@ -69,19 +109,21 @@ def _statements(text: str) -> str:
 def test_every_message_of_the_launchers_and_installers_exists_in_both_languages() -> None:
     """French on a French system, English otherwise (core.language): a message given in one
     language only would show up untranslated."""
-    bat = (ROOT / "run.bat").read_text(encoding="utf-8")
-    calls = re.findall(r"call :say\b.*", bat)
-    assert calls
-    for call in calls:
-        assert re.fullmatch(rf"call :say {QUOTED} +{QUOTED}", call.strip()), call
+    for name in ("run.bat", "install.bat"):
+        bat = (ROOT / name).read_text(encoding="utf-8")
+        calls = re.findall(r"call :say\b.*", bat)
+        assert calls, name
+        for call in calls:
+            assert re.fullmatch(rf"call :say {QUOTED} +{QUOTED}", call.strip()), (name, call)
 
-    for name in ("run.command", "scripts/bootstrap.sh"):
+    for name in SCRIPTS:
         text = _statements((ROOT / name).read_text(encoding="utf-8"))
         uses = re.findall(r"(?<![\w-])say\s.*", text)
         assert uses, name
         for use in uses:
             assert re.match(rf"say {QUOTED} +{QUOTED}", use), (name, use)
-        assert ". scripts/language.sh" in text, name
+        # install.sh runs before the application's folder is there: it decides it itself.
+        assert ". scripts/language.sh" in text or name == "install.sh", name
 
     ps1 = (ROOT / "scripts" / "bootstrap.ps1").read_text(encoding="utf-8-sig")
     uses = re.findall(r"\(T\s.*", ps1)

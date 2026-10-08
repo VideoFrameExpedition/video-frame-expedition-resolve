@@ -69,6 +69,15 @@ sur `127.0.0.1` par défaut. Il peut aussi écouter sur l'adresse Tailscale de l
   groupe de processus et fil de vie sur un Mac) : si elle disparaît, ils s'arrêtent avec elle, et
   rien d'eux ne continue en arrière-plan. Sur un Mac, l'application lance aussi `osascript` (la
   fenêtre de choix d'un dossier), `diskutil`, `sysctl` et `pgrep`, en lecture seulement.
+- **Installation** : `install.bat`, `install.command` et la ligne d'installation du Mac
+  (`install.sh`) installent ce qui manque par winget ou par Homebrew, qui demandent eux-mêmes
+  l'accord de l'administrateur quand il le faut, puis téléchargent les modèles. `install.bat`
+  retire la marque du Web des fichiers du dossier de l'application, `install.command` leur
+  marque de quarantaine, et rien en dehors de ce dossier. Sur un Mac, l'installation ajoute
+  aussi « Video Frame Expedition » au dossier Applications de l'utilisateur : une petite
+  application faite sur place, signée sur place (signature ad hoc), qui ouvre `run.command`. La
+  ligne du Mac exécute un script téléchargé sur GitHub : on peut le lire avant (`install.sh`, à
+  la racine du dépôt).
 
 ## Accès depuis d'autres appareils
 

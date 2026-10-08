@@ -110,6 +110,27 @@ function Read-LMStudioChoice {
     return [bool]($answer -match '^\s*[oOyY]')
 }
 
+# winget comes with "App Installer", which a new Windows sometimes has not registered for this
+# user yet (it comes with the first updates of the Store): registered here, otherwise
+# downloaded from Microsoft.
+if (-not (Test-Command "winget")) {
+    Write-Host (T "[..] winget : enregistrement d'App Installer" "[..] winget: registering App Installer")
+    try {
+        Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe -ErrorAction Stop
+    } catch {
+        Write-Host (T "     pas encore là : téléchargement d'App Installer (Microsoft)" "     not there yet: downloading App Installer (Microsoft)")
+        try {
+            $bundle = Join-Path $env:TEMP "Microsoft.DesktopAppInstaller.msixbundle"
+            Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/getwinget" -OutFile $bundle
+            Add-AppxPackage -Path $bundle -ErrorAction Stop
+        } catch {
+            Write-Host $_.Exception.Message
+        }
+    }
+    Update-Path
+    $apps = Join-Path $env:LOCALAPPDATA "Microsoft\WindowsApps"
+    if (($env:Path -split ";") -notcontains $apps) { $env:Path += ";$apps" }
+}
 if (-not (Test-Command "winget")) {
     throw (T "winget est introuvable : installez « App Installer » depuis le Microsoft Store, puis relancez." "winget cannot be found: install App Installer from the Microsoft Store, then run this again.")
 }

@@ -7,7 +7,9 @@ folder imports them from there; a player shows them with the video. The files na
 language by earlier versions are removed when replaced, if they still hold what was written.
 
 A file of that name is replaced only when the application wrote it and it still holds what was
-written (``subtitle_files`` keeps its SHA-256): any other is left as it is, and said. Written
+written (``subtitle_files`` keeps its SHA-256): any other is left as it is, and said (and
+logged). One that already holds exactly what would be written is taken as ours, as when another
+installation sharing the folder wrote it, or a version that kept no record. Written
 atomically (in place in a folder that refuses renames), no folder ever created; a read-only
 folder, a refused access or a full disk is a result to report, never an exception for the
 caller. The same goes for the timeline's own tracks when Resolve runs on another computer
@@ -25,6 +27,7 @@ from pathlib import Path
 import sqlalchemy as sa
 
 from vfe_vision.core.atomic_io import atomic_write_bytes
+from vfe_vision.core.logging import get_logger
 from vfe_vision.core.paths import path_key
 from vfe_vision.db.base import utcnow
 from vfe_vision.db.models import SubtitleFile
@@ -41,6 +44,8 @@ CONFLICT_DETAIL = (
     "un fichier de ce nom, que l'application n'a pas écrit ou qui a changé depuis, est laissé "
     "tel quel"
 )
+
+log = get_logger(__name__)
 
 
 class WriteStatus(StrEnum):
@@ -88,14 +93,15 @@ def write_file(
         record = session.get(SubtitleFile, key)
         written = record.sha256 if record is not None else None
     try:
-        if target.exists():
-            if written is None or _digest(target) != written:
-                return WrittenSubtitles(
-                    video_id, part, target, WriteStatus.CONFLICT, CONFLICT_DETAIL
-                )
-            if written == digest:  # holds what it would be written with
-                return WrittenSubtitles(video_id, part, target, WriteStatus.WRITTEN)
-        atomic_write_bytes(target, data, create_parents=False, in_place_fallback=True)
+        # What the file of that name holds: "" no file, None too big to be one of ours.
+        found = _digest(target) if target.exists() else ""
+        if found is None or (found and found not in (digest, written)):
+            log.warning("subtitle file left as it is", path=str(target), recorded=bool(written))
+            return WrittenSubtitles(video_id, part, target, WriteStatus.CONFLICT, CONFLICT_DETAIL)
+        if found != digest:
+            atomic_write_bytes(target, data, create_parents=False, in_place_fallback=True)
+        elif written == digest:  # holds what it would be written with
+            return WrittenSubtitles(video_id, part, target, WriteStatus.WRITTEN)
     except OSError as exc:
         return WrittenSubtitles(video_id, part, target, WriteStatus.FAILED, failure(exc))
     with db.write() as session:
