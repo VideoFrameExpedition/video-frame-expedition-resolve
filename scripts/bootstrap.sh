@@ -7,8 +7,10 @@
 #   sh scripts/bootstrap.sh --no-models          # without the application's models
 #   sh scripts/bootstrap.sh --with-lm-studio     # install LM Studio without asking
 #   sh scripts/bootstrap.sh --without-lm-studio  # leave LM Studio out without asking
+#   sh scripts/bootstrap.sh --update             # for scripts/update.sh: no question, short end
 #
-# The French spellings --sans-modeles, --avec-lm-studio and --sans-lm-studio work too.
+# The French spellings --sans-modeles, --avec-lm-studio, --sans-lm-studio and --mise-a-jour work
+# too.
 #
 # LM Studio, which runs the vision model, is installed only when the person running the script
 # wants it: the question is asked unless it was answered in advance, and LM Studio is left out
@@ -24,9 +26,11 @@ cd "$(dirname "$0")/.."
 
 SANS_MODELES=""
 LM_STUDIO="" # oui or non: the answer given in advance
+MISE_A_JOUR=""
 for arg in "$@"; do
   case "$arg" in
     --no-models | --sans-modeles) SANS_MODELES=1 ;;
+    --update | --mise-a-jour) MISE_A_JOUR=1 ;;
     --with-lm-studio | --avec-lm-studio | --without-lm-studio | --sans-lm-studio)
       choice=oui
       case "$arg" in
@@ -46,6 +50,10 @@ for arg in "$@"; do
       ;;
   esac
 done
+# An update asks nothing: LM Studio is left as it is.
+if [ -n "$MISE_A_JOUR" ] && [ -z "$LM_STUDIO" ]; then
+  LM_STUDIO=non
+fi
 
 if [ "$(uname -s)" != "Darwin" ]; then
   say "Ce script installe l'application sur un Mac." "This script installs the application on a Mac."
@@ -138,8 +146,14 @@ if [ -z "$SANS_MODELES" ]; then
   done
 fi
 
-chmod +x run.command 2>/dev/null || true
+chmod +x run.command install.command update.command 2>/dev/null || true
 echo
+
+if [ -n "$MISE_A_JOUR" ]; then
+  say "Mise à jour terminée : votre bibliothèque, vos réglages et les modèles sont restés en place." \
+    "Update complete: your library, your settings and the models stayed in place."
+  exit 0
+fi
 
 # How to start the application: what the one-line installer (install.sh) added to the
 # Applications folder, otherwise run.command.

@@ -234,6 +234,30 @@ ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
    Réglages Système › Confidentialité et sécurité, ou retirez la marque dans le Terminal, depuis
    le dossier de l'application : `xattr -dr com.apple.quarantine .`
 
+### Mettre à jour
+
+**Ouvrez « Video Frame Expedition - mise à jour » (menu Démarrer ou dossier Applications), ou
+double-cliquez sur `update.bat` (Windows) ou `update.command` (Mac) dans le dossier de
+l'application.** Elle demande de fermer l'application si elle tourne, cherche sur GitHub la
+dernière version et, s'il y en a une, la met dans le même dossier et installe ce dont elle a
+besoin ; puis elle propose de démarrer l'application. Votre bibliothèque, vos réglages et les
+modèles sont gardés : ils sont dans le dossier de données (`%LOCALAPPDATA%\vfe-vision`, ou
+`~/Library/Application Support/vfe-vision` sur un Mac), auquel la mise à jour ne touche pas, et
+le fichier `.env` reste tel quel. Avant de changer la structure de sa base de données, la
+nouvelle version la sauvegarde (dossier `backups`, à côté d'elle).
+
+Un dossier obtenu par `git clone` (sur un Mac, la ligne d'installation) se met à jour par
+`git pull`. Sinon, la mise à jour télécharge la dernière version publiée et remplace les fichiers
+de l'application : ce que la nouvelle version n'a plus quitte les dossiers propres à
+l'application (`backend`, `frontend`, `scripts`, `docs`), et tout ce que vous avez mis d'autre
+dans le dossier reste. `update.bat -Depuis <ZIP ou dossier>` (`update.command --depuis …`)
+installe cette version-là.
+
+Jusqu'à la version 1.2.1, qui ne l'avait pas, mettez à jour une fois à la main : téléchargez la
+nouvelle version (Code › Download ZIP), décompressez-la et double-cliquez sur `install.bat` dans
+le nouveau dossier (recopiez votre fichier `.env` si vous en avez fait un) ; sur un Mac, recollez
+la ligne d'installation.
+
 ### LM Studio sur un autre ordinateur
 
 Quand LM Studio tourne sur un autre ordinateur, téléchargez et chargez le modèle là-bas, et

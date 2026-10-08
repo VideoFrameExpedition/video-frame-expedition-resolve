@@ -6,6 +6,10 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -NoModels       (or -SansModeles)
 #   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -WithLMStudio   (or -AvecLMStudio)
 #   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -NoLMStudio     (or -SansLMStudio)
+#   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -Update         (or -MiseAJour)
+#
+# -Update is for scripts\update.ps1, once the new version's files are in place: no question about
+# LM Studio, and a short last message.
 #
 # LM Studio, which runs the vision model, is installed only when the person running the script
 # wants it: the question is asked unless -WithLMStudio or -NoLMStudio answered it in advance,
@@ -22,7 +26,8 @@
 param(
     [Alias("SansModeles")][switch]$NoModels,
     [Alias("AvecLMStudio")][switch]$WithLMStudio,
-    [Alias("SansLMStudio")][switch]$NoLMStudio
+    [Alias("SansLMStudio")][switch]$NoLMStudio,
+    [Alias("MiseAJour")][switch]$Update
 )
 $ErrorActionPreference = "Stop"
 $Root = Split-Path $PSScriptRoot -Parent
@@ -246,7 +251,7 @@ if (Find-LMStudio) {
     Write-Host "[ok] LM Studio"
 } else {
     $install = [bool]$WithLMStudio
-    if (-not $WithLMStudio -and -not $NoLMStudio -and (Test-Keyboard)) {
+    if (-not $WithLMStudio -and -not $NoLMStudio -and -not $Update -and (Test-Keyboard)) {
         $install = Read-LMStudioChoice
     }
     if ($install) {
@@ -285,19 +290,29 @@ if (-not $NoModels) {
 }
 
 # "Video Frame Expedition" in the Start menu, as in the Applications folder of a Mac: a shortcut
-# to run.bat, with the application's icon, for this user only.
-$Shortcut = Join-Path ([Environment]::GetFolderPath("Programs")) "Video Frame Expedition.lnk"
-try {
-    $link = (New-Object -ComObject WScript.Shell).CreateShortcut($Shortcut)
-    $link.TargetPath = Join-Path $Root "run.bat"
-    $link.WorkingDirectory = $Root
-    $link.IconLocation = (Join-Path $Root "docs\brand\icons\app-icon.ico") + ",0"
-    $link.Description = "Video Frame Expedition for DaVinci Resolve"
-    $link.Save()
-    Write-Host (T "[ok] « Video Frame Expedition » dans le menu Démarrer" "[ok] `"Video Frame Expedition`" in the Start menu")
-} catch {
-    Write-Host (T "[--] Raccourci du menu Démarrer non créé : $($_.Exception.Message)" "[--] Start menu shortcut not created: $($_.Exception.Message)")
+# to run.bat, with the application's icon, for this user only; next to it, its update.
+function New-Shortcut([string]$Name, [string]$Target) {
+    $path = Join-Path ([Environment]::GetFolderPath("Programs")) "$Name.lnk"
+    try {
+        $link = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+        $link.TargetPath = $Target
+        $link.WorkingDirectory = $Root
+        $link.IconLocation = (Join-Path $Root "docs\brand\icons\app-icon.ico") + ",0"
+        $link.Description = "Video Frame Expedition for DaVinci Resolve"
+        $link.Save()
+        Write-Host (T "[ok] « $Name » dans le menu Démarrer" "[ok] `"$Name`" in the Start menu")
+    } catch {
+        Write-Host (T "[--] Raccourci « $Name » non créé : $($_.Exception.Message)" "[--] Shortcut `"$Name`" not created: $($_.Exception.Message)")
+    }
 }
+New-Shortcut "Video Frame Expedition" (Join-Path $Root "run.bat")
+# The update's name follows the language of the messages; the other one goes.
+$UpdateName = T "Video Frame Expedition - mise à jour" "Video Frame Expedition - update"
+foreach ($name in "Video Frame Expedition - mise à jour", "Video Frame Expedition - update") {
+    $other = Join-Path ([Environment]::GetFolderPath("Programs")) "$name.lnk"
+    if ($name -ne $UpdateName -and (Test-Path $other)) { Remove-Item $other -Force }
+}
+New-Shortcut $UpdateName (Join-Path $Root "update.bat")
 
 Write-Host ""
 if ($Refused) {
@@ -305,7 +320,9 @@ if ($Refused) {
     Write-Host (T "plus haut). Son verdict peut changer : relancez install.bat dans quelques minutes." "Its verdict can change: run install.bat again in a few minutes.") -ForegroundColor Yellow
     Write-Host ""
 }
-if (Find-LMStudio) {
+if ($Update) {
+    Write-Host (T "Mise à jour terminée : votre bibliothèque, vos réglages et les modèles sont restés en place." "Update complete: your library, your settings and the models stayed in place.")
+} elseif (Find-LMStudio) {
     Write-Host (T "Terminé. Dans LM Studio, téléchargez un modèle de vision (par exemple qwen/qwen3-vl-8b)," "Done. In LM Studio, download a vision model (for example qwen/qwen3-vl-8b),")
     Write-Host (T "chargez-le et activez le serveur local, puis ouvrez « Video Frame Expedition » (menu" "load it and start the local server, then open `"Video Frame Expedition`" (Start menu)")
     Write-Host (T "Démarrer) ou double-cliquez sur run.bat." "or double-click run.bat.")

@@ -220,6 +220,27 @@ or GitHub's "Code › Download ZIP" button, then unzip it.
    Privacy & Security, or remove the mark in the Terminal, from the application's folder:
    `xattr -dr com.apple.quarantine .`
 
+### Updating
+
+**Open "Video Frame Expedition - update" (Start menu or Applications folder), or double-click
+`update.bat` (Windows) or `update.command` (Mac) in the application's folder.** It asks you to
+close the application if it is running, looks on GitHub for the latest version and, when there
+is one, puts it in the same folder and installs what it needs; then it offers to start the
+application. Your library, your settings and the models are kept: they live in the data folder
+(`%LOCALAPPDATA%\vfe-vision`, or `~/Library/Application Support/vfe-vision` on a Mac), which the
+update does not touch, and the `.env` file stays as it is. Before changing the structure of its
+database, the new version backs it up (`backups` folder, next to it).
+
+A folder obtained with `git clone` (on a Mac, the installation line) is updated with `git pull`.
+Otherwise the update downloads the latest release and replaces the application's files: what the
+new version no longer has goes from the application's own folders (`backend`, `frontend`,
+`scripts`, `docs`), and anything else you put in the folder stays. `update.bat -From <ZIP or
+folder>` (`update.command --from …`) installs that version instead.
+
+Up to version 1.2.1, which did not have it, update by hand once: download the new version
+(Code › Download ZIP), unzip it and double-click `install.bat` in the new folder (copy your
+`.env` file over if you made one); on a Mac, paste the installation line again.
+
 ### LM Studio on another computer
 
 When LM Studio runs on another computer, download and load the model over there, and let its

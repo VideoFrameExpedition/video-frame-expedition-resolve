@@ -83,6 +83,14 @@ Video Frame Expedition for DaVinci Resolve is a **local** application: the serve
   Frame Expedition" shortcut to `run.bat`, in the user's Start menu. The Mac's line runs a
   script downloaded from GitHub: it can be read first (`install.sh`, at the root of the
   repository).
+- **Update**: `update.bat` and `update.command` download from the application's repository on
+  GitHub only, over HTTPS: the address of its latest release, then that release's ZIP (a
+  folder that comes from Git is updated with `git pull`). They replace the files of the
+  application's folder and remove, from its own folders (`backend`, `frontend`, `scripts`,
+  `docs`), those the new version no longer has; never the data folder, the `.env` file, the
+  application's environment or anything else in the folder. Then they run the new version's
+  installation. The installation puts "Video Frame Expedition - update" next to the
+  application (Start menu, Applications folder): it opens them.
 
 ## Access from other devices
 

@@ -111,30 +111,40 @@ else
 fi
 
 # The application in the Applications folder: an AppleScript applet made on this Mac, which
-# opens run.command in the Terminal as a double-click would, with the application's icon.
+# opens run.command in the Terminal as a double-click would, with the application's icon; next
+# to it, its update (update.command), named in the language of the messages.
+make_app() {
+  rm -rf "$1"
+  osacompile -o "$1" \
+    -e "do shell script \"open -a Terminal \" & quoted form of \"$2\""
+  if sips -s format icns "$DIR/docs/brand/icons/icon-512.png" \
+    --out "$1/Contents/Resources/applet.icns" >/dev/null 2>&1; then
+    # osacompile also puts the default icon in an asset catalogue, which macOS prefers
+    # (CFBundleIconName): without it, the icon file is the one shown.
+    rm -f "$1/Contents/Resources/Assets.car"
+    /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$1/Contents/Info.plist" \
+      >/dev/null 2>&1 || true
+    codesign --force --sign - "$1" >/dev/null 2>&1 || true # sealed again with its icon
+    touch "$1"
+  fi
+}
 say "[..] « $NAME » dans le dossier Applications" "[..] \"$NAME\" in the Applications folder"
 mkdir -p "$HOME/Applications"
-rm -rf "$APP"
-osacompile -o "$APP" \
-  -e "do shell script \"open -a Terminal \" & quoted form of \"$DIR/run.command\""
-if sips -s format icns "$DIR/docs/brand/icons/icon-512.png" \
-  --out "$APP/Contents/Resources/applet.icns" >/dev/null 2>&1; then
-  # osacompile also puts the default icon in an asset catalogue, which macOS prefers
-  # (CFBundleIconName): without it, the icon file is the one shown.
-  rm -f "$APP/Contents/Resources/Assets.car"
-  /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$APP/Contents/Info.plist" \
-    >/dev/null 2>&1 || true
-  codesign --force --sign - "$APP" >/dev/null 2>&1 || true # sealed again with its icon
-  touch "$APP"
-fi
+make_app "$APP" "$DIR/run.command"
+rm -rf "$HOME/Applications/$NAME - mise à jour.app" "$HOME/Applications/$NAME - update.app"
+UPDATE_APP="$HOME/Applications/$NAME - $(say "mise à jour" "update").app"
+make_app "$UPDATE_APP" "$DIR/update.command"
 
 VFE_LAUNCHER="$NAME" sh "$DIR/scripts/bootstrap.sh" "$@"
 
 echo
-if [ -z "$HERE" ]; then
-  say "Pour mettre l'application à jour plus tard, relancez la même ligne dans le Terminal." \
-    "To update the application later, run the same line in the Terminal again."
-fi
+case " $* " in
+  *" --update "*) ;;
+  *)
+    say "Pour mettre l'application à jour plus tard : « $NAME - mise à jour » (dossier Applications)." \
+      "To update the application later: \"$NAME - update\" (Applications folder)."
+    ;;
+esac
 # Started now, the application runs in this same window (run.command takes over; Ctrl+C stops
 # it). Not asked when run.command started the installation: it goes on itself.
 if [ -t 0 ] && [ -z "${VFE_NO_OPEN:-}" ]; then

@@ -91,6 +91,14 @@ sur `127.0.0.1` par défaut. Il peut aussi écouter sur l'adresse Tailscale de l
   sous Windows, un raccourci « Video Frame Expedition » vers `run.bat`, dans le menu Démarrer de
   l'utilisateur. La ligne du Mac exécute un script téléchargé sur GitHub : on peut le lire
   avant (`install.sh`, à la racine du dépôt).
+- **Mise à jour** : `update.bat` et `update.command` ne téléchargent que depuis le dépôt de
+  l'application sur GitHub, en HTTPS : l'adresse de sa dernière version publiée, puis le ZIP de
+  celle-ci (un dossier venu de Git se met à jour par `git pull`). Ils remplacent les fichiers du
+  dossier de l'application et retirent, de ses dossiers propres (`backend`, `frontend`,
+  `scripts`, `docs`), ceux que la nouvelle version n'a plus ; jamais le dossier de données, le
+  fichier `.env`, l'environnement de l'application ni rien d'autre du dossier. Ils lancent
+  ensuite l'installation de la nouvelle version. L'installation met « Video Frame Expedition -
+  mise à jour » à côté de l'application (menu Démarrer, dossier Applications) : il les ouvre.
 
 ## Accès depuis d'autres appareils
 
