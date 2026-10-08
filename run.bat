@@ -105,7 +105,7 @@ exit /b 0
 :find_tools
 rem A window opened before an installation (winget, npm) does not have the updated PATH.
 rem (Each addition goes through :add_path: inside a loop, %PATH% would be read only once.)
-for %%D in ("%LOCALAPPDATA%\Microsoft\WinGet\Links" "%USERPROFILE%\.local\bin" "%ProgramFiles%\nodejs" "%APPDATA%\npm" "%LOCALAPPDATA%\Programs\ExifTool" "%LOCALAPPDATA%\Programs\ffmpeg\bin") do (
+for %%D in ("%LOCALAPPDATA%\Microsoft\WinGet\Links" "%USERPROFILE%\.local\bin" "%ProgramFiles%\nodejs" "%LOCALAPPDATA%\Programs\nodejs" "%APPDATA%\npm" "%LOCALAPPDATA%\Programs\ExifTool" "%LOCALAPPDATA%\Programs\ffmpeg\bin") do (
     if exist "%%~D\" call :add_path "%%~D"
 )
 for /d %%D in ("%LOCALAPPDATA%\Microsoft\WinGet\Packages\astral-sh.uv_*") do call :add_path "%%~D"
@@ -124,7 +124,7 @@ rem blocks it. pnpm only installs the dependencies, the first time (:install_ui)
 where node >nul 2>nul
 if errorlevel 1 (
     call :say "[ERREUR] Node.js est introuvable : impossible de construire l'interface web." "[ERROR] Node.js cannot be found: the web interface cannot be built."
-    call :say "         Installez-le avec : winget install OpenJS.NodeJS.LTS" "        Install it with: winget install OpenJS.NodeJS.LTS"
+    call :say "         Pour l'installer : double-cliquez sur install.bat." "        To install it: double-click install.bat."
     exit /b 1
 )
 if not exist "frontend\node_modules\vite\bin\vite.js" call :install_ui || exit /b 1
@@ -151,7 +151,7 @@ if not errorlevel 1 (
 where npx.cmd >nul 2>nul
 if errorlevel 1 (
     call :say "[ERREUR] Ni pnpm ni npx : impossible d'installer les dépendances de l'interface." "[ERROR] Neither pnpm nor npx: the interface's dependencies cannot be installed."
-    call :say "         Installez Node.js avec : winget install OpenJS.NodeJS.LTS" "        Install Node.js with: winget install OpenJS.NodeJS.LTS"
+    call :say "         Pour installer Node.js : double-cliquez sur install.bat." "        To install Node.js: double-click install.bat."
     exit /b 1
 )
 call npx.cmd --yes pnpm@12.6.0 --dir frontend install --frozen-lockfile

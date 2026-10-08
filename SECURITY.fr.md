@@ -71,13 +71,18 @@ sur `127.0.0.1` par défaut. Il peut aussi écouter sur l'adresse Tailscale de l
   fenêtre de choix d'un dossier), `diskutil`, `sysctl` et `pgrep`, en lecture seulement.
 - **Installation** : `install.bat`, `install.command` et la ligne d'installation du Mac
   (`install.sh`) installent ce qui manque par winget ou par Homebrew, qui demandent eux-mêmes
-  l'accord de l'administrateur quand il le faut, puis téléchargent les modèles. `install.bat`
+  l'accord de l'administrateur quand il le faut, puis téléchargent les modèles. Sous Windows,
+  quand Smart App Control est actif, Node.js vient de son ZIP officiel (nodejs.org), et ExifTool
+  du sien (exiftool.org) quand winget n'a pas pu l'installer : chacun est vérifié par son
+  empreinte SHA-256 publiée et installé pour l'utilisateur seul.
+  `install.bat`
   retire la marque du Web des fichiers du dossier de l'application, `install.command` leur
   marque de quarantaine, et rien en dehors de ce dossier. Sur un Mac, l'installation ajoute
   aussi « Video Frame Expedition » au dossier Applications de l'utilisateur : une petite
-  application faite sur place, signée sur place (signature ad hoc), qui ouvre `run.command`. La
-  ligne du Mac exécute un script téléchargé sur GitHub : on peut le lire avant (`install.sh`, à
-  la racine du dépôt).
+  application faite sur place, signée sur place (signature ad hoc), qui ouvre `run.command` ;
+  sous Windows, un raccourci « Video Frame Expedition » vers `run.bat`, dans le menu Démarrer de
+  l'utilisateur. La ligne du Mac exécute un script téléchargé sur GitHub : on peut le lire
+  avant (`install.sh`, à la racine du dépôt).
 
 ## Accès depuis d'autres appareils
 

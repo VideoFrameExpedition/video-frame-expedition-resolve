@@ -175,9 +175,11 @@ ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
    `powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1`, qui prend les mêmes
    options). À la fin, il propose de démarrer l'application dans la même fenêtre.
 
-   Le script installe par `winget` ce qui manque (uv, Node.js, FFmpeg, ExifTool), puis les
+   Le script installe par `winget` ce qui manque (uv, Node.js, FFmpeg, ExifTool ; Node.js
+   et ExifTool depuis leur ZIP officiel quand leur installeur est refusé), puis les
    paquets Python de l'application et ses modèles (environ 2 Go, une seule fois ;
-   `-SansModeles` pour s'en passer). Il demande s'il faut installer LM Studio sur ce PC : le
+   `-SansModeles` pour s'en passer), et ajoute « Video Frame Expedition » au menu Démarrer.
+   Il demande s'il faut installer LM Studio sur ce PC : le
    modèle de vision peut aussi tourner dans le LM Studio d'un autre ordinateur. `-AvecLMStudio`
    ou `-SansLMStudio` donne la réponse d'avance. Acceptez les demandes d'autorisation de Windows
    (UAC). Ses messages sont en français sur un Windows en français, en anglais sinon ;
@@ -185,8 +187,9 @@ ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
    `run.bat` et les commandes `vfe` aussi.
 2. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-8b`), chargez-le
    et activez le serveur local (voir plus bas quand il tourne sur un autre ordinateur).
-3. Double-cliquez sur `run.bat`. La première fois, il construit l'interface web (une à deux
-   minutes), puis ouvre le navigateur. Lancé avant l'installation, il propose de la faire.
+3. Ouvrez « Video Frame Expedition » depuis le menu Démarrer, ou double-cliquez sur `run.bat`.
+   La première fois, il construit l'interface web (une à deux minutes), puis ouvre le
+   navigateur. Lancé avant l'installation, `run.bat` propose de la faire.
 
 ### Sur un Mac
 
@@ -247,7 +250,8 @@ et sa mémoire).
 
 ## Démarrage rapide
 
-**Au quotidien : double-cliquez sur `run.bat` (Windows) ou `run.command` (Mac).** Il démarre
+**Au quotidien : ouvrez « Video Frame Expedition » (menu Démarrer ou dossier Applications), ou
+double-cliquez sur `run.bat` (Windows) ou `run.command` (Mac).** Il démarre
 l'application (interface, MCP et analyses) et ouvre le navigateur sur http://127.0.0.1:8765.
 S'il est déjà lancé, il ouvre simplement l'interface. Après une mise à jour, il reconstruit
 d'abord l'interface web ; `run.bat build` (ou `run.command build`) la reconstruit même quand

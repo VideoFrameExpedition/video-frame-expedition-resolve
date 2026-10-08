@@ -136,6 +136,7 @@ def _serve_listening(settings: Settings) -> None:
 
     from vfe_vision.api.app import create_app
     from vfe_vision.api.listen import access_config, open_listeners, plan_listen
+    from vfe_vision.api.server import Server
 
     plan = plan_listen(settings)
     try:
@@ -170,7 +171,7 @@ def _serve_listening(settings: Settings) -> None:
         server_header=False,
         timeout_graceful_shutdown=5,  # Ctrl+C: requests still open (folder dialog) are cut
     )
-    server = uvicorn.Server(config)
+    server = Server(config)
     try:
         server.run(sockets=listeners.sockets)
     finally:

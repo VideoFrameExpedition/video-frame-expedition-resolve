@@ -19,6 +19,7 @@ router = APIRouter(tags=["events"])
 
 POLL_INTERVAL_S = 0.5
 BATCH = 200
+STOP_GRACE_S = 1.0  # well within uvicorn's graceful shutdown (5 s, ``vfe serve``)
 
 
 def _latest_id(db: Database) -> int:
@@ -55,10 +56,13 @@ async def events(
     start = int(last_event_id) if last_event_id and last_event_id.isdigit() else since
     if start is None:
         start = await anyio.to_thread.run_sync(_latest_id, c.db)
+    # Set when the server stops: the stream then ends by itself and the response is complete
+    # (cut short, uvicorn reports "ASGI callable returned without completing response").
+    stopping = anyio.Event()
 
     async def stream() -> AsyncIterator[dict[str, str]]:
         cursor = start
-        while not await request.is_disconnected():
+        while not stopping.is_set() and not await request.is_disconnected():
             batch = await anyio.to_thread.run_sync(_fetch, c.db, cursor)
             for event in batch:
                 cursor = event["id"]
@@ -68,6 +72,9 @@ async def events(
                     "data": json.dumps(event, ensure_ascii=False, default=str),
                 }
             if len(batch) < BATCH:
-                await anyio.sleep(POLL_INTERVAL_S)
+                with anyio.move_on_after(POLL_INTERVAL_S):
+                    await stopping.wait()
 
-    return EventSourceResponse(stream(), ping=15)
+    return EventSourceResponse(
+        stream(), ping=15, shutdown_event=stopping, shutdown_grace_period=STOP_GRACE_S
+    )

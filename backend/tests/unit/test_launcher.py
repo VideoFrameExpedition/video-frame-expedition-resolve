@@ -83,6 +83,32 @@ def test_the_installers_to_double_click_hand_over_to_the_scripts() -> None:
     assert 'call "%~dp0install.bat"' in (ROOT / "run.bat").read_text(encoding="utf-8")
 
 
+def test_node_comes_from_its_zip_when_its_installer_is_refused() -> None:
+    """Smart App Control refuses Node.js's installer (error 1723, nodejs/node#63005): the
+    official ZIP, checked against its published checksum, then found by run.bat."""
+    script = (ROOT / "scripts" / "bootstrap.ps1").read_text(encoding="utf-8-sig")
+    # Under Smart App Control, Node.js's ZIP comes first; ExifTool's only when winget fails.
+    assert '"OpenJS.NodeJS.LTS" { Install-NodeFromZip } -OtherwiseFirst:$Sac' in script
+    assert '"OliverBetz.ExifTool" { Install-ExifToolFromZip }\n' in script
+    assert "VerifiedAndReputablePolicyState -eq 1" in script
+    assert "SHASUMS256.txt" in script
+    assert "exiftool.org/checksums.txt" in script
+    assert "Get-FileHash $zip -Algorithm SHA256" in script
+    assert r"%LOCALAPPDATA%\Programs\nodejs" in (ROOT / "run.bat").read_text(encoding="utf-8")
+
+
+def test_the_windows_installation_puts_the_application_in_the_start_menu() -> None:
+    """As in the Applications folder of a Mac: a shortcut to run.bat, with the application's
+    icon (an .ico rendered with the other icons of the logo)."""
+    script = (ROOT / "scripts" / "bootstrap.ps1").read_text(encoding="utf-8-sig")
+    assert 'GetFolderPath("Programs")' in script
+    assert 'Join-Path $Root "run.bat"' in script
+    assert r"docs\brand\icons\app-icon.ico" in script
+    icon = (ROOT / "docs" / "brand" / "icons" / "app-icon.ico").read_bytes()
+    assert icon[:4] == bytes([0, 0, 1, 0])  # an icon, not a cursor
+    assert int.from_bytes(icon[4:6], "little") >= 4  # several sizes, 16 to 256 px
+
+
 def test_stopping_the_launcher_with_ctrl_c_is_not_an_error() -> None:
     """The server ends on the signal it caught (Ctrl+C: 130, a stop request: 143): run.command
     must not show its error message and wait for Enter then."""

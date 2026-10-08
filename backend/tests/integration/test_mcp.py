@@ -27,7 +27,7 @@ from vfe_vision.db.models import (
     Video,
 )
 from vfe_vision.domain.enums import VideoStatus
-from vfe_vision.mcp.server import build_mcp_server
+from vfe_vision.mcp.server import INSTRUCTIONS, build_mcp_server
 from vfe_vision.services.container import AppContainer
 
 pytestmark = pytest.mark.anyio
@@ -87,6 +87,15 @@ async def test_tools_are_listed_with_schemas(container: AppContainer) -> None:
     expected = {"watch_video", "get_frames", "list_watched", "get_video", "get_job"}
     assert expected | {"get_video_context"} <= set(tools)
     assert tools["list_watched"].output_schema is not None
+
+
+async def test_the_instructions_name_every_tool(container: AppContainer) -> None:
+    """A client without the vfe-montage skill (Cursor, Codex, VS Code) learns the tools from
+    the server's instructions: none is left out, the Resolve tools of the assistant included."""
+    async with Client(build_mcp_server(lambda: container)) as client:
+        tools = {t.name for t in (await client.list_tools()).tools}
+    assert {"read_timeline", "build_timeline", "plan_reframe", "apply_markers"} <= tools
+    assert [name for name in sorted(tools) if name not in INSTRUCTIONS] == []
 
 
 async def test_manifest_and_frames(container: AppContainer) -> None:

@@ -1,5 +1,6 @@
 ﻿# Installs Video Frame Expedition for DaVinci Resolve on a new Windows 11 PC: the missing programs
-# (through winget), the application's Python packages, then its models.
+# (through winget), the application's Python packages, its models, then "Video Frame Expedition"
+# in the Start menu.
 #
 #   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1
 #   powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -NoModels       (or -SansModeles)
@@ -57,20 +58,99 @@ function Update-Path {
         [Environment]::GetEnvironmentVariable("Path", "User")
 }
 
-function Install-IfMissing([string]$Name, [scriptblock]$IsThere, [string]$WingetId) {
+# $Otherwise: another way to install it, when winget fails; -OtherwiseFirst takes it first,
+# without trying winget.
+function Install-IfMissing([string]$Name, [scriptblock]$IsThere, [string]$WingetId, [scriptblock]$Otherwise, [switch]$OtherwiseFirst) {
     if (& $IsThere) {
         Write-Host "[ok] $Name"
         return
     }
-    Write-Host (T "[..] Installation de $Name ($WingetId)" "[..] Installing $Name ($WingetId)")
-    # winget's own catalogue only: the Microsoft Store one may be missing (Store blocked in a
-    # company, Windows Sandbox) and make the search fail before anything is installed.
-    winget install --id $WingetId -e --source winget `
-        --accept-package-agreements --accept-source-agreements --silent
-    if ($LASTEXITCODE -ne 0) {
-        throw (T "winget n'a pas pu installer $Name (code $LASTEXITCODE)." "winget could not install $Name (code $LASTEXITCODE).")
+    if ($Otherwise -and $OtherwiseFirst) {
+        Write-Host (T "[..] Installation de $Name (ZIP officiel : Smart App Control refuse son installeur)" "[..] Installing $Name (official ZIP: Smart App Control refuses its installer)")
+        & $Otherwise
+    } else {
+        Write-Host (T "[..] Installation de $Name ($WingetId)" "[..] Installing $Name ($WingetId)")
+        # winget's own catalogue only: the Microsoft Store one may be missing (Store blocked in a
+        # company, Windows Sandbox) and make the search fail before anything is installed.
+        winget install --id $WingetId -e --source winget `
+            --accept-package-agreements --accept-source-agreements --silent
+        $code = $LASTEXITCODE
+        if ($code -ne 0 -and $Otherwise) {
+            Write-Host (T "     winget n'a pas pu l'installer (code $code) : son ZIP officiel" "     winget could not install it (code $code): its official ZIP")
+            & $Otherwise
+        } elseif ($code -ne 0) {
+            throw (T "winget n'a pas pu installer $Name (code $code)." "winget could not install $Name (code $code).")
+        }
     }
     Update-Path
+    if (-not (& $IsThere)) {
+        throw (T "$Name est installé, mais introuvable : relancez dans une nouvelle fenêtre." "$Name is installed, but cannot be found: run this again in a new window.")
+    }
+}
+
+# Smart App Control on (1; 2 = evaluation, 0 = off): it refuses Node.js's installer (error 1723:
+# the temporary DLL of its "SetInstallScope" action, nodejs/node#63005), while node.exe, signed,
+# is accepted: Node.js's official ZIP is then used directly.
+function Test-SmartAppControl {
+    $policy = Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy" -ErrorAction SilentlyContinue
+    return [bool]($policy -and $policy.VerifiedAndReputablePolicyState -eq 1)
+}
+
+# An official ZIP, checked against its published SHA-256 checksum: the content of its $Inner
+# folder goes to %LOCALAPPDATA%\Programs\$Folder, added to the user's PATH. Returns that folder.
+function Install-Zip([string]$Url, [string]$Sha256, [string]$Inner, [string]$Folder) {
+    Write-Host "     $Url"
+    $zip = Join-Path $env:TEMP "vfe-$Inner.zip"
+    # A user agent like curl's: SourceForge then sends the file, not its page.
+    Invoke-WebRequest -UseBasicParsing -UserAgent "curl/8" $Url -OutFile $zip
+    if (-not $Sha256 -or (Get-FileHash $zip -Algorithm SHA256).Hash -ne $Sha256.ToUpperInvariant()) {
+        Remove-Item $zip -Force
+        throw (T "Le ZIP ne correspond pas à son empreinte publiée : $Url" "The ZIP does not match its published checksum: $Url")
+    }
+    $dest = Join-Path $env:LOCALAPPDATA "Programs\$Folder"
+    # Through .NET: the module of Expand-Archive does not load everywhere (seen in Windows Sandbox).
+    $unzipped = Join-Path $env:TEMP "vfe-$Inner"
+    if (Test-Path $unzipped) { Remove-Item $unzipped -Recurse -Force }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $unzipped)
+    New-Item -ItemType Directory -Force $dest | Out-Null
+    Copy-Item (Join-Path $unzipped "$Inner\*") $dest -Recurse -Force
+    Remove-Item $zip, $unzipped -Recurse -Force
+    $user = [Environment]::GetEnvironmentVariable("Path", "User")
+    if (($user -split ";") -notcontains $dest) {
+        $value = if ($user) { $user.TrimEnd(";") + ";" + $dest } else { $dest }
+        [Environment]::SetEnvironmentVariable("Path", $value, "User")
+    }
+    return $dest
+}
+
+# Node.js 24 LTS, from nodejs.org (checksums: the version's SHASUMS256.txt).
+function Install-NodeFromZip {
+    # Kept in a variable first: Windows PowerShell 5.1 would otherwise pass the whole list to the
+    # filter, as one block.
+    $index = Invoke-RestMethod -UseBasicParsing "https://nodejs.org/dist/index.json"
+    $release = $index | Where-Object { $_.lts -and $_.version -like "v24.*" } | Select-Object -First 1
+    if (-not $release) { throw (T "Node.js 24 est introuvable sur nodejs.org." "Node.js 24 cannot be found on nodejs.org.") }
+    $name = "node-$($release.version)-win-x64"
+    $base = "https://nodejs.org/dist/$($release.version)"
+    $sums = ([string](Invoke-WebRequest -UseBasicParsing "$base/SHASUMS256.txt").Content) -split "`n"
+    $line = $sums | Where-Object { $_ -match "\s$([regex]::Escape($name))\.zip\s*$" } | Select-Object -First 1
+    $sha = if ($line) { ($line.Trim() -split "\s+")[0] } else { "" }
+    Install-Zip "$base/$name.zip" $sha $name "nodejs" | Out-Null
+}
+
+# ExifTool, from its author (exiftool.org; the ZIP is hosted by SourceForge), when winget could
+# not install it. winget's installer comes first: on a PC where Smart App Control is on, it has
+# the reputation that the ZIP of the same version may not have.
+function Install-ExifToolFromZip {
+    $version = ([string](Invoke-WebRequest -UseBasicParsing "https://exiftool.org/ver.txt").Content).Trim()
+    $name = "exiftool-$($version)_64"
+    $sums = ([string](Invoke-WebRequest -UseBasicParsing "https://exiftool.org/checksums.txt").Content) -split "`n"
+    $line = $sums | Where-Object { $_ -like "SHA2-256($name.zip)=*" } | Select-Object -First 1
+    $sha = if ($line) { ($line -split "=")[-1].Trim() } else { "" }
+    $dest = Install-Zip "https://downloads.sourceforge.net/project/exiftool/$name.zip" $sha $name "ExifTool"
+    # "exiftool(-k).exe" waits for a key before ending: renamed, it does not.
+    Move-Item -LiteralPath (Join-Path $dest "exiftool(-k).exe") (Join-Path $dest "exiftool.exe") -Force
 }
 
 function Test-Command([string]$Command) {
@@ -135,10 +215,11 @@ if (-not (Test-Command "winget")) {
     throw (T "winget est introuvable : installez « App Installer » depuis le Microsoft Store, puis relancez." "winget cannot be found: install App Installer from the Microsoft Store, then run this again.")
 }
 
+$Sac = Test-SmartAppControl
 Install-IfMissing "uv" { Test-Command "uv" } "astral-sh.uv"
-Install-IfMissing "Node.js" { Test-Command "node" } "OpenJS.NodeJS.LTS"
+Install-IfMissing "Node.js" { Test-Command "node" } "OpenJS.NodeJS.LTS" { Install-NodeFromZip } -OtherwiseFirst:$Sac
 Install-IfMissing "FFmpeg" { Test-Command "ffmpeg" } "Gyan.FFmpeg"
-Install-IfMissing "ExifTool" { Test-Command "exiftool" } "OliverBetz.ExifTool"
+Install-IfMissing "ExifTool" { Test-Command "exiftool" } "OliverBetz.ExifTool" { Install-ExifToolFromZip }
 
 if (Find-LMStudio) {
     Write-Host "[ok] LM Studio"
@@ -169,14 +250,31 @@ if (-not $NoModels) {
     }
 }
 
+# "Video Frame Expedition" in the Start menu, as in the Applications folder of a Mac: a shortcut
+# to run.bat, with the application's icon, for this user only.
+$Shortcut = Join-Path ([Environment]::GetFolderPath("Programs")) "Video Frame Expedition.lnk"
+try {
+    $link = (New-Object -ComObject WScript.Shell).CreateShortcut($Shortcut)
+    $link.TargetPath = Join-Path $Root "run.bat"
+    $link.WorkingDirectory = $Root
+    $link.IconLocation = (Join-Path $Root "docs\brand\icons\app-icon.ico") + ",0"
+    $link.Description = "Video Frame Expedition for DaVinci Resolve"
+    $link.Save()
+    Write-Host (T "[ok] « Video Frame Expedition » dans le menu Démarrer" "[ok] `"Video Frame Expedition`" in the Start menu")
+} catch {
+    Write-Host (T "[--] Raccourci du menu Démarrer non créé : $($_.Exception.Message)" "[--] Start menu shortcut not created: $($_.Exception.Message)")
+}
+
 Write-Host ""
 if (Find-LMStudio) {
     Write-Host (T "Terminé. Dans LM Studio, téléchargez un modèle de vision (par exemple qwen/qwen3-vl-8b)," "Done. In LM Studio, download a vision model (for example qwen/qwen3-vl-8b),")
-    Write-Host (T "chargez-le et activez le serveur local, puis double-cliquez sur run.bat." "load it and start the local server, then double-click run.bat.")
+    Write-Host (T "chargez-le et activez le serveur local, puis ouvrez « Video Frame Expedition » (menu" "load it and start the local server, then open `"Video Frame Expedition`" (Start menu)")
+    Write-Host (T "Démarrer) ou double-cliquez sur run.bat." "or double-click run.bat.")
 } else {
     Write-Host (T "Terminé. Sur l'ordinateur qui a LM Studio, chargez un modèle de vision et laissez son" "Done. On the computer that has LM Studio, load a vision model and let its server accept")
     Write-Host (T "serveur accepter le réseau local (Developer › Server Settings › « Serve on Local Network »)." "the local network (Developer › Server Settings › `"Serve on Local Network`").")
-    Write-Host (T "Double-cliquez ensuite sur run.bat ; dans l'application, page Système, carte" "Then double-click run.bat; in the application, System page, `"LM Studio`" card:")
+    Write-Host (T "Ouvrez ensuite « Video Frame Expedition » (menu Démarrer) ou double-cliquez sur run.bat ;" "Then open `"Video Frame Expedition`" (Start menu) or double-click run.bat;")
+    Write-Host (T "dans l'application, page Système, carte" "in the application, System page, `"LM Studio`" card:")
     Write-Host (T "« LM Studio » : choisissez « Sur un autre ordinateur » et tapez son adresse." "choose `"On another computer`" and type its address.")
     Write-Host (T "Pour installer LM Studio sur ce PC plus tard : relancez ce script avec -AvecLMStudio." "To install LM Studio on this PC later: run this script again with -WithLMStudio.")
 }

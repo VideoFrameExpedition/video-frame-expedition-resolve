@@ -2866,9 +2866,10 @@
                   <span class="fr-only win-only">
                     Le script installe par <code>winget</code> ce qui manque (uv, Node.js, FFmpeg,
                     ExifTool), puis les paquets Python de l'application et ses modèles (environ
-                    2&nbsp;Go, une seule fois&nbsp;; <code>-SansModeles</code> pour s'en passer). Il
-                    demande s'il faut installer LM&nbsp;Studio sur ce PC&nbsp;: le modèle de vision
-                    peut aussi tourner dans le LM&nbsp;Studio d'un autre ordinateur.
+                    2&nbsp;Go, une seule fois&nbsp;; <code>-SansModeles</code> pour s'en passer), et
+                    ajoute «&nbsp;Video Frame Expedition&nbsp;» au menu Démarrer. Il demande s'il
+                    faut installer LM&nbsp;Studio sur ce PC&nbsp;: le modèle de vision peut aussi
+                    tourner dans le LM&nbsp;Studio d'un autre ordinateur.
                     <code>-AvecLMStudio</code> ou <code>-SansLMStudio</code> donne la réponse
                     d'avance. Acceptez les demandes d'autorisation de Windows (UAC). Ses messages
                     suivent la langue de Windows (français ou anglais).
@@ -2894,9 +2895,10 @@
                   <span class="en-only win-only">
                     The script installs through <code>winget</code> what is missing (uv, Node.js,
                     FFmpeg, ExifTool), then the application's Python packages and its models (about
-                    2&nbsp;GB, once only; <code>-NoModels</code> to do without them). It asks
-                    whether to install LM&nbsp;Studio on this PC: the vision model can also run in
-                    the LM&nbsp;Studio of another computer. <code>-WithLMStudio</code> or
+                    2&nbsp;GB, once only; <code>-NoModels</code> to do without them), and adds
+                    "Video Frame Expedition" to the Start menu. It asks whether to install
+                    LM&nbsp;Studio on this PC: the vision model can also run in the LM&nbsp;Studio
+                    of another computer. <code>-WithLMStudio</code> or
                     <code>-NoLMStudio</code> gives the answer in advance. Accept the Windows (UAC)
                     prompts. Its messages follow the language of Windows (English or French).
                   </span>
@@ -2959,9 +2961,11 @@
                 </li>
                 <li>
                   <span class="fr-only win-only">
-                    <strong>Double-cliquez sur <code>run.bat</code></strong
-                    >. La première fois, il construit l'interface web (une à deux minutes), puis
-                    ouvre le navigateur. Lancé avant l'installation, il propose de la faire.
+                    <strong>Ouvrez «&nbsp;Video Frame Expedition&nbsp;»</strong> depuis le menu
+                    Démarrer (ou double-cliquez sur <code>run.bat</code> dans le dossier de
+                    l'application). La première fois, il construit l'interface web (une à deux
+                    minutes), puis ouvre le navigateur. Lancé avant l'installation,
+                    <code>run.bat</code> propose de la faire.
                   </span>
                   <span class="fr-only mac-only">
                     <strong>Ouvrez «&nbsp;Video Frame Expedition&nbsp;»</strong> depuis le
@@ -2977,9 +2981,10 @@
                     <code>xattr -dr com.apple.quarantine .</code>
                   </span>
                   <span class="en-only win-only">
-                    <strong>Double-click <code>run.bat</code></strong
-                    >. The first time, it builds the web interface (one or two minutes), then opens
-                    the browser. Started before the installation, it offers to do it.
+                    <strong>Open "Video Frame Expedition"</strong> from the Start menu (or
+                    double-click <code>run.bat</code> in the application's folder). The first time,
+                    it builds the web interface (one or two minutes), then opens the browser.
+                    Started before the installation, <code>run.bat</code> offers to do it.
                   </span>
                   <span class="en-only mac-only">
                     <strong>Open "Video Frame Expedition"</strong> from Launchpad, Spotlight or the
@@ -3003,28 +3008,31 @@
                 </h4>
                 <p>
                   <span class="fr-only win-only">
-                    Double-cliquez sur <code>run.bat</code>. Il lance l'application — interface,
-                    serveur MCP et analyses — et ouvre le navigateur sur
-                    <code>http://127.0.0.1:8765</code>. S'il tourne déjà, il ouvre simplement
-                    l'interface. Pour l'arrêter, fermez la fenêtre.
+                    Ouvrez «&nbsp;Video Frame Expedition&nbsp;» (menu Démarrer) ou double-cliquez
+                    sur
+                    <code>run.bat</code>. Il lance l'application — interface, serveur MCP et
+                    analyses — et ouvre le navigateur sur <code>http://127.0.0.1:8765</code>. S'il
+                    tourne déjà, il ouvre simplement l'interface. Pour l'arrêter, fermez la fenêtre.
                   </span>
                   <span class="fr-only mac-only">
-                    Double-cliquez sur <code>run.command</code>. Il lance l'application — interface,
+                    Ouvrez «&nbsp;Video Frame Expedition&nbsp;» (dossier Applications) ou
+                    double-cliquez sur <code>run.command</code>. Il lance l'application — interface,
                     serveur MCP et analyses — et ouvre le navigateur sur
                     <code>http://127.0.0.1:8765</code>. S'il tourne déjà, il ouvre simplement
                     l'interface. Pour l'arrêter, fermez la fenêtre du Terminal (ou Ctrl+C).
                   </span>
                   <span class="en-only win-only">
-                    Double-click <code>run.bat</code>. It starts the application — interface, MCP
-                    server and analyses — and opens the browser on
-                    <code>http://127.0.0.1:8765</code>. If it is already running, it simply opens
-                    the interface. To stop it, close the window.
+                    Open "Video Frame Expedition" (Start menu) or double-click
+                    <code>run.bat</code>. It starts the application — interface, MCP server and
+                    analyses — and opens the browser on <code>http://127.0.0.1:8765</code>. If it is
+                    already running, it simply opens the interface. To stop it, close the window.
                   </span>
                   <span class="en-only mac-only">
-                    Double-click <code>run.command</code>. It starts the application — interface,
-                    MCP server and analyses — and opens the browser on
-                    <code>http://127.0.0.1:8765</code>. If it is already running, it simply opens
-                    the interface. To stop it, close the Terminal window (or press Ctrl+C).
+                    Open "Video Frame Expedition" (Applications folder) or double-click
+                    <code>run.command</code>. It starts the application — interface, MCP server and
+                    analyses — and opens the browser on <code>http://127.0.0.1:8765</code>. If it is
+                    already running, it simply opens the interface. To stop it, close the Terminal
+                    window (or press Ctrl+C).
                   </span>
                 </p>
                 <p>

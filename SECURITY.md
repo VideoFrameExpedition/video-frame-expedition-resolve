@@ -64,11 +64,16 @@ Video Frame Expedition for DaVinci Resolve is a **local** application: the serve
   `diskutil`, `sysctl` and `pgrep`, to read only.
 - **Installation**: `install.bat`, `install.command` and the Mac's installation line
   (`install.sh`) install what is missing through winget or Homebrew, which ask for the
-  administrator's consent themselves when needed, then download the models. `install.bat`
+  administrator's consent themselves when needed, then download the models. On Windows, when
+  Smart App Control is on, Node.js comes from its official ZIP (nodejs.org), and ExifTool from
+  its own (exiftool.org) when winget could not install it: each is checked against its
+  published SHA-256 checksum and installed for the user only.
+  `install.bat`
   removes the mark of the Web from the files of the application's folder, `install.command`
   their quarantine mark, and nothing outside that folder. On a Mac, the installation also adds
   "Video Frame Expedition" to the user's Applications folder: a small application made on the
-  spot, signed on the spot (ad hoc signature), that opens `run.command`. The Mac's line runs a
+  spot, signed on the spot (ad hoc signature), that opens `run.command`; on Windows, a "Video
+  Frame Expedition" shortcut to `run.bat`, in the user's Start menu. The Mac's line runs a
   script downloaded from GitHub: it can be read first (`install.sh`, at the root of the
   repository).
 

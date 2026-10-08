@@ -165,17 +165,20 @@ or GitHub's "Code › Download ZIP" button, then unzip it.
    `powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1`, which takes the same
    options). At the end, it offers to start the application in the same window.
 
-   The script uses `winget` to install what is missing (uv, Node.js, FFmpeg, ExifTool), then
+   The script uses `winget` to install what is missing (uv, Node.js, FFmpeg, ExifTool; Node.js
+   and ExifTool from their official ZIP when their installer is refused), then
    the application's Python packages and its models (about 2 GB, downloaded once;
-   `-NoModels` skips them). It asks whether to install LM Studio on this PC: the vision model
+   `-NoModels` skips them), and adds "Video Frame Expedition" to the Start menu. It asks
+   whether to install LM Studio on this PC: the vision model
    can also run in the LM Studio of another computer. `-WithLMStudio` or `-NoLMStudio` gives
    the answer in advance. Accept the Windows (UAC) prompts. Its messages are in English, or in
    French on a Windows set to French; `VFE_LANG=en` or `VFE_LANG=fr` in the `.env` file decides,
    for `run.bat` and the `vfe` commands too.
 2. In LM Studio, download a vision model (for example `qwen/qwen3-vl-8b`), load it and start the
    local server (see below when it runs on another computer).
-3. Double-click `run.bat`. The first time, it builds the web interface (one or two minutes),
-   then opens the browser. Started before the installation, it offers to do it.
+3. Open "Video Frame Expedition" from the Start menu, or double-click `run.bat`. The first time,
+   it builds the web interface (one or two minutes), then opens the browser. Started before the
+   installation, `run.bat` offers to do it.
 
 ### On a Mac
 
@@ -232,7 +235,8 @@ and its memory).
 
 ## Quick start
 
-**Day to day: double-click `run.bat` (Windows) or `run.command` (Mac).** It starts the
+**Day to day: open "Video Frame Expedition" (Start menu or Applications folder), or double-click
+`run.bat` (Windows) or `run.command` (Mac).** It starts the
 application (interface, MCP and analyses) and opens the browser on http://127.0.0.1:8765. If the
 application is already running, it simply opens the interface. After an update, it first
 rebuilds the web interface; `run.bat build` (or `run.command build`) rebuilds it even when

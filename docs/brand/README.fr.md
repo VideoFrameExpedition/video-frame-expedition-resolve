@@ -83,6 +83,7 @@ version **Nuit** (fond sombre) ; le suffixe `-light` est la version **Papier** (
 | `icons/favicon.svg` | Onglet du navigateur : le symbole épais sur une tuile `night-900`, dès 16 px. |
 | `icons/app-icon.svg`, `icons/icon-512.png`, `icons/icon-192.png` | Icône d'application, coins arrondis, lueurs ambre et bleue. |
 | `icons/app-icon-square.svg`, `icons/icon-512-maskable.png`, `icons/apple-touch-icon.png` | Les mêmes, à angles droits : c'est le système qui découpe la forme. |
+| `icons/app-icon.ico` | Le raccourci du menu Démarrer de Windows : 16 à 256 px, le favicon en dessous de 32 px, l'icône d'application au-dessus. |
 
 L'interface web reçoit ses copies au moment de la construction : `lockup-ui` et
 `lockup-compact` dans `frontend/src/assets/brand/` (les deux thèmes), et le favicon dans
@@ -124,7 +125,7 @@ faible aujourd'hui est de 3,1:1 (la facette `blue-600` sur `night-900`, un aplat
 cd docs/brand
 npm install --no-save opentype.js   # une fois : sert à convertir le texte en courbes
 node build.cjs                      # les SVG de logo/ et icons/, et les copies de l'interface
-node render-png.mjs                 # les PNG des icônes et apercu.png (Microsoft Edge)
+node render-png.mjs                 # les PNG des icônes, app-icon.ico et apercu.png (Microsoft Edge)
 ```
 
 `build.cjs` télécharge au premier passage les trois graisses d'Epilogue dans `.cache/fonts`

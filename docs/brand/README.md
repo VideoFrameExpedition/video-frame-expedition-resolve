@@ -83,6 +83,7 @@ light background).
 | `icons/favicon.svg` | Browser tab: the thick symbol on a `night-900` tile, from 16 px. |
 | `icons/app-icon.svg`, `icons/icon-512.png`, `icons/icon-192.png` | Application icon, rounded corners, amber and blue glows. |
 | `icons/app-icon-square.svg`, `icons/icon-512-maskable.png`, `icons/apple-touch-icon.png` | The same, with square corners: it is the system that cuts out the shape. |
+| `icons/app-icon.ico` | The Windows Start menu shortcut: 16 to 256 px, the favicon below 32 px, the application icon above. |
 
 The web interface receives its copies at build time: `lockup-ui` and `lockup-compact` in
 `frontend/src/assets/brand/` (both themes), and the favicon in `frontend/public/`. Do not modify
@@ -122,7 +123,7 @@ is 3.1:1 (the `blue-600` facet on `night-900`, a decorative flat fill).
 cd docs/brand
 npm install --no-save opentype.js   # once: used to convert the text to outlines
 node build.cjs                      # the SVGs of logo/ and icons/, and the interface's copies
-node render-png.mjs                 # the PNGs of the icons and apercu.png (Microsoft Edge)
+node render-png.mjs                 # the PNGs of the icons, app-icon.ico and apercu.png (Microsoft Edge)
 ```
 
 `build.cjs` downloads the three weights of Epilogue into `.cache/fonts` (not versioned) on its

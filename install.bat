@@ -32,7 +32,7 @@ rem Return alone keeps the default answer (yes): the variable is never empty.
 set "REPONSE=o"
 set /p "REPONSE=%ASK%"
 if /i not "%REPONSE:~0,1%"=="n" "%~dp0run.bat"
-call :say "Pour la démarrer plus tard : double-cliquez sur run.bat." "To start it later: double-click run.bat."
+call :say "Pour la démarrer plus tard : « Video Frame Expedition » dans le menu Démarrer, ou run.bat." "To start it later: open Video Frame Expedition from the Start menu, or run.bat."
 
 :end
 pause
