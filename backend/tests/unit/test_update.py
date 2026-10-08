@@ -36,6 +36,7 @@ def test_update_bat_is_read_in_one_go_before_the_update_replaces_it() -> None:
     # "exit /b 1" inside a block ends the batch file with the code 0: the code goes through
     # delayed expansion.
     assert "exit /b !CODE!" in block
+    assert 'set "PSModulePath="' in text[: text.index("(\r\n")]
 
 
 def test_update_command_hands_over_to_a_script_read_in_one_go() -> None:
@@ -163,6 +164,13 @@ def _free_port() -> int:
         return int(probe.getsockname()[1])
 
 
+def _environment() -> dict[str, str]:
+    """As update.bat passes it on: without PSModulePath (the tests may run under PowerShell 7,
+    whose module folders hide some commands of Windows PowerShell's)."""
+    environment = {key: value for key, value in os.environ.items() if key.upper() != "PSMODULEPATH"}
+    return {**environment, "VFE_LANG": "en"}
+
+
 def _update(root: Path, *args: str, port: int | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
@@ -178,7 +186,7 @@ def _update(root: Path, *args: str, port: int | None = None) -> subprocess.Compl
             str(port or _free_port()),
         ],
         cwd=root,
-        env={**os.environ, "VFE_LANG": "en"},
+        env=_environment(),
         stdin=subprocess.DEVNULL,
         capture_output=True,
         text=True,
@@ -285,7 +293,7 @@ def test_update_bat_says_when_the_update_failed(tmp_path: Path) -> None:
                 str(_free_port()),
             ],
             cwd=root,
-            env={**os.environ, "VFE_LANG": "en", "VFE_NO_PAUSE": "1"},
+            env={**_environment(), "VFE_NO_PAUSE": "1"},
             stdin=subprocess.DEVNULL,
             capture_output=True,
             text=True,

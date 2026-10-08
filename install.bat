@@ -16,6 +16,10 @@ if not defined VFE_LANG for /f %%L in ('powershell -NoProfile -Command "(Get-UIC
 if defined VFE_LANG set "VFE_LANG=%VFE_LANG:"=%"
 if /i "%VFE_LANG:~0,2%"=="fr" (set "VFE_LANG=fr") else (set "VFE_LANG=en")
 
+rem Started from PowerShell 7, the folders of its modules would be passed on to Windows
+rem PowerShell, which then misses some of its own commands (Get-FileHash): emptied, it
+rem rebuilds its own.
+set "PSModulePath="
 rem A folder downloaded as a ZIP carries the mark of the Web on every file: removed here, so
 rem that Windows asks nothing more for run.bat and the scripts.
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-ChildItem -Recurse -File -ErrorAction SilentlyContinue | Unblock-File -ErrorAction SilentlyContinue"
