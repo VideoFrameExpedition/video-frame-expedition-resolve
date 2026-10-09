@@ -45,8 +45,8 @@ Apple Silicon: one code base, one installation per system. It was developed on W
 NVIDIA graphics card; on a Mac, the analyses, HDR videos included, and the link with DaVinci
 Resolve were tried on an M1 Mac.
 
-> Video presentation, nine minutes: [youtu.be/G0WT96QsGsU](https://youtu.be/G0WT96QsGsU);
-> in French: [youtu.be/1EI36bRbdWo](https://youtu.be/1EI36bRbdWo).
+> Video presentation, three minutes: [youtu.be/DP_iRuMTGaA](https://youtu.be/DP_iRuMTGaA);
+> in French: [youtu.be/E3sQsLg24eM](https://youtu.be/E3sQsLg24eM).
 >
 > This is the new version of *Video Frame Expedition*; it replaces the earlier one.
 
@@ -274,9 +274,9 @@ English. It is the file
 [`frontend/public/help/index.html`](frontend/public/help/index.html), served at
 http://127.0.0.1:8765/help/index.html; the folder can also be hosted elsewhere as it is.
 
-**The presentation video** (nine minutes, ten chapters) is on
-[YouTube](https://youtu.be/G0WT96QsGsU) and in the help page; so is its French version (eight
-minutes), on [YouTube](https://youtu.be/1EI36bRbdWo) and in the French help page.
+**The presentation video** (three minutes, nine chapters) is on
+[YouTube](https://youtu.be/DP_iRuMTGaA) and in the help page; so is its French version, on
+[YouTube](https://youtu.be/E3sQsLg24eM) and in the French help page.
 
 Connecting assistants (Claude Code, Claude Desktop, Cursor, VS Code, Codex) and using the
 application from your other devices through Tailscale: "Connections" page of the interface and

@@ -49,8 +49,8 @@ Apple Silicon : un seul code, une installation par système. Elle a été dével
 avec une carte graphique NVIDIA ; sur un Mac, les analyses, vidéos HDR comprises, et le lien
 avec DaVinci Resolve ont été essayés sur un Mac M1.
 
-> Présentation en vidéo, huit minutes : [youtu.be/1EI36bRbdWo](https://youtu.be/1EI36bRbdWo) ;
-> en anglais : [youtu.be/G0WT96QsGsU](https://youtu.be/G0WT96QsGsU).
+> Présentation en vidéo, trois minutes : [youtu.be/E3sQsLg24eM](https://youtu.be/E3sQsLg24eM) ;
+> en anglais : [youtu.be/DP_iRuMTGaA](https://youtu.be/DP_iRuMTGaA).
 >
 > C'est la nouvelle version de *Video Frame Expedition* ; elle remplace l'ancienne.
 
@@ -292,9 +292,9 @@ en français et en anglais. C'est le fichier
 [`frontend/public/help/index.html`](frontend/public/help/index.html), servi à
 http://127.0.0.1:8765/help/index.html ; le dossier peut aussi être hébergé tel quel ailleurs.
 
-**La vidéo de présentation** (huit minutes, dix chapitres) est en ligne sur
-[YouTube](https://youtu.be/1EI36bRbdWo) et dans la page d'aide ; sa version anglaise (neuf
-minutes) aussi, sur [YouTube](https://youtu.be/G0WT96QsGsU) et dans la page d'aide en anglais.
+**La vidéo de présentation** (trois minutes, neuf chapitres) est en ligne sur
+[YouTube](https://youtu.be/E3sQsLg24eM) et dans la page d'aide ; sa version anglaise aussi, sur
+[YouTube](https://youtu.be/DP_iRuMTGaA) et dans la page d'aide en anglais.
 
 Assistants (Claude Code, Claude Desktop, Cursor, VS Code, Codex) et accès depuis vos autres
 appareils par Tailscale : page « Connexions » de l'interface et
