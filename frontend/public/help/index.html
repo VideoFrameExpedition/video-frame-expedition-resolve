@@ -745,34 +745,6 @@
         height: 100%;
         border: 0;
       }
-      .video-chapters {
-        list-style: none;
-        margin: 18px 0 0;
-        padding: 0;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-        gap: 6px 18px;
-      }
-      .video-chapters a {
-        display: flex;
-        gap: 10px;
-        align-items: baseline;
-        padding: 6px 0;
-        border-bottom: 1px solid var(--line);
-        color: var(--fg);
-        font-size: 15px;
-        text-decoration: none;
-      }
-      .video-chapters a:hover {
-        color: var(--accent);
-      }
-      .video-chapters time {
-        min-width: 2.6em;
-        font-family: var(--mono);
-        font-size: 13px;
-        font-variant-numeric: tabular-nums;
-        color: var(--accent);
-      }
       .video-note {
         margin-top: 12px;
         font-size: 14px;
@@ -1596,12 +1568,11 @@
         <div class="wrap">
           <div class="section-head">
             <p class="kicker">
-              <span class="fr-only">En trois minutes</span
-              ><span class="en-only">In three minutes</span>
+              <span class="fr-only">En vidéo</span><span class="en-only">On video</span>
             </p>
             <h2>
-              <span class="fr-only">La vidéo de présentation</span>
-              <span class="en-only">The walkthrough video</span>
+              <span class="fr-only">La présentation</span>
+              <span class="en-only">The overview</span>
             </h2>
           </div>
 
@@ -1645,154 +1616,6 @@
               allowfullscreen
             ></iframe>
           </div>
-          <ol class="video-chapters fr-only">
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=E3sQsLg24eM&amp;t=0s"
-                target="_blank"
-                rel="noopener"
-                ><time>0:00</time><span>Présentation</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=E3sQsLg24eM&amp;t=26s"
-                target="_blank"
-                rel="noopener"
-                ><time>0:26</time><span>L'analyse</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=E3sQsLg24eM&amp;t=47s"
-                target="_blank"
-                rel="noopener"
-                ><time>0:47</time><span>L'image</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=E3sQsLg24eM&amp;t=74s"
-                target="_blank"
-                rel="noopener"
-                ><time>1:14</time><span>Le son</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=E3sQsLg24eM&amp;t=95s"
-                target="_blank"
-                rel="noopener"
-                ><time>1:35</time><span>Le contexte</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=E3sQsLg24eM&amp;t=115s"
-                target="_blank"
-                rel="noopener"
-                ><time>1:55</time><span>La recherche</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=E3sQsLg24eM&amp;t=131s"
-                target="_blank"
-                rel="noopener"
-                ><time>2:11</time><span>Avec DaVinci&nbsp;Resolve</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=E3sQsLg24eM&amp;t=162s"
-                target="_blank"
-                rel="noopener"
-                ><time>2:42</time><span>Avec un assistant IA</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=E3sQsLg24eM&amp;t=191s"
-                target="_blank"
-                rel="noopener"
-                ><time>3:11</time><span>Vos données</span></a
-              >
-            </li>
-          </ol>
-          <ol class="video-chapters en-only">
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=DP_iRuMTGaA&amp;t=0s"
-                target="_blank"
-                rel="noopener"
-                ><time>0:00</time><span>Introduction</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=DP_iRuMTGaA&amp;t=22s"
-                target="_blank"
-                rel="noopener"
-                ><time>0:22</time><span>The analysis</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=DP_iRuMTGaA&amp;t=41s"
-                target="_blank"
-                rel="noopener"
-                ><time>0:41</time><span>The picture</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=DP_iRuMTGaA&amp;t=65s"
-                target="_blank"
-                rel="noopener"
-                ><time>1:05</time><span>The sound</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=DP_iRuMTGaA&amp;t=85s"
-                target="_blank"
-                rel="noopener"
-                ><time>1:25</time><span>The context</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=DP_iRuMTGaA&amp;t=104s"
-                target="_blank"
-                rel="noopener"
-                ><time>1:44</time><span>Search</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=DP_iRuMTGaA&amp;t=118s"
-                target="_blank"
-                rel="noopener"
-                ><time>1:58</time><span>With DaVinci&nbsp;Resolve</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=DP_iRuMTGaA&amp;t=145s"
-                target="_blank"
-                rel="noopener"
-                ><time>2:25</time><span>With an AI assistant</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="https://www.youtube.com/watch?v=DP_iRuMTGaA&amp;t=173s"
-                target="_blank"
-                rel="noopener"
-                ><time>2:53</time><span>Your data</span></a
-              >
-            </li>
-          </ol>
           <p class="video-note">
             <span class="fr-only"
               >Commentaire en français. La vidéo s'ouvre aussi
