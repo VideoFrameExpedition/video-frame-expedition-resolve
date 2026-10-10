@@ -48,7 +48,7 @@ Resolve were tried on an M1 Mac.
 > Video presentation, three minutes: [youtu.be/DP_iRuMTGaA](https://youtu.be/DP_iRuMTGaA);
 > in French: [youtu.be/E3sQsLg24eM](https://youtu.be/E3sQsLg24eM).
 >
-> The complete guide, in English and in French: [videoframeexpedition.github.io/video-frame-expedition-resolve](https://videoframeexpedition.github.io/video-frame-expedition-resolve/).
+> The complete guide, in English and in French: [videoframeexpedition.github.io/video-frame-expedition-resolve](https://videoframeexpedition.github.io/video-frame-expedition-resolve/?lang=en).
 >
 > This is the new version of *Video Frame Expedition*; it replaces the earlier one.
 
@@ -287,7 +287,7 @@ one by one, some fifty screenshots of the French interface, with the text in Fre
 English. It is the file
 [`frontend/public/help/index.html`](frontend/public/help/index.html), served at
 http://127.0.0.1:8765/help/index.html. It is also online, at
-[videoframeexpedition.github.io/video-frame-expedition-resolve](https://videoframeexpedition.github.io/video-frame-expedition-resolve/), and the
+[videoframeexpedition.github.io/video-frame-expedition-resolve](https://videoframeexpedition.github.io/video-frame-expedition-resolve/?lang=en), and the
 folder can be hosted elsewhere as it is.
 
 **The presentation video** (three minutes, nine chapters) is on
@@ -359,7 +359,7 @@ All the tools: [docs/mcp-tools.md](docs/mcp-tools.md).
 
 - [Architecture](docs/architecture.md)
 - [Tools, resource and prompts of the MCP server](docs/mcp-tools.md)
-- [The complete guide](https://videoframeexpedition.github.io/video-frame-expedition-resolve/) (online) · [User guides](docs/guide/)
+- [The complete guide](https://videoframeexpedition.github.io/video-frame-expedition-resolve/?lang=en) (online) · [User guides](docs/guide/)
 - [Security](SECURITY.md) · [Third-party licences](THIRD_PARTY_NOTICES.md)
 - [The logo](docs/brand/README.md)
 
