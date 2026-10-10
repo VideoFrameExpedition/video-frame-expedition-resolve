@@ -45,6 +45,14 @@
         } catch (e) {
           /* private browsing, site data blocked: the defaults apply */
         }
+        // A link may name the language (?lang=fr or ?lang=en): it wins over the remembered
+        // choice and the browser's language, and the script at the end remembers it.
+        try {
+          var asked = new URLSearchParams(location.search).get("lang");
+          if (asked === "fr" || asked === "en") lang = asked;
+        } catch (e) {
+          /* a browser without URLSearchParams: the address is not read */
+        }
         if (lang !== "fr" && lang !== "en") {
           lang = (navigator.language || "fr").toLowerCase().indexOf("fr") === 0 ? "fr" : "en";
         }
@@ -7661,9 +7669,23 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
           remember("vfe-help-lang", lang);
         }
 
+        // An address that names the language follows the reader's choice, so that reloading the
+        // page keeps it.
+        function followAddress(lang) {
+          try {
+            var params = new URLSearchParams(location.search);
+            if (!params.has("lang")) return;
+            params.set("lang", lang);
+            history.replaceState(null, "", "?" + params.toString() + location.hash);
+          } catch (e) {
+            /* the address stays as it was: only a reload would bring its language back */
+          }
+        }
+
         buttons.forEach(function (b) {
           b.addEventListener("click", function () {
             setLang(b.dataset.lang);
+            followAddress(b.dataset.lang);
           });
         });
         setLang(html.classList.contains("lang-en") ? "en" : "fr");

@@ -52,6 +52,8 @@ avec DaVinci Resolve ont été essayés sur un Mac M1.
 > Présentation en vidéo, trois minutes : [youtu.be/E3sQsLg24eM](https://youtu.be/E3sQsLg24eM) ;
 > en anglais : [youtu.be/DP_iRuMTGaA](https://youtu.be/DP_iRuMTGaA).
 >
+> Le guide complet, en français et en anglais : [videoframeexpedition.github.io/video-frame-expedition-resolve](https://videoframeexpedition.github.io/video-frame-expedition-resolve/).
+>
 > C'est la nouvelle version de *Video Frame Expedition* ; elle remplace l'ancienne.
 
 Vos images et vos sons ne quittent jamais votre machine, sauf, si vous le choisissez, vers le
@@ -304,7 +306,9 @@ sa fenêtre (sur Mac, celle du Terminal, ou Ctrl+C).
 d'une vidéo un par un, une cinquantaine de captures de l'interface en français, avec le texte
 en français et en anglais. C'est le fichier
 [`frontend/public/help/index.html`](frontend/public/help/index.html), servi à
-http://127.0.0.1:8765/help/index.html ; le dossier peut aussi être hébergé tel quel ailleurs.
+http://127.0.0.1:8765/help/index.html. Il est aussi en ligne, à l'adresse
+[videoframeexpedition.github.io/video-frame-expedition-resolve](https://videoframeexpedition.github.io/video-frame-expedition-resolve/), et le
+dossier peut être hébergé tel quel ailleurs.
 
 **La vidéo de présentation** (trois minutes, neuf chapitres) est en ligne sur
 [YouTube](https://youtu.be/E3sQsLg24eM) et dans la page d'aide ; sa version anglaise aussi, sur
@@ -374,7 +378,7 @@ l'autorise. Tous les outils : [docs/mcp-tools.fr.md](docs/mcp-tools.fr.md).
 
 - [Architecture](docs/architecture.fr.md)
 - [Outils, ressource et invites du serveur MCP](docs/mcp-tools.fr.md)
-- [Guides d'utilisation](docs/guide/)
+- [Le guide complet](https://videoframeexpedition.github.io/video-frame-expedition-resolve/) (en ligne) · [Guides d'utilisation](docs/guide/)
 - [Sécurité](SECURITY.fr.md) · [Licences tierces](THIRD_PARTY_NOTICES.md) (en anglais)
 - [Le logo](docs/brand/README.fr.md)
 
