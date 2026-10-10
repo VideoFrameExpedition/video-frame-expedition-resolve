@@ -13,7 +13,7 @@ from vfe_vision.adapters.resolve.builder import ResolveTimelineBuilder
 from vfe_vision.adapters.resolve.editor import ResolveEditor
 from vfe_vision.adapters.resolve.reader import ResolveReader, TimelineSnapshots
 from vfe_vision.core.config import Settings
-from vfe_vision.db.lmstudio_link import LinkReader
+from vfe_vision.db.lmstudio_link import LinkReader, default_target
 from vfe_vision.db.preferences import load_preferences
 from vfe_vision.db.session import Database
 from vfe_vision.db.translations import TranslationCache
@@ -27,8 +27,8 @@ LMSTUDIO_TEST_TIMEOUT_S = 8.0
 
 
 def _lmstudio_probe(target: LmStudioTarget) -> LmStudioClient:
-    """A client for one question to an LM Studio that is not (yet) the one in use."""
-    return LmStudioClient(target.url, token=target.token, timeout_s=LMSTUDIO_TEST_TIMEOUT_S)
+    """A client for one question to a model server that is not (yet) the one in use."""
+    return LmStudioClient(target, timeout_s=LMSTUDIO_TEST_TIMEOUT_S)
 
 
 @dataclass(slots=True)
@@ -51,16 +51,14 @@ class AppContainer:
     resolve_builder: ResolveTimelineMaker = field(init=False)
     # The assistant's Resolve tools, when allowed: new timelines and markers.
     resolve_editor: ResolveTimelineEditor = field(init=False)
-    # Where LM Studio runs: the address chosen on the System page, and how an
-    # address is tried before it is chosen (tests assign a fake).
+    # Where the model server runs (LM Studio, or an OpenAI-compatible server): the address
+    # chosen on the System page, and how an address is tried before it is chosen (tests assign
+    # a fake).
     lmstudio_link: LinkReader = field(init=False)
     lmstudio_probe: Callable[[LmStudioTarget], LmStudioClient] = _lmstudio_probe
 
     def __post_init__(self) -> None:
-        token = self.settings.lmstudio_token
-        self.lmstudio_link = LinkReader(
-            self.db, self.settings.lmstudio_url, token.get_secret_value() if token else None
-        )
+        self.lmstudio_link = LinkReader(self.db, default_target(self.settings))
 
         def host() -> str | None:
             return load_preferences(self.db).resolve_host
@@ -71,9 +69,8 @@ class AppContainer:
 
     @classmethod
     def create(cls, settings: Settings) -> AppContainer:
-        token = settings.lmstudio_token.get_secret_value() if settings.lmstudio_token else None
         db = Database(settings.db_path)
-        link = LinkReader(db, settings.lmstudio_url, token)
+        link = LinkReader(db, default_target(settings))
         container = cls(
             settings=settings,
             db=db,

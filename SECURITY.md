@@ -36,15 +36,22 @@ Video Frame Expedition for DaVinci Resolve is a **local** application: the serve
 - **Loading models in LM Studio**: the "Model bench" page asks LM Studio, through its
   local API, to load and unload the vision models the user has ticked, among those LM Studio
   already has; nothing is downloaded. This request is a write like any other (`Origin` checked,
-  `X-VFE-Client` header, token when remote). No analysis and no MCP tool loads a model.
-- **LM Studio on another computer**: by default, the frames of the videos do not
-  leave the computer (`http://127.0.0.1:1234`). The user can designate another LM Studio on the
-  System page: the frames and the texts of the analyses are then sent to it, unencrypted on a
-  local network (http), encrypted on Tailscale. The card says so before saving and the
-  diagnostics show it as a warning. The accepted address is a host and a port, with no path and
-  no credentials; the connection test only makes a `GET /api/v1/models` and returns only counts
-  from it. The API token of an LM Studio is sent only to its address, is never returned by the
-  API, and is stored in clear text in the local database. No MCP tool changes this address.
+  `X-VFE-Client` header, token when remote). No analysis and no MCP tool loads a model. On a
+  server compatible with OpenAI's API, the application loads and unloads nothing, and the model
+  bench does not start.
+- **A model server on another computer**: by default, the frames of the videos do not
+  leave the computer (`http://127.0.0.1:1234`). The user can designate another model server on
+  the System page, an LM Studio or a server compatible with OpenAI's API (vLLM…): the frames and
+  the texts of the analyses are then sent to it, unencrypted on a local network (http),
+  encrypted on Tailscale or over https. The card says so before saving and the diagnostics show
+  it as a warning. The accepted address is a host and a port, with no credentials; only the
+  address of an OpenAI-compatible server keeps a path (`/v1` by default), made of plain
+  segments. The connection test only lists the models (LM Studio's `GET /api/v1/models`, or the
+  `GET /v1/models` of an OpenAI-compatible server) and returns only counts, the kind of server
+  and the names of the vision models loaded; on an OpenAI-compatible server, it also sends its
+  first vision model one tiny plain grey image, to tell whether it sees images. The API token of
+  a model server is sent only to its address, is never returned by the API, and is stored in
+  clear text in the local database. No MCP tool changes this address.
 - **Compiled extension refused by Windows**: when Smart App Control refuses an
   extension of a Python package that also exists in pure Python, the application renames that
   file in its own environment (`….pyd.refused`) and restarts. It never runs a refused file and

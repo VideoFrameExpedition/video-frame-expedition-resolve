@@ -41,16 +41,22 @@ sur `127.0.0.1` par défaut. Il peut aussi écouter sur l'adresse Tailscale de l
   Studio, par son API locale, de charger et de décharger les modèles de vision que l'utilisateur
   a cochés, parmi ceux que LM Studio possède déjà ; rien n'est téléchargé. Cette requête est une
   écriture comme les autres (`Origin` vérifiée, en-tête `X-VFE-Client`, jeton à distance). Aucune
-  analyse et aucun outil MCP ne charge de modèle.
-- **LM Studio sur un autre ordinateur** : par défaut, les images des vidéos ne
-  quittent pas l'ordinateur (`http://127.0.0.1:1234`). L'utilisateur peut désigner un autre LM
-  Studio dans la page Système : les images et les textes des analyses lui sont alors envoyés, en
-  clair sur un réseau local (http), chiffrés sur Tailscale. La carte le dit avant
+  analyse et aucun outil MCP ne charge de modèle. Sur un serveur compatible avec l'API d'OpenAI,
+  l'application ne charge et ne décharge rien, et le banc d'essai ne se lance pas.
+- **Un serveur de modèles sur un autre ordinateur** : par défaut, les images des vidéos ne
+  quittent pas l'ordinateur (`http://127.0.0.1:1234`). L'utilisateur peut désigner un autre
+  serveur de modèles dans la page Système, un LM Studio ou un serveur compatible avec l'API
+  d'OpenAI (vLLM…) : les images et les textes des analyses lui sont alors envoyés, en clair sur
+  un réseau local (http), chiffrés sur Tailscale ou en https. La carte le dit avant
   l'enregistrement et le diagnostic l'affiche en avertissement. L'adresse acceptée est un hôte
-  et un port, sans chemin ni identifiants ; le test de connexion ne fait qu'un
-  `GET /api/v1/models` et n'en rend que des compteurs. Le jeton d'API d'un LM Studio n'est
-  envoyé qu'à son adresse, n'est jamais rendu par l'API, et se trouve en clair dans la base
-  locale. Aucun outil MCP ne change cette adresse.
+  et un port, sans identifiants ; seule l'adresse d'un serveur compatible OpenAI garde un chemin
+  (`/v1` par défaut), fait de segments simples. Le test de connexion ne fait que lister les
+  modèles (`GET /api/v1/models` de LM Studio, ou `GET /v1/models` d'un serveur compatible
+  OpenAI) et n'en rend que des compteurs, le type de serveur et le nom des modèles de vision
+  chargés ; sur un serveur compatible OpenAI, il envoie aussi à son premier modèle de vision une
+  toute petite image grise unie, pour savoir s'il voit les images. Le jeton d'API d'un serveur de
+  modèles n'est envoyé qu'à son adresse, n'est jamais rendu par l'API, et se trouve en clair dans
+  la base locale. Aucun outil MCP ne change cette adresse.
 - **Extension compilée refusée par Windows** : quand Smart App Control refuse une
   extension d'un paquet Python qui existe aussi en Python pur, l'application renomme ce fichier
   dans son propre environnement (`….pyd.refused`) et se relance. Elle n'exécute jamais un

@@ -2535,15 +2535,29 @@
                     <strong>serveur local activé</strong>, et un modèle <em>de vision</em> chargé —
                     par exemple <code>qwen/qwen3-vl-4b</code> ou <code>qwen/qwen3-vl-8b</code>. Sur
                     le même ordinateur ou sur un autre, sous Windows, macOS ou Linux&nbsp;:
-                    <a href="#systeme">page Système</a>, carte «&nbsp;LM&nbsp;Studio&nbsp;».
+                    <a href="#systeme">page Système</a>, carte «&nbsp;Serveur de modèles&nbsp;».
                   </span>
                   <span class="en-only">
                     <a href="https://lmstudio.ai">LM&nbsp;Studio</a> must be running, its
                     <strong>local server on</strong>, and a <em>vision</em> model loaded — for
                     instance <code>qwen/qwen3-vl-4b</code> or <code>qwen/qwen3-vl-8b</code>. On the
                     same computer or on another one, under Windows, macOS or Linux:
-                    <a href="#systeme">System page</a>, "LM&nbsp;Studio" card.
+                    <a href="#systeme">System page</a>, "Model server" card.
                   </span>
+                </p>
+                <p>
+                  <span class="fr-only"
+                    >Le modèle de vision peut aussi tourner dans un serveur compatible avec l'API
+                    d'OpenAI, comme vLLM, si vous en faites déjà tourner un&nbsp;: voir
+                    <a href="#faq-vllm"
+                      >«&nbsp;Puis-je utiliser vLLM plutôt que LM&nbsp;Studio&nbsp;?&nbsp;»</a
+                    >.</span
+                  >
+                  <span class="en-only"
+                    >The vision model can also run in a server compatible with OpenAI's API, such as
+                    vLLM, if you already run one: see
+                    <a href="#faq-vllm">"Can I use vLLM instead of LM&nbsp;Studio?"</a>.</span
+                  >
                 </p>
                 <p>
                   <span class="fr-only"
@@ -2760,8 +2774,8 @@
                     Quand LM&nbsp;Studio tourne sur un autre ordinateur, faites-le là-bas et laissez
                     son serveur accepter le réseau local (Developer&nbsp;› Server Settings&nbsp;›
                     «&nbsp;Serve on Local Network&nbsp;»)&nbsp;; une fois l'application ouverte,
-                    donnez son adresse <a href="#systeme">page Système</a>, carte
-                    «&nbsp;LM&nbsp;Studio&nbsp;».
+                    donnez son adresse <a href="#systeme">page Système</a>, carte «&nbsp;Serveur de
+                    modèles&nbsp;».
                   </span>
                   <span class="fr-only mac-only">
                     <strong>Dans LM&nbsp;Studio</strong>, téléchargez un modèle de vision (par
@@ -2770,8 +2784,8 @@
                     LM&nbsp;Studio tourne sur un autre ordinateur, faites-le là-bas et laissez son
                     serveur accepter le réseau local (Developer&nbsp;› Server Settings&nbsp;›
                     «&nbsp;Serve on Local Network&nbsp;»)&nbsp;; une fois l'application ouverte,
-                    donnez son adresse <a href="#systeme">page Système</a>, carte
-                    «&nbsp;LM&nbsp;Studio&nbsp;».
+                    donnez son adresse <a href="#systeme">page Système</a>, carte «&nbsp;Serveur de
+                    modèles&nbsp;».
                   </span>
                   <span class="en-only win-only">
                     <strong>In LM&nbsp;Studio</strong>, download a vision model (for instance
@@ -2779,7 +2793,7 @@
                     LM&nbsp;Studio runs on another computer, do this over there and let its server
                     accept the local network (Developer&nbsp;› Server Settings&nbsp;› "Serve on
                     Local Network"); once the application is open, give its address on the
-                    <a href="#systeme">System page</a>, "LM&nbsp;Studio" card.
+                    <a href="#systeme">System page</a>, "Model server" card.
                   </span>
                   <span class="en-only mac-only">
                     <strong>In LM&nbsp;Studio</strong>, download a vision model (for instance
@@ -2788,7 +2802,7 @@
                     another computer, do this over there and let its server accept the local network
                     (Developer&nbsp;› Server Settings&nbsp;› "Serve on Local Network"); once the
                     application is open, give its address on the <a href="#systeme">System page</a>,
-                    "LM&nbsp;Studio" card.
+                    "Model server" card.
                   </span>
                 </li>
                 <li>
@@ -2986,7 +3000,7 @@
                 </span>
               </p>
             </div>
-            <pre><code><span class="fr-only"># Le diagnostic : vérifie ffmpeg, ExifTool, LM Studio et le GPU</span><span class="en-only"># The diagnostic: checks ffmpeg, ExifTool, LM Studio and the GPU</span>
+            <pre><code><span class="fr-only"># Le diagnostic : vérifie ffmpeg, ExifTool, le serveur de modèles et le GPU</span><span class="en-only"># The diagnostic: checks ffmpeg, ExifTool, the model server and the GPU</span>
 uv run --frozen --no-dev --project backend python -m vfe_vision doctor
 
 <span class="fr-only"># Les modèles, en abrégé : vfe = uv run … python -m vfe_vision</span><span class="en-only"># The models, shortened: vfe = uv run … python -m vfe_vision</span>
@@ -3021,18 +3035,19 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
               </p>
               <p>
                 <span class="fr-only">
-                  Plus bas viennent les réglages&nbsp;: l'adresse de
-                  <strong>LM&nbsp;Studio</strong>, le <strong>modèle de vision</strong> à employer,
-                  le prêt de la <strong>carte graphique</strong>, la
-                  <strong>langue de rédaction</strong> des modèles et la traduction des analyses
-                  existantes, les <strong>fichiers d'analyse</strong> posés — ou non — à côté de vos
-                  vidéos, l'<strong>accès de Claude</strong> par MCP, et
+                  Plus bas viennent les réglages&nbsp;: le
+                  <strong>serveur de modèles</strong> (LM&nbsp;Studio, vLLM…), le
+                  <strong>modèle de vision</strong> à employer, le prêt de la
+                  <strong>carte graphique</strong>, la <strong>langue de rédaction</strong> des
+                  modèles et la traduction des analyses existantes, les
+                  <strong>fichiers d'analyse</strong> posés — ou non — à côté de vos vidéos,
+                  l'<strong>accès de Claude</strong> par MCP, et
                   <strong>vos données</strong>
                   à exporter, importer ou réinitialiser.
                 </span>
                 <span class="en-only">
-                  Below come the settings: the address of <strong>LM&nbsp;Studio</strong>, which
-                  <strong>vision model</strong> to use, whether the
+                  Below come the settings: the <strong>model server</strong> (LM&nbsp;Studio,
+                  vLLM…), which <strong>vision model</strong> to use, whether the
                   <strong>graphics card</strong> may be lent, the
                   <strong>language the models write in</strong> and the translation of existing
                   analyses, the <strong>analysis files</strong> written — or not — next to your
@@ -3044,54 +3059,116 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
             <div class="split" style="margin-top: 22px">
               <div class="card">
                 <h4>
-                  <span class="fr-only">La carte «&nbsp;LM&nbsp;Studio&nbsp;»</span>
-                  <span class="en-only">The "LM&nbsp;Studio" card</span>
+                  <span class="fr-only">La carte «&nbsp;Serveur de modèles&nbsp;»</span>
+                  <span class="en-only">The "Model server" card</span>
                 </h4>
                 <p>
                   <span class="fr-only"
-                    >Elle dit à quel LM&nbsp;Studio l'application parle, et s'il répond. Par défaut,
-                    c'est celui de cet ordinateur. Pour confier les images à un autre ordinateur de
+                    >Elle dit à quel serveur l'application confie les images, et s'il répond. Par
+                    défaut, c'est le LM&nbsp;Studio de cet ordinateur. Pour un autre ordinateur de
                     votre réseau — un PC dont la carte graphique est plus puissante, joint par le
-                    réseau local ou par Tailscale —, choisissez «&nbsp;Sur un autre
-                    ordinateur&nbsp;» et tapez son adresse&nbsp;: <code>192.168.1.20</code>,
-                    <code>100.64.12.34:1234</code> ou son nom.</span
+                    réseau local ou par Tailscale — ou un autre serveur de modèles, choisissez
+                    «&nbsp;À une autre adresse&nbsp;» et tapez-la&nbsp;: <code>192.168.1.20</code>,
+                    <code>100.64.12.34:1234</code>, le nom de l'ordinateur, ou
+                    <code>127.0.0.1:8000</code> pour vLLM sur cet ordinateur.</span
                   >
                   <span class="en-only"
-                    >It says which LM&nbsp;Studio the application talks to, and whether it answers.
-                    By default it is the one of this computer. To hand the frames to another
+                    >It says which server the application hands the frames to, and whether it
+                    answers. By default it is the LM&nbsp;Studio of this computer. For another
                     computer of your network — a PC with a more powerful graphics card, reached over
-                    the local network or Tailscale — pick "On another computer" and type its
-                    address: <code>192.168.1.20</code>, <code>100.64.12.34:1234</code> or its
-                    name.</span
+                    the local network or Tailscale — or another model server, pick "At another
+                    address" and type it: <code>192.168.1.20</code>, <code>100.64.12.34:1234</code>,
+                    the computer's name, or <code>127.0.0.1:8000</code> for vLLM on this
+                    computer.</span
                   >
                 </p>
                 <p>
                   <span class="fr-only"
-                    >Là-bas, LM&nbsp;Studio doit accepter les connexions du réseau (Developer&nbsp;›
-                    Server Settings&nbsp;› «&nbsp;Serve on Local Network&nbsp;»)&nbsp;; s'il demande
-                    un jeton d'API, saisissez-le avec l'adresse.
-                    <strong>«&nbsp;Tester&nbsp;»</strong> dit ce que ce LM&nbsp;Studio répond avant
-                    d'enregistrer. Le changement vaut tout de suite, sans redémarrer&nbsp;; il est
-                    refusé tant qu'une analyse est en cours. Les
-                    <strong>connexions passées</strong> restent listées&nbsp;: un clic y revient, la
-                    corbeille en oublie une.</span
+                    >Le <strong>type de serveur</strong> se trouve tout seul&nbsp;: l'application
+                    cherche LM&nbsp;Studio d'abord, puis, quand l'API propre de LM&nbsp;Studio
+                    manque, demande ses modèles à un serveur compatible OpenAI
+                    (<code>/v1/models</code>). Vous pouvez aussi le dire&nbsp;:
+                    «&nbsp;LM&nbsp;Studio&nbsp;», ou «&nbsp;Compatible OpenAI (vLLM,
+                    llama.cpp…)&nbsp;» pour un serveur comme <a href="#faq-vllm">vLLM</a>. Pour
+                    celui-ci&nbsp;:</span
                   >
                   <span class="en-only"
-                    >Over there, LM&nbsp;Studio must accept network connections (Developer&nbsp;›
-                    Server Settings&nbsp;› "Serve on Local Network"); if it asks for an API token,
-                    type it with the address. <strong>"Test"</strong> says what that LM&nbsp;Studio
-                    answers before you save. The change applies at once, without a restart; it is
+                    >The <strong>server type</strong> is found out on its own: the application looks
+                    for LM&nbsp;Studio first and, when LM&nbsp;Studio's own API is missing, asks an
+                    OpenAI-compatible server for its models (<code>/v1/models</code>). You can also
+                    say it: "LM&nbsp;Studio", or "OpenAI-compatible (vLLM, llama.cpp…)" for a server
+                    such as <a href="#faq-vllm">vLLM</a>. For the latter:</span
+                  >
+                </p>
+                <ul>
+                  <li>
+                    <span class="fr-only"
+                      >l'adresse garde son port et son chemin, <code>/v1</code> s'il n'y en a
+                      pas&nbsp;: <code>gpu-box:8000</code> devient
+                      <code>http://gpu-box:8000/v1</code>&nbsp;;</span
+                    >
+                    <span class="en-only"
+                      >the address keeps its port and its path, <code>/v1</code> when there is none:
+                      <code>gpu-box:8000</code> becomes <code>http://gpu-box:8000/v1</code>;</span
+                    >
+                  </li>
+                  <li>
+                    <span class="fr-only"
+                      ><strong>«&nbsp;Requêtes envoyées à la fois&nbsp;»</strong>, de 1 à 32, 4 par
+                      défaut&nbsp;: vLLM traite les requêtes par lots, et 4 à 8 lui font décrire
+                      plusieurs images à la fois&nbsp;;</span
+                    >
+                    <span class="en-only"
+                      ><strong>"Requests sent at once"</strong>, 1 to 32, 4 by default: vLLM handles
+                      requests in batches, and 4 to 8 let it describe several frames at once;</span
+                    >
+                  </li>
+                  <li>
+                    <span class="fr-only"
+                      ><strong>«&nbsp;Ce serveur voit les images&nbsp;»</strong>, coché par
+                      défaut&nbsp;: un tel serveur ne dit pas si ses modèles voient les
+                      images.</span
+                    >
+                    <span class="en-only"
+                      ><strong>"This server sees images"</strong>, ticked by default: such a server
+                      does not say whether its models see images.</span
+                    >
+                  </li>
+                </ul>
+                <p>
+                  <span class="fr-only"
+                    >Sur un autre ordinateur, LM&nbsp;Studio doit accepter les connexions du réseau
+                    (Developer&nbsp;› Server Settings&nbsp;› «&nbsp;Serve on Local Network&nbsp;»).
+                    Si le serveur demande un jeton d'API (celui de LM&nbsp;Studio, ou le
+                    <code>--api-key</code> de vLLM), saisissez-le avec l'adresse&nbsp;: il n'est
+                    envoyé qu'à elle. <strong>«&nbsp;Tester&nbsp;»</strong> dit ce qui a répondu
+                    avant d'enregistrer&nbsp;; à un serveur compatible OpenAI, il montre en plus une
+                    toute petite image, pour savoir si son premier modèle de vision voit les images.
+                    Le changement vaut tout de suite, sans redémarrer&nbsp;; il est refusé tant
+                    qu'une analyse est en cours. Les <strong>connexions passées</strong> restent
+                    listées, avec leur type et leurs réglages&nbsp;: un clic y revient, la corbeille
+                    en oublie une.</span
+                  >
+                  <span class="en-only"
+                    >On another computer, LM&nbsp;Studio must accept network connections
+                    (Developer&nbsp;› Server Settings&nbsp;› "Serve on Local Network"). If the
+                    server asks for an API token (LM&nbsp;Studio's, or vLLM's
+                    <code>--api-key</code>), type it with the address: it is sent to that address
+                    only. <strong>"Test"</strong> says what answered before you save; to an
+                    OpenAI-compatible server, it also shows a tiny image, to tell whether its first
+                    vision model sees images. The change applies at once, without a restart; it is
                     refused while an analysis is running. The <strong>past connections</strong> stay
-                    listed: one click goes back to one, the bin forgets it.</span
+                    listed, with their type and settings: one click goes back to one, the bin
+                    forgets it.</span
                   >
                 </p>
                 <p>
                   <span class="fr-only"
-                    >Les images de vos vidéos partent alors vers cet ordinateur&nbsp;: sur un réseau
+                    >Les images de vos vidéos partent alors vers cette adresse&nbsp;: sur un réseau
                     local elles voyagent sans chiffrement, Tailscale les chiffre.</span
                   >
                   <span class="en-only"
-                    >The frames of your videos then go to that computer: unencrypted on a local
+                    >The frames of your videos then go to that address: unencrypted on a local
                     network, encrypted by Tailscale.</span
                   >
                 </p>
@@ -3137,10 +3214,10 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                   <li>
                     <span class="fr-only"
                       ><strong>Réinitialiser</strong> efface la bibliothèque, les réglages (adresse
-                      de LM&nbsp;Studio comprise), ou les deux.</span
+                      du serveur de modèles comprise), ou les deux.</span
                     >
                     <span class="en-only"
-                      ><strong>Reset</strong> erases the library, the settings (LM&nbsp;Studio's
+                      ><strong>Reset</strong> erases the library, the settings (the model server's
                       address included), or both.</span
                     >
                   </li>
@@ -3387,6 +3464,18 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                 <span class="en-only"
                   >During a test, the analyses wait, and
                   <strong>nothing changes in the library</strong>.</span
+                >
+              </p>
+              <p>
+                <span class="fr-only"
+                  >Le banc d'essai a besoin de LM&nbsp;Studio, car il charge et décharge les modèles
+                  un par un&nbsp;: avec un serveur compatible OpenAI (vLLM…), la page le dit et ne
+                  lance pas de test.</span
+                >
+                <span class="en-only"
+                  >The model bench needs LM&nbsp;Studio, since it loads and unloads the models one
+                  by one: with an OpenAI-compatible server (vLLM…), the page says so and starts no
+                  test.</span
                 >
               </p>
             </div>
@@ -6226,12 +6315,14 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               <div class="note cold">
                 <p>
                   <span class="fr-only">
-                    Les questions et les passages <strong>restent sur cet ordinateur</strong>&nbsp;:
-                    ils ne vont qu'au modèle local de LM&nbsp;Studio.
+                    Les questions et les passages <strong>ne vont qu'au serveur de modèles</strong>
+                    choisi dans la page Système, sur cette machine ou sur votre réseau local (VPN
+                    compris).
                   </span>
                   <span class="en-only">
-                    The questions and the passages <strong>stay on this computer</strong>: they only
-                    go to the local model in LM&nbsp;Studio.
+                    The questions and the passages <strong>only go to the model server</strong>
+                    chosen on the System page, on this computer or on your local network (VPN
+                    included).
                   </span>
                 </p>
               </div>
@@ -7306,12 +7397,17 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
                     <em>de vision</em> être chargé — par exemple <code>qwen/qwen3-vl-4b</code> ou
                     <code>qwen/qwen3-vl-8b</code>. Pendant les analyses, l'application ne charge
                     jamais de modèle elle-même&nbsp;: c'est vous qui décidez ce qui occupe la carte.
+                    Avec un serveur compatible OpenAI, il doit servir un modèle de vision, et la
+                    case «&nbsp;Ce serveur voit les images&nbsp;» de la carte «&nbsp;Serveur de
+                    modèles&nbsp;» doit être cochée.
                   </span>
                   <span class="en-only">
                     LM&nbsp;Studio must be running, its local server on, and a
                     <em>vision</em> model loaded — for instance <code>qwen/qwen3-vl-4b</code> or
                     <code>qwen/qwen3-vl-8b</code>. During the analyses, the application never loads
-                    a model itself: what occupies the card is your call.
+                    a model itself: what occupies the card is your call. With an OpenAI-compatible
+                    server, it must serve a vision model, and the "This server sees images" box of
+                    the "Model server" card must be ticked.
                   </span>
                 </p>
               </div>
@@ -7341,6 +7437,79 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
                     frame and whether the language is kept, and rate the descriptions blind. A
                     larger model is not always more accurate: it is always slower, and takes the
                     memory DaVinci Resolve needs.
+                  </span>
+                </p>
+              </div>
+            </details>
+
+            <details id="faq-vllm">
+              <summary>
+                <span class="fr-only">Puis-je utiliser vLLM plutôt que LM&nbsp;Studio&nbsp;?</span>
+                <span class="en-only">Can I use vLLM instead of LM&nbsp;Studio?</span>
+              </summary>
+              <div>
+                <p>
+                  <span class="fr-only">
+                    Oui, ou tout autre serveur compatible avec l'API d'OpenAI (le serveur de
+                    llama.cpp…). LM&nbsp;Studio reste le choix le plus simple&nbsp;; vLLM sert si
+                    vous en faites déjà tourner un, par exemple avec un modèle de vision de
+                    30&nbsp;milliards de paramètres sur une machine. Côté serveur, servez un modèle
+                    de vision <em>Instruct</em>&nbsp;:
+                  </span>
+                  <span class="en-only">
+                    Yes, or any other server compatible with OpenAI's API (llama.cpp's server…).
+                    LM&nbsp;Studio remains the simplest choice; vLLM is for when you already run
+                    one, for instance with a 30-billion-parameter vision model on one machine. On
+                    the server side, serve an <em>Instruct</em> vision model:
+                  </span>
+                </p>
+                <pre><code>vllm serve Qwen/Qwen3-VL-8B-Instruct --max-model-len 32768 --limit-mm-per-prompt '{"image": 4}' --api-key <span class="fr-only">&lt;jeton&gt;</span><span class="en-only">&lt;token&gt;</span></code></pre>
+                <p>
+                  <span class="fr-only">
+                    <code>--limit-mm-per-prompt</code> permet au moins 4&nbsp;images par
+                    requête&nbsp;: le récit des plans en envoie jusqu'à 4 à la fois.
+                    <code>--max-model-len</code> fixe le contexte,
+                    <code>--served-model-name</code> le nom affiché dans l'application, et
+                    <code>--api-key</code> exige un jeton. Les réponses structurées suivent des
+                    schémas JSON avec <code>enum</code> et <code>maxItems</code>&nbsp;: gardez un
+                    moteur de décodage guidé (structured outputs) qui les prend en charge — celui de
+                    vLLM par défaut le fait.
+                  </span>
+                  <span class="en-only">
+                    <code>--limit-mm-per-prompt</code> allows at least 4&nbsp;images per request:
+                    the shot stories send up to 4 at once. <code>--max-model-len</code> sets the
+                    context, <code>--served-model-name</code> the name shown in the application, and
+                    <code>--api-key</code> requires a token. The structured answers follow JSON
+                    schemas with <code>enum</code> and <code>maxItems</code>: keep a guided decoding
+                    (structured outputs) backend that handles them — vLLM's default one does.
+                  </span>
+                </p>
+                <p>
+                  <span class="fr-only">
+                    Dans l'application, <a href="#systeme">page Système</a>, carte «&nbsp;Serveur de
+                    modèles&nbsp;»&nbsp;: choisissez «&nbsp;À une autre adresse&nbsp;», tapez celle
+                    du serveur (<code>gpu-box:8000</code> devient
+                    <code>http://gpu-box:8000/v1</code>) et son jeton, choisissez le type
+                    «&nbsp;Compatible OpenAI (vLLM, llama.cpp…)&nbsp;», puis «&nbsp;Tester&nbsp;».
+                    Chaque modèle que le serveur liste compte comme chargé, et chaque requête
+                    dispose du contexte entier&nbsp;; l'application n'y charge ni n'y décharge
+                    jamais de modèle, et coupe la réflexion des modèles qui raisonnent. Quand un
+                    modèle refuse les images, ou qu'une requête porte plus d'images que le serveur
+                    n'en accepte, elle le dit en clair. Le <a href="#banc-essai">Banc d'essai</a>,
+                    lui, a besoin de LM&nbsp;Studio. Comme pour un LM&nbsp;Studio sur un autre
+                    ordinateur, les images partent alors vers ce serveur.
+                  </span>
+                  <span class="en-only">
+                    In the application, <a href="#systeme">System page</a>, "Model server" card:
+                    pick "At another address", type the server's (<code>gpu-box:8000</code> becomes
+                    <code>http://gpu-box:8000/v1</code>) and its token, choose the
+                    "OpenAI-compatible (vLLM, llama.cpp…)" type, then "Test". Every model the server
+                    lists counts as loaded, and each request has the whole context; the application
+                    never loads or unloads a model there, and switches off the thinking of the
+                    models that reason. When a model refuses images, or a request holds more images
+                    than the server allows, it says so in plain words. The
+                    <a href="#banc-essai">Model bench</a>, for its part, needs LM&nbsp;Studio. As
+                    with an LM&nbsp;Studio on another computer, the frames then go to that server.
                   </span>
                 </p>
               </div>

@@ -130,6 +130,13 @@ class Settings(BaseSettings):
     lmstudio_url: str = "http://127.0.0.1:1234"
     lmstudio_token: SecretStr | None = None
     lmstudio_timeout_s: float = Field(default=300.0, gt=0)
+    # The kind of model server at that address: found out (LM Studio, else a server compatible
+    # with OpenAI's API), or said: ``lmstudio``, or ``openai`` (vLLM…: the address then keeps its
+    # path, e.g. http://gpu-box:8000/v1). The two others only matter for an OpenAI-compatible
+    # server, which does not tell them: requests sent at once, and whether its models see images.
+    model_server: Literal["auto", "lmstudio", "openai"] = "auto"
+    model_server_parallel: int = Field(default=4, ge=1, le=32)
+    model_server_vision: bool = True
 
     # Online services: replaceable by a self-hosted or paid provider.
     nominatim_url: str = "https://nominatim.openstreetmap.org"

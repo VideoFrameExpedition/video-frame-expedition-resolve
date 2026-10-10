@@ -29,6 +29,10 @@ le montage dans une nouvelle timeline. Les tâches simples (décrire des images,
 bibliothèque, situer un sujet) vont au modèle local : l'assistant IA ne reçoit que les résultats et
 économise ses tokens.
 
+Avec Claude Code, [un plugin](https://github.com/VideoFrameExpedition/video-frame-expedition-claude-plugin)
+relie l'assistant à l'application et ajoute un skill de montage (`resolve-editing`) : Claude suit
+la méthode de l'application et travaille toujours sur une copie de la timeline.
+
 **Au-delà du MCP de Resolve :** quatre outils pilotent Resolve Studio 21.1 par des scripts figés
 et testés plutôt que par du code réécrit à chaque demande : lecture de la timeline avec les plages
 exactes des sources, recadrages (9:16…) centrés sur les sujets, nouvelle timeline construite puis
@@ -57,12 +61,12 @@ avec DaVinci Resolve ont été essayés sur un Mac M1.
 > C'est la nouvelle version de *Video Frame Expedition* ; elle remplace l'ancienne.
 
 Vos images et vos sons ne quittent jamais votre machine, sauf, si vous le choisissez, vers le
-LM Studio d'un autre de vos ordinateurs ; le modèle de vision tourne sur votre carte graphique.
-Les analyses ne font que deux appels réseau (une position arrondie et une date, pour trouver le
-lieu et la météo), et un seul interrupteur de la page Système les coupe ; le même interrupteur
-masque la carte OpenStreetMap de l'onglet Contexte, qui charge ses tuiles depuis internet. La
-page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentation depuis YouTube
-(youtube-nocookie.com, seulement quand vous arrivez à leur hauteur).
+serveur de modèles (LM Studio, vLLM…) d'un autre de vos ordinateurs ; le modèle de vision tourne
+sur votre carte graphique. Les analyses ne font que deux appels réseau (une position arrondie et
+une date, pour trouver le lieu et la météo), et un seul interrupteur de la page Système les
+coupe ; le même interrupteur masque la carte OpenStreetMap de l'onglet Contexte, qui charge ses
+tuiles depuis internet. La page d'aide charge ses polices depuis Google Fonts, et ses vidéos de
+présentation depuis YouTube (youtube-nocookie.com, seulement quand vous arrivez à leur hauteur).
 
 ## Principes
 
@@ -84,7 +88,8 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
   langue parlée) et `<nom>_SHOTS_FR.srt` (les plans, dans la langue de l'interface). Un fichier
   que l'application n'a pas écrit, ou que vous avez modifié, n'est jamais remplacé.
 - **Le modèle de vision reste sur le GPU** : l'application utilise le modèle que vous avez chargé
-  dans LM Studio, sans jamais le recharger ni en charger d'autres pendant les analyses. Elle ne
+  dans LM Studio (ou celui que sert votre serveur compatible OpenAI), sans jamais le recharger ni
+  en charger d'autres pendant les analyses. Elle ne
   décode les vidéos sur le GPU que si ce modèle laisse assez de mémoire libre (par exemple avec
   `qwen/qwen3-vl-4b`).
 - **Choisir son modèle de vision** : la page « Banc d'essai » compare les modèles de LM Studio
@@ -99,10 +104,13 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
   graphiques résument ces mesures, et un historique garde chaque test : le classement général y
   compare le dernier résultat de chaque modèle, tous tests confondus. C'est le seul endroit où
   l'application charge un modèle, à votre demande ; elle recharge ensuite celui qui était là.
-- **LM Studio ici ou ailleurs** : par défaut, l'application parle au LM Studio de l'ordinateur.
-  La carte « LM Studio » de la page Système en désigne un autre — un PC de votre réseau local ou
-  de Tailscale, dont la carte graphique est plus puissante —, le teste avant de l'adopter et
-  garde les connexions passées à portée de clic. Les images de vos vidéos partent alors vers cet
+  La page a besoin de LM Studio, car elle charge et décharge les modèles un par un : avec un
+  serveur compatible OpenAI, elle le dit et ne se lance pas.
+- **Un serveur de modèles ici ou ailleurs** : par défaut, l'application parle au LM Studio de
+  l'ordinateur. La carte « Serveur de modèles » de la page Système en désigne un autre — un PC de
+  votre réseau local ou de Tailscale, dont la carte graphique est plus puissante, avec LM Studio
+  ou un serveur compatible avec l'API d'OpenAI (vLLM…) —, le teste avant de l'adopter et garde
+  les connexions passées à portée de clic. Les images de vos vidéos partent alors vers cet
   ordinateur, et seulement vers lui.
 - **Deux langues** : chaque analyse existe en français et en anglais. Les modèles écrivent dans
   une langue (page Système), puis l'étape « Traduction » traduit leurs textes dans l'autre, sans
@@ -154,6 +162,8 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
   vision.
 - **LM Studio**, avec le serveur local activé et un modèle de vision chargé (ex.
   `qwen/qwen3-vl-8b`) : sur le même ordinateur ou sur un autre, sous Windows, macOS ou Linux.
+  Le modèle de vision peut aussi tourner dans un serveur compatible avec l'API d'OpenAI
+  (vLLM…) : [voir plus bas](#avec-vllm-ou-un-autre-serveur-compatible-openai).
 - **DaVinci Resolve Studio 21.1 ou plus récent**, pour le lien avec Resolve : sur le même
   ordinateur ou sur un autre, sous Windows, macOS ou Linux.
 
@@ -279,7 +289,7 @@ sous-titres posés dans Resolve et les modèles téléchargés ne sont jamais to
 Quand LM Studio tourne sur un autre ordinateur, téléchargez et chargez le modèle là-bas, et
 laissez son serveur accepter le réseau local (Developer › Server Settings › « Serve on Local
 Network ») ; une fois l'application ouverte, donnez son adresse page Système, carte
-« LM Studio ».
+« Serveur de modèles ».
 
 **Ligne de commande.** Dans cette page, `vfe <commande>` désigne la commande suivante, tapée
 dans PowerShell (sur un Mac, dans le Terminal) depuis le dossier de l'application :
@@ -288,9 +298,55 @@ dans PowerShell (sur un Mac, dans le Terminal) depuis le dossier de l'applicatio
 uv run --frozen --no-dev --project backend python -m vfe_vision <commande>
 ```
 
-Par exemple, `vfe doctor` vérifie FFmpeg, ExifTool, LM Studio et le GPU (sur un Mac, la puce
-et sa mémoire) ; `vfe doctor --binaries`, seulement ce que Windows (Smart App Control) pense
-des fichiers compilés de l'application.
+Par exemple, `vfe doctor` vérifie FFmpeg, ExifTool, le serveur de modèles (LM Studio…) et le GPU
+(sur un Mac, la puce et sa mémoire) ; `vfe doctor --binaries`, seulement ce que Windows (Smart
+App Control) pense des fichiers compilés de l'application.
+
+### Avec vLLM ou un autre serveur compatible OpenAI
+
+LM Studio reste le choix le plus simple. Si vous faites déjà tourner un serveur compatible avec
+l'API d'OpenAI (vLLM, le serveur de llama.cpp…), par exemple avec un modèle de vision de
+30 milliards de paramètres sur une machine, l'application peut s'en servir à la place.
+
+Côté serveur, avec vLLM :
+
+```sh
+vllm serve Qwen/Qwen3-VL-8B-Instruct --max-model-len 32768 --limit-mm-per-prompt '{"image": 4}' --api-key <jeton>
+```
+
+- Servez un modèle de vision *Instruct*.
+- `--limit-mm-per-prompt '{"image": 4}'` : au moins 4 images par requête, car le récit des plans
+  envoie jusqu'à 4 images dans une même requête.
+- `--max-model-len` fixe le contexte (32768, par exemple).
+- `--served-model-name` donne le nom affiché dans l'application.
+- `--api-key` exige un jeton, que vous saisissez dans l'application avec l'adresse.
+- Les réponses structurées suivent des schémas JSON avec `enum` et `maxItems` : gardez un moteur
+  de décodage guidé (structured outputs) de vLLM qui les prend en charge ; celui par défaut le
+  fait.
+
+Dans l'application, page Système, carte « Serveur de modèles » : donnez l'adresse du serveur et
+choisissez le type de serveur « Compatible OpenAI (vLLM, llama.cpp…) ». L'adresse garde son port
+et son chemin, et `/v1` s'ajoute s'il n'y en a pas : `gpu-box:8000` devient
+`http://gpu-box:8000/v1`, et `https://gpu-box.lan/vllm/v1` reste tel quel. Deux réglages
+l'accompagnent : les requêtes envoyées à la fois (de 1 à 32, 4 par défaut ; vLLM traite les
+requêtes par lots, et 4 à 8 lui font décrire plusieurs images à la fois) et « Ce serveur voit les
+images » (coché par défaut). « Tester » dit ce qui a répondu et montre une toute petite image au
+premier modèle de vision du serveur, pour savoir s'il voit les images. Le type peut aussi être
+trouvé tout seul : l'application cherche LM Studio d'abord, puis le `/v1/models` d'un serveur
+compatible OpenAI. Sans l'interface : `VFE_MODEL_SERVER=openai` et
+`VFE_LMSTUDIO_URL=http://gpu-box:8000/v1` dans le fichier `.env` (voir
+[`docs/env.example`](docs/env.example)).
+
+Chaque modèle que le serveur liste compte comme chargé, avec le `max_model_len` du serveur pour
+contexte ; chaque requête dispose du contexte entier (les requêtes parallèles de LM Studio se
+partagent le sien). L'application n'y charge ni n'y décharge jamais de modèle. Elle coupe la
+réflexion (`chat_template_kwargs: {"enable_thinking": false}`, retiré si le serveur refuse ce
+champ), et dit en clair quand un modèle refuse les images, ou quand une requête porte plus
+d'images que le serveur n'en accepte. La page « Banc d'essai » a besoin de LM Studio, car elle
+charge et décharge les modèles un par un : avec un serveur compatible OpenAI, elle le dit et ne
+se lance pas. Comme pour le LM Studio d'un autre ordinateur, les images de vos vidéos partent
+vers ce serveur, sans chiffrement sur un réseau local ; Tailscale, ou une adresse `https`, les
+chiffre.
 
 ## Démarrage rapide
 
@@ -318,8 +374,8 @@ Assistants (Claude Code, Claude Desktop, Cursor, VS Code, Codex) et accès depui
 appareils par Tailscale : page « Connexions » de l'interface et
 [guide](docs/guide/connect-mcp.fr.md).
 
-Réglages lus au démarrage (adresse et port, chemins des outils, adresse de LM Studio) : copiez
-[`docs/env.example`](docs/env.example) en fichier `.env` à côté de `run.bat` (ou de
+Réglages lus au démarrage (adresse et port, chemins des outils, adresse du serveur de modèles) :
+copiez [`docs/env.example`](docs/env.example) en fichier `.env` à côté de `run.bat` (ou de
 `run.command`). Tout le reste se règle dans l'interface.
 
 ## Développement
@@ -353,8 +409,8 @@ Connexions est cochée (désactivée par défaut). La démarche :
 2. Claude choisit les plans (`find_clips`, `get_synthesis`, `get_frames`) et demande à
    `get_cut_points` des entrées et sorties sûres (jamais dans un mot, J-cut et L-cut) ;
 3. `plan_reframe` prépare le recadrage pour une autre forme (9:16…) : le travail d'image se
-   fait en local, avec le modèle de vision chargé dans LM Studio (réponses gardées en cache), et
-   Claude ne regarde que les planches de contrôle des plans signalés ;
+   fait en local, avec le modèle de vision de LM Studio ou de votre serveur de modèles (réponses
+   gardées en cache), et Claude ne regarde que les planches de contrôle des plans signalés ;
 4. `build_timeline` construit une timeline **neuve** « … - vfe vN » avec ces plans et ces
    recadrages, relit chaque durée et chaque valeur, et `apply_markers` pose chapitres, moments
    forts et métadonnées. Aucune timeline existante n'est modifiée et **le projet n'est pas

@@ -1,4 +1,5 @@
 import {
+  AlertTriangle,
   Clock,
   FlaskConical,
   Hourglass,
@@ -15,6 +16,7 @@ import { toast } from "sonner";
 
 import { errorMessage, type BenchModel, type BenchOverview } from "@/api/client";
 import { useStartBench } from "@/api/queries";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -238,7 +240,13 @@ export function ModelPicker({
       </CardHeader>
       <CardContent className="grid gap-6">
         <p className="text-muted-foreground text-sm leading-relaxed">{t("bench.new.intro")}</p>
-        {overview.lmstudio_error ? (
+        {overview.needs_lmstudio ? (
+          // An OpenAI-compatible server serves its models as it was started: nothing to load.
+          <Alert>
+            <AlertTriangle className="text-warning-ink size-4" aria-hidden />
+            <AlertDescription>{t("bench.new.needsLmStudio")}</AlertDescription>
+          </Alert>
+        ) : overview.lmstudio_error ? (
           <p className="text-destructive text-sm">{t("bench.new.unreachable")}</p>
         ) : overview.models.length === 0 ? (
           <p className="text-muted-foreground text-sm">{t("bench.new.noModels")}</p>
@@ -355,6 +363,7 @@ export function ModelPicker({
                 noFrames ||
                 active ||
                 start.isPending ||
+                overview.needs_lmstudio ||
                 Boolean(overview.lmstudio_error)
               }
               onClick={() => {

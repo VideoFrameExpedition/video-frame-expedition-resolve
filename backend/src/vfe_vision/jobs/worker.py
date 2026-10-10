@@ -28,7 +28,7 @@ from vfe_vision.core.cancel import CancelToken
 from vfe_vision.core.config import Settings
 from vfe_vision.core.errors import CancelledError, ConflictError, VfeError
 from vfe_vision.core.logging import get_logger
-from vfe_vision.db.lmstudio_link import LinkReader
+from vfe_vision.db.lmstudio_link import LinkReader, default_target
 from vfe_vision.db.models import Job, LibraryRoot, Video
 from vfe_vision.db.preferences import load_preferences
 from vfe_vision.db.session import Database
@@ -104,13 +104,7 @@ class Worker:
         sink = DbEventSink(db)
         # The address chosen on the System page, followed without a restart.
         lmstudio = self.lmstudio or LmStudioClient(
-            LinkReader(
-                db,
-                self.settings.lmstudio_url,
-                self.settings.lmstudio_token.get_secret_value()
-                if self.settings.lmstudio_token
-                else None,
-            ),
+            LinkReader(db, default_target(self.settings)),
             timeout_s=self.settings.lmstudio_timeout_s,
         )
         weather = self.weather or OpenMeteoClient(
@@ -378,7 +372,7 @@ class Worker:
         prefs = await anyio.to_thread.run_sync(load_preferences, tools.db)
         picked = pick_vision_instance(await tools.lmstudio.list_models(), prefs.vision_model)
         if picked is None:
-            raise VfeError("Aucun modèle de vision chargé dans LM Studio.")
+            raise VfeError(tools.lmstudio.no_vision_model())
         model, instance = picked
         profile = await vision_profile.measure(
             tools.db, tools.lmstudio, tools.lm_budget, model, instance, cancel=token

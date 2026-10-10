@@ -24,7 +24,7 @@ import sqlalchemy as sa
 from vfe_vision.adapters.ffmpeg.tools import Ffmpeg
 from vfe_vision.adapters.imaging import encode_jpeg, read_image, resize_long_side
 from vfe_vision.adapters.lmstudio import prompts
-from vfe_vision.adapters.lmstudio.catalog import LoadedInstance, ModelInfo
+from vfe_vision.adapters.lmstudio.catalog import LoadedInstance, ModelInfo, budget_of
 from vfe_vision.adapters.lmstudio.client import ChatImage, LmStudioUnavailableError
 from vfe_vision.adapters.lmstudio.schema import field_guide
 from vfe_vision.core.cancel import CancelToken
@@ -173,9 +173,7 @@ class VisionShotsStage(Stage):
                 "LM Studio injoignable ou aucun modèle de vision chargé"
             )
         model, instance = picked
-        await ctx.tools.lm_budget.resize(
-            int((instance.context_length or 8192) * 0.9), instance.parallel or 1
-        )
+        await ctx.tools.lm_budget.resize(*budget_of(instance))
         generation = new_id()
         fills: dict[tuple[str, int], list[_Frame]] = {}
         rows: list[ShotStory] = []

@@ -28,22 +28,25 @@ def update_analysis_preferences(
     return settings_service.update_preferences(c, patch)
 
 
-# ------------------------------------------------------------------ where LM Studio runs
+# ------------------------------------------------------------------ where the model server runs
 @router.get("/lmstudio")
 def get_lmstudio_link(c: Container) -> LmStudioLinkOut:
-    """The address of LM Studio in use and the ones used before."""
+    """The model server in use (LM Studio, or an OpenAI-compatible server such as vLLM), its
+    kind and settings, and the ones used before."""
     return lmstudio_link.read(c)
 
 
 @router.put("/lmstudio")
 def choose_lmstudio(c: Container, choice: LmStudioChoice) -> LmStudioLinkOut:
-    """Talk to the LM Studio at this address from now on (no address: this computer's)."""
+    """Talk to the model server at this address from now on (no address: the installation's
+    own), with its kind and settings."""
     return lmstudio_link.choose(c, choice)
 
 
 @router.post("/lmstudio/test")
 async def test_lmstudio(c: Container, choice: LmStudioChoice) -> LmStudioTestOut:
-    """Whether an LM Studio answers at this address, and what it has loaded; changes nothing."""
+    """Whether a model server answers at this address, which kind, what it has loaded or serves,
+    and whether its vision model takes an image; changes nothing."""
     return await lmstudio_link.test(c, choice)
 
 

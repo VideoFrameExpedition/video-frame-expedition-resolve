@@ -2112,6 +2112,11 @@
             "title": "Models",
             "type": "array"
           },
+          "needs_lmstudio": {
+            "default": false,
+            "title": "Needs Lmstudio",
+            "type": "boolean"
+          },
           "parallel": {
             "default": 4,
             "title": "Parallel",
@@ -5356,8 +5361,39 @@
                 "type": "null"
               }
             ],
-            "description": "Address of LM Studio (192.168.1.20, 192.168.1.20:1234, http://living-room-pc:1234); empty: the one on this computer.",
+            "description": "Address of the model server (192.168.1.20, 192.168.1.20:1234, http://gpu-box:8000/v1); empty: the installation's own.",
             "title": "Address"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "auto",
+                  "lmstudio",
+                  "openai"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "lmstudio, openai (an OpenAI-compatible server: vLLM…), or auto: found out (LM Studio first). Absent: the one saved for this address, else auto.",
+            "title": "Kind"
+          },
+          "parallel": {
+            "anyOf": [
+              {
+                "maximum": 32.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "OpenAI-compatible server: requests sent at once. Absent: the one saved for this address, else 4.",
+            "title": "Parallel"
           },
           "token": {
             "anyOf": [
@@ -5369,15 +5405,27 @@
                 "type": "null"
               }
             ],
-            "description": "API token of this LM Studio, if it asks for one. Absent: the one already saved for this address is kept; empty string: it is removed.",
+            "description": "API token of this server, if it asks for one. Absent: the one already saved for this address is kept; empty string: it is removed.",
             "title": "Token"
+          },
+          "vision": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "OpenAI-compatible server: whether its models see images. Absent: the one saved for this address, else yes.",
+            "title": "Vision"
           }
         },
         "title": "LmStudioChoice",
         "type": "object"
       },
       "LmStudioLinkOut": {
-        "description": "The address in use and the ones used before. A token is never given back.",
+        "description": "The server in use and the ones used before. A token is never given back.",
         "properties": {
           "custom": {
             "title": "Custom",
@@ -5387,13 +5435,44 @@
             "title": "Default Url",
             "type": "string"
           },
+          "found": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ServerKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "has_token": {
             "title": "Has Token",
             "type": "boolean"
           },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ServerKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "local": {
             "title": "Local",
             "type": "boolean"
+          },
+          "parallel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parallel"
           },
           "past": {
             "items": {
@@ -5405,6 +5484,10 @@
           "url": {
             "title": "Url",
             "type": "string"
+          },
+          "vision": {
+            "title": "Vision",
+            "type": "boolean"
           }
         },
         "required": [
@@ -5413,6 +5496,10 @@
           "default_url",
           "local",
           "has_token",
+          "kind",
+          "found",
+          "parallel",
+          "vision",
           "past"
         ],
         "title": "LmStudioLinkOut",
@@ -5430,6 +5517,27 @@
               }
             ],
             "title": "Error"
+          },
+          "images": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Images"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ServerKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "loaded": {
             "items": {
@@ -5496,6 +5604,11 @@
               }
             ],
             "title": "Parallel"
+          },
+          "shared_context": {
+            "default": true,
+            "title": "Shared Context",
+            "type": "boolean"
           }
         },
         "required": [
@@ -6053,6 +6166,16 @@
             "title": "Has Token",
             "type": "boolean"
           },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ServerKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "last_used_at": {
             "format": "date-time",
             "title": "Last Used At",
@@ -6062,16 +6185,34 @@
             "title": "Local",
             "type": "boolean"
           },
+          "parallel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parallel"
+          },
           "url": {
             "title": "Url",
             "type": "string"
+          },
+          "vision": {
+            "title": "Vision",
+            "type": "boolean"
           }
         },
         "required": [
           "url",
           "last_used_at",
           "local",
-          "has_token"
+          "has_token",
+          "kind",
+          "parallel",
+          "vision"
         ],
         "title": "PastConnectionOut",
         "type": "object"
@@ -8185,6 +8326,15 @@
         ],
         "title": "SearchOut",
         "type": "object"
+      },
+      "ServerKind": {
+        "description": "The kind of model server. None (where a kind is optional) means: found out, LM Studio\nfirst, then an OpenAI-compatible server when LM Studio's own API is not there.",
+        "enum": [
+          "lmstudio",
+          "openai"
+        ],
+        "title": "ServerKind",
+        "type": "string"
       },
       "SessionOut": {
         "properties": {
@@ -13214,7 +13364,7 @@
   "info": {
     "description": "Local video analysis API (LM Studio vision model).",
     "title": "Video Frame Expedition for DaVinci Resolve",
-    "version": "1.3.0"
+    "version": "1.4.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -15486,7 +15636,7 @@
     },
     "/api/v1/settings/lmstudio": {
       "get": {
-        "description": "The address of LM Studio in use and the ones used before.",
+        "description": "The model server in use (LM Studio, or an OpenAI-compatible server such as vLLM), its\nkind and settings, and the ones used before.",
         "operationId": "get_lmstudio_link_api_v1_settings_lmstudio_get",
         "responses": {
           "200": {
@@ -15506,7 +15656,7 @@
         ]
       },
       "put": {
-        "description": "Talk to the LM Studio at this address from now on (no address: this computer's).",
+        "description": "Talk to the model server at this address from now on (no address: the installation's\nown), with its kind and settings.",
         "operationId": "choose_lmstudio_api_v1_settings_lmstudio_put",
         "requestBody": {
           "content": {
@@ -15594,7 +15744,7 @@
     },
     "/api/v1/settings/lmstudio/test": {
       "post": {
-        "description": "Whether an LM Studio answers at this address, and what it has loaded; changes nothing.",
+        "description": "Whether a model server answers at this address, which kind, what it has loaded or serves,\nand whether its vision model takes an image; changes nothing.",
         "operationId": "test_lmstudio_api_v1_settings_lmstudio_test_post",
         "requestBody": {
           "content": {

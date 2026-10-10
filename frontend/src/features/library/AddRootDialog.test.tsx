@@ -108,10 +108,9 @@ describe("AddRootDialog", () => {
     await user.click(screen.getByRole("button", { name: "Parcourir…" }));
     expect(pickFolder).toHaveBeenCalledOnce();
     expect(alert).toHaveTextContent("complétées toutes seules");
-    expect(screen.getByRole("link", { name: "page Système, carte « LM Studio »" })).toHaveAttribute(
-      "href",
-      "/system",
-    );
+    expect(
+      screen.getByRole("link", { name: "page Système, carte « Serveur de modèles »" }),
+    ).toHaveAttribute("href", "/system");
   });
 
   it("warns too when LM Studio answers without a vision model loaded", async () => {

@@ -258,13 +258,20 @@ async def _ask_heads(c: AppContainer, frames: list[_Frame], stats: HeadStats) ->
     try:
         models = await c.lmstudio.list_models()
     except VfeError:
-        _none_asked(frames, stats, "LM Studio injoignable : têtes non cherchées (haut du sujet).")
+        _none_asked(
+            frames,
+            stats,
+            f"{c.lmstudio.server_title()} injoignable : têtes non cherchées (haut du sujet).",
+        )
         return
     prefs = await anyio.to_thread.run_sync(load_preferences, c.db)
     picked = pick_vision_instance(models, prefs.vision_model)
     if picked is None:
-        _none_asked(frames, stats, "Aucun modèle de vision chargé dans LM Studio : têtes non "
-                    "cherchées (haut du sujet).")  # fmt: skip
+        _none_asked(
+            frames,
+            stats,
+            f"{c.lmstudio.no_vision_model().rstrip('.')} : têtes non cherchées (haut du sujet).",
+        )
         return
     model, instance = picked
     setup = await anyio.to_thread.run_sync(known_setup, c.db, model)
@@ -310,7 +317,7 @@ async def _ask_heads(c: AppContainer, frames: list[_Frame], stats: HeadStats) ->
     for index, frame in enumerate(frames):
         frame.pending = index not in done
     if gone:
-        stats.note = f"LM Studio a cessé de répondre : {gone[0]}"
+        stats.note = f"{c.lmstudio.server_title()} a cessé de répondre : {gone[0]}"
 
 
 async def _head(

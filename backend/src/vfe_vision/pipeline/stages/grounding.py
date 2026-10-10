@@ -18,7 +18,7 @@ import anyio
 
 from vfe_vision.adapters.imaging import encode_jpeg, read_image, resize_long_side
 from vfe_vision.adapters.lmstudio import prompts
-from vfe_vision.adapters.lmstudio.catalog import LoadedInstance, ModelInfo
+from vfe_vision.adapters.lmstudio.catalog import LoadedInstance, ModelInfo, budget_of
 from vfe_vision.adapters.lmstudio.client import ChatImage, LmStudioUnavailableError
 from vfe_vision.adapters.lmstudio.schema import field_guide
 from vfe_vision.core.errors import CancelledError, VfeError
@@ -125,9 +125,7 @@ class GroundingStage(Stage):
     async def execute(self, ctx: StageContext) -> StageOutcome:
         picked = await pick_vision_model(ctx)
         if picked is None:
-            return StageOutcome.waiting_for_lmstudio(
-                "LM Studio injoignable ou aucun modèle de vision chargé"
-            )
+            return StageOutcome.waiting_for_lmstudio(ctx.tools.lmstudio.unavailable_note())
         model, instance = picked
         try:
             setup = await self._setup(ctx, model, instance)
@@ -141,9 +139,7 @@ class GroundingStage(Stage):
                 "recalibrez depuis la page Système"
             )
         convention = setup.convention
-        await ctx.tools.lm_budget.resize(
-            int((instance.context_length or 8192) * 0.9), instance.parallel or 1
-        )
+        await ctx.tools.lm_budget.resize(*budget_of(instance))
         frames = await anyio.to_thread.run_sync(distinct_keyframes, ctx)
         rows: list[DetectionRow] = []
         scans: list[SubjectScan] = []

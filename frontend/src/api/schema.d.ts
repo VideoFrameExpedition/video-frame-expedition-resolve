@@ -752,12 +752,14 @@ export interface paths {
         };
         /**
          * Get Lmstudio Link
-         * @description The address of LM Studio in use and the ones used before.
+         * @description The model server in use (LM Studio, or an OpenAI-compatible server such as vLLM), its
+         *     kind and settings, and the ones used before.
          */
         get: operations["get_lmstudio_link_api_v1_settings_lmstudio_get"];
         /**
          * Choose Lmstudio
-         * @description Talk to the LM Studio at this address from now on (no address: this computer's).
+         * @description Talk to the model server at this address from now on (no address: the installation's
+         *     own), with its kind and settings.
          */
         put: operations["choose_lmstudio_api_v1_settings_lmstudio_put"];
         post?: never;
@@ -798,7 +800,8 @@ export interface paths {
         put?: never;
         /**
          * Test Lmstudio
-         * @description Whether an LM Studio answers at this address, and what it has loaded; changes nothing.
+         * @description Whether a model server answers at this address, which kind, what it has loaded or serves,
+         *     and whether its vision model takes an image; changes nothing.
          */
         post: operations["test_lmstudio_api_v1_settings_lmstudio_test_post"];
         delete?: never;
@@ -2534,6 +2537,11 @@ export interface components {
              */
             models: components["schemas"]["BenchModel"][];
             /**
+             * Needs Lmstudio
+             * @default false
+             */
+            needs_lmstudio: boolean;
+            /**
              * Parallel
              * @default 4
              */
@@ -3751,37 +3759,61 @@ export interface components {
         LmStudioChoice: {
             /**
              * Address
-             * @description Address of LM Studio (192.168.1.20, 192.168.1.20:1234, http://living-room-pc:1234); empty: the one on this computer.
+             * @description Address of the model server (192.168.1.20, 192.168.1.20:1234, http://gpu-box:8000/v1); empty: the installation's own.
              */
             address?: string | null;
             /**
+             * Kind
+             * @description lmstudio, openai (an OpenAI-compatible server: vLLM…), or auto: found out (LM Studio first). Absent: the one saved for this address, else auto.
+             */
+            kind?: ("auto" | "lmstudio" | "openai") | null;
+            /**
+             * Parallel
+             * @description OpenAI-compatible server: requests sent at once. Absent: the one saved for this address, else 4.
+             */
+            parallel?: number | null;
+            /**
              * Token
-             * @description API token of this LM Studio, if it asks for one. Absent: the one already saved for this address is kept; empty string: it is removed.
+             * @description API token of this server, if it asks for one. Absent: the one already saved for this address is kept; empty string: it is removed.
              */
             token?: string | null;
+            /**
+             * Vision
+             * @description OpenAI-compatible server: whether its models see images. Absent: the one saved for this address, else yes.
+             */
+            vision?: boolean | null;
         };
         /**
          * LmStudioLinkOut
-         * @description The address in use and the ones used before. A token is never given back.
+         * @description The server in use and the ones used before. A token is never given back.
          */
         LmStudioLinkOut: {
             /** Custom */
             custom: boolean;
             /** Default Url */
             default_url: string;
+            found: components["schemas"]["ServerKind"] | null;
             /** Has Token */
             has_token: boolean;
+            kind: components["schemas"]["ServerKind"] | null;
             /** Local */
             local: boolean;
+            /** Parallel */
+            parallel: number | null;
             /** Past */
             past: components["schemas"]["PastConnectionOut"][];
             /** Url */
             url: string;
+            /** Vision */
+            vision: boolean;
         };
         /** LmStudioTestOut */
         LmStudioTestOut: {
             /** Error */
             error?: string | null;
+            /** Images */
+            images?: boolean | null;
+            kind?: components["schemas"]["ServerKind"] | null;
             /** Loaded */
             loaded?: string[];
             /** Local */
@@ -3809,6 +3841,11 @@ export interface components {
             id: string;
             /** Parallel */
             parallel?: number | null;
+            /**
+             * Shared Context
+             * @default true
+             */
+            shared_context: boolean;
         };
         /** LoginIn */
         LoginIn: {
@@ -4012,6 +4049,7 @@ export interface components {
         PastConnectionOut: {
             /** Has Token */
             has_token: boolean;
+            kind: components["schemas"]["ServerKind"] | null;
             /**
              * Last Used At
              * Format: date-time
@@ -4019,8 +4057,12 @@ export interface components {
             last_used_at: string;
             /** Local */
             local: boolean;
+            /** Parallel */
+            parallel: number | null;
             /** Url */
             url: string;
+            /** Vision */
+            vision: boolean;
         };
         /**
          * PendingOut
@@ -4860,6 +4902,13 @@ export interface components {
              */
             total: number;
         };
+        /**
+         * ServerKind
+         * @description The kind of model server. None (where a kind is optional) means: found out, LM Studio
+         *     first, then an OpenAI-compatible server when LM Studio's own API is not there.
+         * @enum {string}
+         */
+        ServerKind: "lmstudio" | "openai";
         /** SessionOut */
         SessionOut: {
             /**

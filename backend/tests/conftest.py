@@ -353,41 +353,45 @@ class FakeLmStudio:
         if request.url.path == "/api/v1/models":
             return httpx.Response(200, json=self.models_payload)
         if request.url.path == "/v1/chat/completions":
-            body = json.loads(request.content)
-            self.chat_requests.append(body)
-            if self.replies:
-                return self.replies.pop(0)
-            if self.status_code != 200:
-                return httpx.Response(self.status_code, text="failed to process mtmd chunk")
-            if body.get("stream"):
-                chunks = sse_chunks(
-                    pieces_of(self.stream_text), model=body["model"],
-                    finish_reason=self.finish_reason or "stop", error=self.stream_error,
-                )  # fmt: skip
-                return httpx.Response(
-                    200,
-                    headers={"content-type": "text/event-stream"},
-                    stream=StreamedBody(self, chunks, self.stream_delay),
-                )
-            content = self.answers.pop(0) if self.answers else json.dumps(_default_answer(body))
+            return self.chat(request)
+        return httpx.Response(404, text="not found")
+
+    def chat(self, request: httpx.Request) -> httpx.Response:
+        """A chat completion, streamed or not."""
+        body = json.loads(request.content)
+        self.chat_requests.append(body)
+        if self.replies:
+            return self.replies.pop(0)
+        if self.status_code != 200:
+            return httpx.Response(self.status_code, text="failed to process mtmd chunk")
+        if body.get("stream"):
+            chunks = sse_chunks(
+                pieces_of(self.stream_text), model=body["model"],
+                finish_reason=self.finish_reason or "stop", error=self.stream_error,
+            )  # fmt: skip
             return httpx.Response(
                 200,
-                json={
-                    "model": body["model"],
-                    "choices": [
-                        {
-                            "message": {"role": "assistant", "content": content},
-                            "finish_reason": self.finish_reason,
-                        }
-                    ],
-                    "usage": {
-                        "prompt_tokens": 700,
-                        "completion_tokens": 300,
-                        "completion_tokens_details": {"reasoning_tokens": self.reasoning_tokens},
-                    },
-                },
+                headers={"content-type": "text/event-stream"},
+                stream=StreamedBody(self, chunks, self.stream_delay),
             )
-        return httpx.Response(404, text="not found")
+        content = self.answers.pop(0) if self.answers else json.dumps(_default_answer(body))
+        return httpx.Response(
+            200,
+            json={
+                "model": body["model"],
+                "choices": [
+                    {
+                        "message": {"role": "assistant", "content": content},
+                        "finish_reason": self.finish_reason,
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 700,
+                    "completion_tokens": 300,
+                    "completion_tokens_details": {"reasoning_tokens": self.reasoning_tokens},
+                },
+            },
+        )
 
     def client(self) -> LmStudioClient:
         return LmStudioClient("http://lmstudio.test", transport=httpx.MockTransport(self.handler))
@@ -396,6 +400,90 @@ class FakeLmStudio:
 @pytest.fixture
 def fake_lmstudio() -> FakeLmStudio:
     return FakeLmStudio()
+
+
+# ---------------------------------------------------------------- fake vLLM
+# What vLLM's OpenAI-compatible server lists (``vllm serve Qwen/Qwen3-VL-8B-Instruct
+# --max-model-len 32768``): the served model, its context, no LM Studio fields.
+VLLM_MODELS_PAYLOAD: dict[str, Any] = {
+    "object": "list",
+    "data": [
+        {
+            "id": "Qwen/Qwen3-VL-8B-Instruct",
+            "object": "model",
+            "created": 1791000000,
+            "owned_by": "vllm",
+            "root": "Qwen/Qwen3-VL-8B-Instruct",
+            "parent": None,
+            "max_model_len": 32768,
+            "permission": [],
+        }
+    ],
+}
+
+
+def _openai_error(message: str) -> httpx.Response:
+    """A 400 as vLLM writes it."""
+    return httpx.Response(
+        400,
+        json={"object": "error", "message": message, "type": "BadRequestError", "code": 400},
+    )
+
+
+class FakeVllm(FakeLmStudio):
+    """A server compatible with OpenAI's API, as vLLM answers: no LM Studio API (404), the
+    served models under ``{prefix}/models``, the chat under ``{prefix}/chat/completions``.
+
+    ``refuse_images``: a model that does not see images (vLLM's 400); ``max_images``: what
+    ``--limit-mm-per-prompt`` allows; ``refuse_template_kwargs``: a server that does not know
+    ``chat_template_kwargs``.
+    """
+
+    def __init__(self, prefix: str = "/v1") -> None:
+        super().__init__()
+        self.prefix = prefix
+        self.served: dict[str, Any] = VLLM_MODELS_PAYLOAD
+        self.refuse_images = False
+        self.max_images: int | None = None
+        self.refuse_template_kwargs = False
+
+    def handler(self, request: httpx.Request) -> httpx.Response:
+        path = request.url.path
+        self.requested_paths.append(path)
+        if self.down:
+            raise httpx.ConnectError("connection refused", request=request)
+        if path == f"{self.prefix}/models":
+            return httpx.Response(200, json=self.served)
+        if path == f"{self.prefix}/chat/completions":
+            body = json.loads(request.content)
+            images = sum(
+                part.get("type") == "image_url"
+                for message in body["messages"]
+                if isinstance(message["content"], list)
+                for part in message["content"]
+            )
+            if self.refuse_template_kwargs and "chat_template_kwargs" in body:
+                self.chat_requests.append(body)
+                return _openai_error("Unknown field: chat_template_kwargs is not supported")
+            if self.refuse_images and images:
+                self.chat_requests.append(body)
+                return _openai_error(f"{body['model']} is not a multimodal model")
+            if self.max_images is not None and images > self.max_images:
+                self.chat_requests.append(body)
+                return _openai_error(
+                    f"At most {self.max_images} image(s) may be provided in one request."
+                )
+            return self.chat(request)
+        return httpx.Response(404, json={"detail": "Not Found"})
+
+    def client(self) -> LmStudioClient:
+        """A client that finds out the kind of server (a plain address)."""
+        return LmStudioClient("http://gpu-box:8000", transport=httpx.MockTransport(self.handler))
+
+
+@pytest.fixture
+def fake_vllm() -> FakeVllm:
+    return FakeVllm()
 
 
 @pytest.fixture

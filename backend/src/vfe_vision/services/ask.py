@@ -35,12 +35,13 @@ import sqlalchemy as sa
 
 from vfe_vision.adapters.imaging import encode_jpeg, read_image, resize_long_side
 from vfe_vision.adapters.lmstudio import prompts
-from vfe_vision.adapters.lmstudio.budget import (
-    estimate_image_tokens,
-    estimate_text_tokens,
-    slot_tokens,
+from vfe_vision.adapters.lmstudio.budget import estimate_image_tokens, estimate_text_tokens
+from vfe_vision.adapters.lmstudio.catalog import (
+    LoadedInstance,
+    ModelInfo,
+    pick_text_instance,
+    request_tokens,
 )
-from vfe_vision.adapters.lmstudio.catalog import LoadedInstance, ModelInfo, pick_text_instance
 from vfe_vision.adapters.lmstudio.client import ChatImage
 from vfe_vision.adapters.lmstudio.schema import field_guide
 from vfe_vision.core.errors import (
@@ -240,11 +241,17 @@ def _question(text: str) -> str:
 
 
 async def loaded_model(c: AppContainer) -> tuple[ModelInfo, LoadedInstance]:
-    """The instance already loaded in LM Studio that will answer: never one to load."""
+    """The instance already loaded in LM Studio (or served by an OpenAI-compatible server)
+    that will answer: never one to load."""
     models = await c.lmstudio.list_models()
     preferred = (await anyio.to_thread.run_sync(load_preferences, c.db)).vision_model
     picked = pick_text_instance(models, preferred)
     if picked is None:
+        if c.lmstudio.serves_its_models:
+            raise NoModelLoadedError(
+                "Le serveur de modèles ne sert aucun modèle de langage : servez-en un (par "
+                "exemple Qwen/Qwen3-VL-8B-Instruct)."
+            )
         raise NoModelLoadedError(
             "Aucun modèle n'est chargé dans LM Studio. Chargez-en un (par exemple "
             "qwen/qwen3-vl-4b) : l'application n'en charge jamais elle-même."
@@ -333,7 +340,7 @@ async def ask(  # noqa: PLR0915 - one question, told in order
         partial(search.search, c, text, filters, limit=CANDIDATES)
     )
     candidates = [_candidate(hit) for hit in found.hits]
-    slot = slot_tokens(instance.context_length, instance.parallel)
+    slot = request_tokens(instance)
     budget = ask_budget(slot, _estimate(_render(language, question=text, passages=[])))
     chosen = choose_passages(candidates, budget.passages, estimate_text_tokens)
     rendered = _render(language, question=text, passages=[candidates[i].line for i in chosen])

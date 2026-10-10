@@ -23,8 +23,13 @@ import anyio
 from pydantic import BaseModel, ConfigDict, create_model
 
 from vfe_vision.adapters.lmstudio import prompts
-from vfe_vision.adapters.lmstudio.budget import estimate_text_tokens, slot_tokens
-from vfe_vision.adapters.lmstudio.catalog import LoadedInstance, ModelInfo
+from vfe_vision.adapters.lmstudio.budget import estimate_text_tokens
+from vfe_vision.adapters.lmstudio.catalog import (
+    LoadedInstance,
+    ModelInfo,
+    budget_of,
+    request_tokens,
+)
 from vfe_vision.adapters.lmstudio.client import (
     LmStudioResponseError,
     LmStudioTruncatedError,
@@ -72,8 +77,9 @@ def answer_model(count: int) -> type[BaseModel]:
 
 def batch_chars(instance: LoadedInstance) -> int:
     """How much text one request may hold: its prompt and its answer (about as long) fit a
-    slot's share of the loaded context, so the parallel requests all fit together."""
-    share = slot_tokens(instance.context_length, instance.parallel) - SYSTEM_TOKENS
+    slot's share of the loaded context (the whole context on a server that gives each request
+    its own), so the parallel requests all fit together."""
+    share = request_tokens(instance) - SYSTEM_TOKENS
     return max(MIN_CHARS, min(MAX_CHARS, share * 3 // 2 - 200))
 
 
@@ -138,11 +144,11 @@ class TranslationStage(Stage):
             return StageOutcome.ok(texts=len(set(texts)), asked=0)
         picked = await pick_vision_model(ctx)
         if picked is None:
-            return StageOutcome.waiting_for_lmstudio("LM Studio injoignable ou aucun modèle chargé")
+            return StageOutcome.waiting_for_lmstudio(
+                ctx.tools.lmstudio.unavailable_note(vision=False)
+            )
         model, instance = picked
-        await ctx.tools.lm_budget.resize(
-            int((instance.context_length or 8192) * 0.9), instance.parallel or 1
-        )
+        await ctx.tools.lm_budget.resize(*budget_of(instance))
         run = _Run(model, instance, await anyio.to_thread.run_sync(self._context, ctx))
         counters = run.counters
         await self._run_pass(ctx, first, run)

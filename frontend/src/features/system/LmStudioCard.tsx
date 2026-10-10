@@ -22,9 +22,22 @@ import { names } from "./lmStudioAddress";
 
 type Link = Schemas["LmStudioLinkOut"];
 type Tried = Schemas["LmStudioTestOut"];
+type Kind = NonNullable<Schemas["LmStudioChoice"]["kind"]>;
 
-/** Where LM Studio runs: this computer, or another one of the user's network, tried
- * before it is chosen; the addresses used before stay one click away. */
+// « auto »: found out, LM Studio first, then an OpenAI-compatible server.
+const KINDS: readonly Kind[] = ["auto", "lmstudio", "openai"];
+const DEFAULT_PARALLEL = 4;
+const MAX_PARALLEL = 32;
+
+/** The requests sent at once, as typed, kept within what the server accepts. */
+function requestsOf(typed: string): number {
+  const value = Math.round(Number(typed));
+  return Number.isFinite(value) && value >= 1 ? Math.min(value, MAX_PARALLEL) : DEFAULT_PARALLEL;
+}
+
+/** The model server: LM Studio on this computer by default, or another address (LM Studio
+ * elsewhere, or a server compatible with OpenAI's API such as vLLM), tried before it is
+ * chosen; the addresses used before stay one click away. */
 export function LmStudioCard() {
   const { t } = useTranslation();
   const link = useLmStudioLink();
@@ -57,16 +70,31 @@ function LmStudioForm({ link }: { link: Link }) {
   const [elsewhere, setElsewhere] = useState(link.custom);
   const [address, setAddress] = useState(link.custom ? link.url : "");
   const [token, setToken] = useState("");
+  const [kind, setKind] = useState<Kind>(link.custom ? (link.kind ?? "auto") : "auto");
+  const [parallel, setParallel] = useState(String(link.parallel ?? DEFAULT_PARALLEL));
+  const [vision, setVision] = useState(link.vision);
+  const thereHintId = useId();
   const addressId = useId();
   const addressHintId = useId();
   const tokenId = useId();
   const tokenHintId = useId();
+  const parallelId = useId();
+  const parallelHintId = useId();
+  const visionId = useId();
+  const visionHintId = useId();
+  const openai = kind === "openai";
 
-  // An empty token field keeps the token remembered for the address.
-  const choice = (): Schemas["LmStudioChoice"] => ({
-    address: elsewhere ? address.trim() : null,
-    ...(elsewhere && token.trim() ? { token: token.trim() } : {}),
-  });
+  // An empty token field keeps the token remembered for the address; the requests at once and
+  // the images only matter to an OpenAI-compatible server.
+  const choice = (): Schemas["LmStudioChoice"] =>
+    elsewhere
+      ? {
+          address: address.trim(),
+          kind,
+          ...(token.trim() ? { token: token.trim() } : {}),
+          ...(openai ? { parallel: requestsOf(parallel), vision } : {}),
+        }
+      : { address: null };
   const apply = (body: Schemas["LmStudioChoice"]): void => {
     choose.mutate(body, {
       onSuccess: (saved) => toast.success(t("system.lmstudioLink.saved", { url: saved.url })),
@@ -78,6 +106,7 @@ function LmStudioForm({ link }: { link: Link }) {
     apply(choice());
   };
   const tokenKept = link.past.some((past) => past.has_token && names(address, past.url));
+  const inUse = link.found ?? link.kind; // the kind that answered, else the one said
 
   return (
     <div className="grid gap-5">
@@ -87,6 +116,9 @@ function LmStudioForm({ link }: { link: Link }) {
         <Badge variant="secondary">
           {t(link.local ? "system.lmstudioLink.thisComputer" : "system.lmstudioLink.otherComputer")}
         </Badge>
+        {inUse ? (
+          <Badge variant="outline">{t(`system.lmstudioLink.kindName.${inUse}`)}</Badge>
+        ) : null}
         {models.isPending ? null : (
           <span role="status" className={models.isError ? "text-destructive" : "text-brand-teal"}>
             {t(models.isError ? "system.lmstudioLink.silent" : "system.lmstudioLink.answers")}
@@ -110,21 +142,48 @@ function LmStudioForm({ link }: { link: Link }) {
             />
             {t("system.lmstudioLink.here", { url: link.default_url })}
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="lmstudio-where"
-              checked={elsewhere}
-              onChange={() => {
-                setElsewhere(true);
-                test.reset();
-              }}
-              className="accent-primary"
-            />
-            {t("system.lmstudioLink.there")}
-          </label>
+          <div className="grid gap-0.5">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="lmstudio-where"
+                checked={elsewhere}
+                aria-describedby={thereHintId}
+                onChange={() => {
+                  setElsewhere(true);
+                  test.reset();
+                }}
+                className="accent-primary"
+              />
+              {t("system.lmstudioLink.there")}
+            </label>
+            <p id={thereHintId} className="text-muted-foreground pl-6 text-xs">
+              {t("system.lmstudioLink.thereHint")}
+            </p>
+          </div>
           {elsewhere ? (
             <div className="grid gap-3 pl-6">
+              <fieldset className="grid gap-1.5">
+                <legend className="mb-1 text-sm font-medium">
+                  {t("system.lmstudioLink.kind.label")}
+                </legend>
+                {KINDS.map((option) => (
+                  <label key={option} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="lmstudio-kind"
+                      value={option}
+                      checked={kind === option}
+                      onChange={() => {
+                        setKind(option);
+                        test.reset();
+                      }}
+                      className="accent-primary"
+                    />
+                    {t(`system.lmstudioLink.kind.${option}`)}
+                  </label>
+                ))}
+              </fieldset>
               <div className="grid gap-1">
                 <Label htmlFor={addressId}>{t("system.lmstudioLink.address")}</Label>
                 <Input
@@ -132,7 +191,7 @@ function LmStudioForm({ link }: { link: Link }) {
                   aria-describedby={addressHintId}
                   value={address}
                   required
-                  placeholder="192.168.1.20"
+                  placeholder={openai ? "192.168.1.20:8000" : "192.168.1.20"}
                   autoComplete="off"
                   spellCheck={false}
                   onChange={(event) => {
@@ -142,7 +201,11 @@ function LmStudioForm({ link }: { link: Link }) {
                   className="max-w-xs font-mono"
                 />
                 <p id={addressHintId} className="text-muted-foreground text-xs">
-                  {t("system.lmstudioLink.addressHint")}
+                  {t(
+                    openai
+                      ? "system.lmstudioLink.addressHintOpenai"
+                      : "system.lmstudioLink.addressHint",
+                  )}
                 </p>
               </div>
               <div className="grid gap-1">
@@ -163,6 +226,50 @@ function LmStudioForm({ link }: { link: Link }) {
                   {t(tokenKept ? "system.lmstudioLink.tokenKept" : "system.lmstudioLink.tokenHint")}
                 </p>
               </div>
+              {openai ? (
+                <>
+                  <div className="grid gap-1">
+                    <Label htmlFor={parallelId}>{t("system.lmstudioLink.parallel")}</Label>
+                    <Input
+                      id={parallelId}
+                      aria-describedby={parallelHintId}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={MAX_PARALLEL}
+                      step={1}
+                      value={parallel}
+                      onChange={(event) => {
+                        setParallel(event.target.value);
+                        test.reset();
+                      }}
+                      className="w-24 tabular-nums"
+                    />
+                    <p id={parallelHintId} className="text-muted-foreground text-xs">
+                      {t("system.lmstudioLink.parallelHint")}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <input
+                      id={visionId}
+                      type="checkbox"
+                      checked={vision}
+                      aria-describedby={visionHintId}
+                      onChange={(event) => {
+                        setVision(event.target.checked);
+                        test.reset();
+                      }}
+                      className="accent-primary mt-0.5 size-4"
+                    />
+                    <div className="grid gap-1">
+                      <Label htmlFor={visionId}>{t("system.lmstudioLink.vision")}</Label>
+                      <p id={visionHintId} className="text-muted-foreground text-xs">
+                        {t("system.lmstudioLink.visionHint")}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : null}
               <p className="text-warning text-xs">{t("system.lmstudioLink.privacy")}</p>
             </div>
           ) : null}
@@ -207,6 +314,7 @@ function LmStudioForm({ link }: { link: Link }) {
                 current={link.custom && past.url === link.url}
                 busy={choose.isPending}
                 onUse={() => {
+                  // The kind and the settings saved for that address come back with it.
                   apply({ address: past.url });
                 }}
               />
@@ -220,22 +328,31 @@ function LmStudioForm({ link }: { link: Link }) {
   );
 }
 
+/** What answered at the address: LM Studio and the vision models it has loaded, or an
+ * OpenAI-compatible server, the vision models it serves and whether they took a test image. */
 function TestResult({ tried }: { tried: Tried }) {
   const { t } = useTranslation();
   if (!tried.ok) {
     return <span className="text-destructive">{tried.error}</span>;
   }
+  const serves = tried.kind === "openai";
   const loaded = tried.loaded ?? [];
   return (
     <span className="text-brand-teal">
-      {t("system.lmstudioLink.ok", {
+      {t(serves ? "system.lmstudioLink.okOpenai" : "system.lmstudioLink.ok", {
         url: tried.url,
         count: tried.models,
         vision: tried.vision_models,
       })}{" "}
       {loaded.length > 0
-        ? t("system.lmstudioLink.loaded", { models: loaded.join(", ") })
-        : t("system.lmstudioLink.noneLoaded")}
+        ? t(serves ? "system.lmstudioLink.served" : "system.lmstudioLink.loaded", {
+            models: loaded.join(", "),
+          })
+        : t(serves ? "system.lmstudioLink.noneServed" : "system.lmstudioLink.noneLoaded")}
+      {tried.images === true ? <> {t("system.lmstudioLink.imagesOk")}</> : null}
+      {tried.images === false ? (
+        <span className="text-warning-ink"> {t("system.lmstudioLink.imagesRefused")}</span>
+      ) : null}
     </span>
   );
 }
@@ -261,6 +378,9 @@ function PastConnection({
     <li className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
       <span className="flex min-w-0 flex-wrap items-center gap-2">
         <span className="font-mono break-all">{past.url}</span>
+        {past.kind === "openai" ? (
+          <Badge variant="outline">{t("system.lmstudioLink.kindName.openai")}</Badge>
+        ) : null}
         {past.local ? (
           <Badge variant="secondary">{t("system.lmstudioLink.thisComputer")}</Badge>
         ) : null}

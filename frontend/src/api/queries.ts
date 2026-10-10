@@ -543,7 +543,8 @@ export function useLmModels() {
   });
 }
 
-/** Where LM Studio runs: the address in use and the ones used before. */
+/** The model server (LM Studio, or an OpenAI-compatible server such as vLLM): the address in
+ * use, its kind and settings, and the ones used before. */
 export function useLmStudioLink() {
   return useQuery({
     queryKey: queryKeys.lmStudioLink,
@@ -551,7 +552,7 @@ export function useLmStudioLink() {
   });
 }
 
-/** Everything read from LM Studio is read again once its address changed. */
+/** Everything read from the model server is read again once its address changed. */
 function useLmStudioMoved() {
   const queryClient = useQueryClient();
   return async (link: Schemas["LmStudioLinkOut"]): Promise<void> => {
@@ -564,7 +565,7 @@ function useLmStudioMoved() {
   };
 }
 
-/** Talk to the LM Studio at this address from now on (no address: this computer's). */
+/** Talk to the model server at this address from now on (no address: the installation's own). */
 export function useChooseLmStudio() {
   const moved = useLmStudioMoved();
   return useMutation({
@@ -574,7 +575,7 @@ export function useChooseLmStudio() {
   });
 }
 
-/** Whether an LM Studio answers at an address, without choosing it. */
+/** Whether a model server answers at an address, and which kind, without choosing it. */
 export function useTestLmStudio() {
   return useMutation({
     mutationFn: (body: Schemas["LmStudioChoice"]) =>

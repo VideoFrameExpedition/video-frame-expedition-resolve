@@ -88,6 +88,10 @@ RELEASE_TIMEOUT_S = 20.0
 RELEASE_SLACK_MIB = 256
 REFERENCE_KINDS = frozenset({Category.PERSON.value, Category.MAMMAL.value, Category.BIRD.value})
 INTERRUPTED = "Interrompu par l'arrêt de l'application"
+NEEDS_LMSTUDIO = (
+    "Le banc d'essai demande LM Studio : il charge et décharge les modèles un par un, ce "
+    "qu'un serveur compatible OpenAI ne permet pas."
+)
 
 
 @dataclass(slots=True)
@@ -375,6 +379,8 @@ async def _run(run: _Run) -> tuple[JobStatus, str | None]:
     tools, data = run.tools, run.data
     data.error = None
     catalogue = {model.key: model for model in await tools.lmstudio.list_models()}
+    if tools.lmstudio.serves_its_models:  # nothing to load nor unload there
+        raise VfeError(NEEDS_LMSTUDIO)
     data.models = [_model_run(key, catalogue.get(key)) for key in data.model_keys]
     for previous in data.previous or []:
         previous.restored, previous.error = None, None

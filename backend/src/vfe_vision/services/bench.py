@@ -97,6 +97,9 @@ class BenchOverview(BaseModel):
     loaded: list[str] = []  # the language models loaded now: unloaded for the test, then back
     running_jobs: int = 0  # jobs running now: the test waits for them to end
     active_run_id: str | None = None
+    # An OpenAI-compatible server (vLLM…) serves its models itself: the bench, which loads and
+    # unloads them one by one, needs LM Studio.
+    needs_lmstudio: bool = False
 
 
 class BenchAnswer(BaseModel):
@@ -234,6 +237,9 @@ async def overview(c: AppContainer) -> BenchOverview:
     except VfeError as exc:
         result.lmstudio_error = exc.detail
         return result
+    if c.lmstudio.serves_its_models:
+        result.needs_lmstudio = True
+        return result
     vision = sorted(
         (model for model in models if model.vision),
         key=lambda model: (model.size_bytes or 0, model.key),
@@ -246,7 +252,8 @@ async def overview(c: AppContainer) -> BenchOverview:
 # ------------------------------------------------------------------------------ a run
 async def start(c: AppContainer, keys: list[str], images: int) -> BenchRunView:
     """Queue a run on these models (their LM Studio keys), smallest first. 409 while another run
-    is active or when the library has no frame to show; 422 for a model LM Studio does not
+    is active, when the library has no frame to show or when the model server is not LM Studio;
+    422 for a model LM Studio does not
     hold or that cannot see; 503 when LM Studio does not answer."""
     wanted = list(dict.fromkeys(key.strip() for key in keys if key.strip()))
     if not wanted:
@@ -254,6 +261,8 @@ async def start(c: AppContainer, keys: list[str], images: int) -> BenchRunView:
     if len(wanted) > MAX_MODELS:
         raise InvalidInputError(f"Au plus {MAX_MODELS} modèles par test.")
     by_key = {model.key: model for model in await c.lmstudio.list_models()}
+    if c.lmstudio.serves_its_models:
+        raise ConflictError(bench_job.NEEDS_LMSTUDIO)
     unknown = [key for key in wanted if key not in by_key]
     if unknown:
         raise InvalidInputError(f"Modèle introuvable dans LM Studio : {', '.join(unknown)}")

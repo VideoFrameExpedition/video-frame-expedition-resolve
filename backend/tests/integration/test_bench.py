@@ -13,6 +13,7 @@ import pytest
 import sqlalchemy as sa
 from fastapi.testclient import TestClient
 
+from tests.conftest import FakeVllm
 from tests.fakes.bench import CAT, GEMMA, LARGE, SMALL, TEXT_ONLY, BenchLmStudio, FakeVram
 from tests.fakes.context import FakeGeocoder, FakeWeather
 from tests.fakes.library import Library, build_library
@@ -413,6 +414,39 @@ async def test_what_can_be_tested(settings: Settings, db: Database, tmp_path: Pa
 
     lm.down = True
     assert (await bench.overview(c)).lmstudio_error
+
+
+async def test_the_bench_needs_lm_studio(
+    settings: Settings, db: Database, tmp_path: Path, fake_vllm: FakeVllm
+) -> None:
+    """An OpenAI-compatible server (vLLM) serves its models itself: the bench, which loads and
+    unloads them one by one, says it needs LM Studio and starts nothing."""
+    c = AppContainer(
+        settings=settings,
+        db=db,
+        artifacts=ArtifactStore(settings.artifacts_dir),
+        ffmpeg=Ffmpeg(settings.ffmpeg_path, settings.ffprobe_path),
+        lmstudio=fake_vllm.client(),
+    )
+    _library(settings, db, tmp_path / "rushs")
+    overview = await bench.overview(c)
+    assert overview.needs_lmstudio
+    assert (overview.models, overview.lmstudio_error) == ([], None)
+    with pytest.raises(ConflictError, match="demande LM Studio"):
+        await bench.start(c, ["Qwen/Qwen3-VL-8B-Instruct"], 8)
+    assert queue.claim_next(c.db, 1) is None
+
+    # A run queued while LM Studio answered, run after the switch: it fails with the same words.
+    lm = BenchLmStudio(loaded=())
+    run_id, job = await _queued(_container(settings, db, lm), [SMALL])
+    tools = BenchTools(c.db, c.artifacts, fake_vllm.client(), FakeVram(lm), settle_s=0.0)
+    with pytest.raises(VfeError, match="demande LM Studio"):
+        await run_bench(tools, job, cancel=CancelToken(), progress=lambda _f, _m: None)
+    view = bench.get_run(c, run_id)
+    assert view.status == BenchRunStatus.FAILED
+    assert "demande LM Studio" in (view.error or "")
+    assert (lm.loads, lm.unloads) == ([], [])
+    assert not any("load" in path for path in fake_vllm.requested_paths)
 
 
 async def test_a_run_whose_job_ended_without_it_is_settled(

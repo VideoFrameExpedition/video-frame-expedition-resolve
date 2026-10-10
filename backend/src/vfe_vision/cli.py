@@ -367,10 +367,12 @@ def worker() -> None:
 
 @app.command(
     help=tr(
-        "Vérifie l'environnement : ffmpeg, ExifTool, LM Studio, GPU, modules natifs, stockage."
+        "Vérifie l'environnement : ffmpeg, ExifTool, serveur de modèles (LM Studio…), GPU, "
+        "modules natifs, stockage."
         "\n\nAvec --vision, mesure d'abord comment le modèle de vision chargé écrit ses "
         "positions : par l'application si elle tourne, sinon directement.",
-        "Checks the environment: ffmpeg, ExifTool, LM Studio, GPU, native modules, storage."
+        "Checks the environment: ffmpeg, ExifTool, model server (LM Studio…), GPU, native "
+        "modules, storage."
         "\n\nWith --vision, first measures how the loaded vision model writes its positions: "
         "through the application when it runs, otherwise directly.",
     )
@@ -412,7 +414,8 @@ def doctor(
         ),
     ] = False,
 ) -> None:
-    """Vérifie l'environnement : ffmpeg, ExifTool, LM Studio, GPU, modules natifs, stockage.
+    """Vérifie l'environnement : ffmpeg, ExifTool, serveur de modèles, GPU, modules natifs,
+    stockage.
 
     Avec --vision, mesure d'abord comment le modèle de vision chargé écrit ses positions :
     par l'application si elle tourne, sinon directement. Avec --binaries, seulement les fichiers
@@ -496,17 +499,21 @@ class _Calibration:
         return self.error is None and profile is not None and profile.grounding.enabled
 
 
+NO_VISION_MODEL_FR = (
+    "Aucun modèle de vision chargé dans LM Studio, ou servi par le serveur de modèles."
+)
+NO_VISION_MODEL_EN = "No vision model loaded in LM Studio, or served by the model server."
+
+
 def _no_model(status: VisionStatus) -> str | None:
     if status.model is not None:
         return None
     if status.lmstudio_error is not None:
         return tr(
-            f"LM Studio injoignable : {status.lmstudio_error}",
-            f"LM Studio cannot be reached: {status.lmstudio_error}",
+            f"Serveur de modèles injoignable : {status.lmstudio_error}",
+            f"The model server cannot be reached: {status.lmstudio_error}",
         )
-    return tr(
-        "Aucun modèle de vision chargé dans LM Studio.", "No vision model loaded in LM Studio."
-    )
+    return tr(NO_VISION_MODEL_FR, NO_VISION_MODEL_EN)
 
 
 def _vision_doctor(settings: Settings, *, force: bool) -> _Calibration:
@@ -607,13 +614,7 @@ async def _vision_inline(settings: Settings, force: bool) -> _Calibration:
             models = await container.lmstudio.list_models()
             picked = pick_vision_instance(models, prefs.vision_model)
             if picked is None:
-                return _Calibration(
-                    status,
-                    tr(
-                        "Aucun modèle de vision chargé dans LM Studio.",
-                        "No vision model loaded in LM Studio.",
-                    ),
-                )
+                return _Calibration(status, tr(NO_VISION_MODEL_FR, NO_VISION_MODEL_EN))
             model, instance = picked
             typer.echo(
                 tr(f"Calibrage de {model.display_name}…", f"Calibrating {model.display_name}…"),

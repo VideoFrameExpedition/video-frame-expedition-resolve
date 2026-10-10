@@ -1,14 +1,30 @@
-"""LM Studio model catalogue (native REST ``GET /api/v1/models``, completed by
-``GET /api/v0/models`` for the models loaded from another variant)."""
+"""Model catalogue: LM Studio's native REST ``GET /api/v1/models`` (completed by
+``GET /api/v0/models`` for the models loaded from another variant), or an OpenAI-compatible
+server's ``GET /v1/models`` (vLLM…), where every model listed is served, hence loaded."""
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
+from vfe_vision.adapters.lmstudio.budget import UNKNOWN_CONTEXT
+
 # LM Studio's own number of parallel requests for a model it loads (and the model bench's).
 DEFAULT_PARALLEL = 4
+FILL_RATIO = 0.9  # of the context, reserved by the requests in flight
+
+# In a served model's name: the size ("30B", "30B-A3B" for a mixture of experts, "500M") and
+# the quantization ("AWQ", "FP8", "Q4_K_M"…), as LM Studio says them for its own models.
+_PARAMS = re.compile(
+    r"(?<![a-z0-9.])(\d+(?:\.\d+)?)([bm])(?:-a(\d+(?:\.\d+)?)b)?(?![a-z0-9])", re.I
+)
+_QUANT = re.compile(
+    r"(?<![a-z0-9])(i?q\d(?:_[a-z0-9]{1,3}){0,2}|awq|gptq(?:-int\d)?|nvfp4|mxfp4|fp8|fp4|"
+    r"int4|int8|w\d{1,2}a\d{1,2}|bf16|fp16|f16)(?![a-z0-9])",
+    re.I,
+)
 
 
 class LoadedInstance(BaseModel):
@@ -17,6 +33,9 @@ class LoadedInstance(BaseModel):
     id: str
     context_length: int | None = None
     parallel: int | None = None
+    # LM Studio shares one context between its parallel requests; an OpenAI-compatible
+    # server such as vLLM gives each request the whole context and queues what does not fit.
+    shared_context: bool = True
 
 
 class ModelInfo(BaseModel):
@@ -73,6 +92,78 @@ def parse_models(payload: dict[str, Any]) -> list[ModelInfo]:
             )
         )
     return models
+
+
+def parse_openai_models(payload: dict[str, Any], *, parallel: int, vision: bool) -> list[ModelInfo]:
+    """The models an OpenAI-compatible server lists (``{"data": [{"id", "max_model_len"}]}``).
+
+    Each one is served, so loaded, with its whole context per request. The server does not
+    say whether a model sees images: ``vision`` is the user's setting for this server (an
+    embedding model never does). Family, size and quantization are read from the name, for the
+    model bench's colours.
+    """
+    models: list[ModelInfo] = []
+    for raw in payload.get("data") or []:
+        if not isinstance(raw, dict) or not isinstance(raw.get("id"), str) or not raw["id"]:
+            continue
+        key = str(raw["id"])
+        context = raw.get("max_model_len")
+        context = context if isinstance(context, int) and context > 0 else None
+        embedding = "embed" in key.lower()
+        publisher, _, name = key.rpartition("/")
+        models.append(
+            ModelInfo(
+                key=key,
+                display_name=name or key,
+                type="embedding" if embedding else "llm",
+                publisher=publisher.split("/")[-1] or None,
+                params=params_in(name or key),
+                quantization=quantization_in(name or key),
+                max_context_length=context,
+                vision=vision and not embedding,
+                loaded_instances=(
+                    LoadedInstance(
+                        id=key, context_length=context, parallel=parallel, shared_context=False
+                    ),
+                ),
+            )
+        )
+    return models
+
+
+def params_in(name: str) -> str | None:
+    """The size a model's name gives: ``Qwen3-VL-30B-A3B-Instruct`` → ``30B-A3B``."""
+    found = _PARAMS.search(name)
+    if found is None:
+        return None
+    size = f"{found.group(1)}{found.group(2).upper()}"
+    return f"{size}-A{found.group(3)}B" if found.group(3) else size
+
+
+def quantization_in(name: str) -> str | None:
+    """The quantization a model's name gives: ``…-Instruct-AWQ`` → ``AWQ``; None if it says
+    none (full precision, as served)."""
+    found = _QUANT.search(name)
+    return found.group(1).upper() if found else None
+
+
+def budget_of(instance: LoadedInstance) -> tuple[int, int]:
+    """The token budget of an instance: tokens the requests in flight may hold together, and
+    how many run at once. LM Studio's requests share its context; each of an OpenAI-compatible
+    server's has the whole of it (the server queues what does not fit its cache)."""
+    context = instance.context_length or UNKNOWN_CONTEXT
+    parallel = max(1, instance.parallel or 1)
+    capacity = int(context * FILL_RATIO) * (1 if instance.shared_context else parallel)
+    return max(1024, capacity), parallel
+
+
+def request_tokens(instance: LoadedInstance) -> int:
+    """What one request can hold while every other one runs: its share of a shared context,
+    or the whole context when each request has its own."""
+    context = instance.context_length or UNKNOWN_CONTEXT
+    if not instance.shared_context:
+        return context
+    return context // max(1, instance.parallel or 1)
 
 
 def hides_its_instance(model: ModelInfo) -> bool:

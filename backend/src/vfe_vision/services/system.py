@@ -307,30 +307,41 @@ async def _lmstudio(c: AppContainer) -> list[Check]:
         checks.append(
             Check(
                 id="lmstudio_remote",
-                label="LM Studio distant",
+                label="Serveur de modèles distant",
                 status=CheckStatus.WARNING,
                 detail=f"{url} n'est pas une adresse locale : les images y seront envoyées.",
-                hint="Adresse choisie dans la carte « LM Studio » de cette page. Sur un réseau "
-                "local, les images y voyagent sans chiffrement (Tailscale, lui, chiffre).",
+                hint="Adresse choisie dans la carte « Serveur de modèles » de cette page. Sur un "
+                "réseau local, les images y voyagent sans chiffrement (Tailscale, lui, chiffre).",
             )
         )
     try:
         models = await c.lmstudio.list_models()
     except VfeError as exc:
+        served = c.lmstudio.serves_its_models
+        if served:
+            hint = (
+                "Vérifiez l'adresse dans la carte « Serveur de modèles » de cette page, et que le "
+                "serveur tourne (vLLM : vllm serve …)."
+            )
+        elif remote:
+            hint = (
+                "Vérifiez l'adresse dans la carte « Serveur de modèles » de cette page, et que "
+                "l'autre ordinateur est allumé."
+            )
+        else:
+            hint = "Ouvrez LM Studio → Developer → Start server, puis chargez un modèle de vision."
         return [
             *checks,
             Check(
                 id="lmstudio",
-                label="LM Studio",
+                label="Serveur de modèles" if served else "LM Studio",
                 status=CheckStatus.ERROR,
                 detail=exc.detail,
-                hint="Vérifiez l'adresse dans la carte « LM Studio » de cette page, et que "
-                "l'autre ordinateur est allumé."
-                if remote
-                else "Ouvrez LM Studio → Developer → Start server, "
-                "puis chargez un modèle de vision.",
+                hint=hint,
             ),
         ]
+    served = c.lmstudio.serves_its_models
+    label = "Serveur de modèles" if served else "LM Studio"
     prefs = load_preferences(c.db)
     picked = pick_vision_instance(models, prefs.vision_model)
     vision_models = [m.key for m in models if m.vision]
@@ -338,11 +349,19 @@ async def _lmstudio(c: AppContainer) -> list[Check]:
         checks.append(
             Check(
                 id="lmstudio",
-                label="LM Studio",
+                label=label,
                 status=CheckStatus.WARNING,
-                detail=f"Serveur joignable, aucun modèle de vision chargé ({len(vision_models)} "
+                detail=(
+                    f"Serveur joignable, aucun modèle de vision servi ({len(models)} modèle(s)). "
+                    "S'il voit les images, cochez « Ce serveur voit les images » dans la carte "
+                    "« Serveur de modèles »."
+                )
+                if served
+                else f"Serveur joignable, aucun modèle de vision chargé ({len(vision_models)} "
                 "disponibles).",
-                hint="Chargez un modèle de vision (ex. qwen/qwen3-vl-8b) entièrement sur le GPU.",
+                hint="Servez un modèle de vision (vLLM : vllm serve Qwen/Qwen3-VL-8B-Instruct)."
+                if served
+                else "Chargez un modèle de vision (ex. qwen/qwen3-vl-8b) entièrement sur le GPU.",
             )
         )
         return checks
@@ -350,14 +369,20 @@ async def _lmstudio(c: AppContainer) -> list[Check]:
     context = instance.context_length or 0
     checks.append(await anyio.to_thread.run_sync(_vision_profile_check, c, model))
     status = CheckStatus.WARNING if context and context < LOW_CONTEXT_TOKENS else CheckStatus.OK
+    what = "servi" if served else "chargé"
     checks.append(
         Check(
             id="lmstudio",
-            label="LM Studio",
+            label=label,
             status=status,
-            detail=f"{model.display_name} chargé (instance « {instance.id} », contexte "
+            detail=f"{model.display_name} {what} (instance « {instance.id} », contexte "
             f"{context or '?'} tokens, {instance.parallel or 1} requêtes parallèles)",
-            hint="Contexte court : augmentez-le dans LM Studio si la VRAM le permet."
+            hint=(
+                "Contexte court : relancez le serveur avec un --max-model-len plus grand si la "
+                "mémoire le permet."
+                if served
+                else "Contexte court : augmentez-le dans LM Studio si la VRAM le permet."
+            )
             if status == CheckStatus.WARNING
             else None,
         )
@@ -463,7 +488,9 @@ async def request_probe(c: AppContainer) -> Job:
         raise ServiceUnavailableError(status.lmstudio_error)
     if status.model is None:
         raise ConflictError(
-            "Aucun modèle de vision chargé dans LM Studio : chargez-en un, puis recalibrez."
+            "Le serveur de modèles ne sert aucun modèle de vision : servez-en un, puis recalibrez."
+            if c.lmstudio.serves_its_models
+            else "Aucun modèle de vision chargé dans LM Studio : chargez-en un, puis recalibrez."
         )
     active = await anyio.to_thread.run_sync(queue.active_job, c.db, JobKind.PROBE_VISION)
     if active is not None:

@@ -19,7 +19,7 @@ from pydantic import ValidationError
 from vfe_vision.adapters.imaging import draw_probe_scene
 from vfe_vision.adapters.lmstudio import prompts
 from vfe_vision.adapters.lmstudio.budget import TokenBudget
-from vfe_vision.adapters.lmstudio.catalog import LoadedInstance, ModelInfo
+from vfe_vision.adapters.lmstudio.catalog import LoadedInstance, ModelInfo, budget_of
 from vfe_vision.adapters.lmstudio.client import (
     ChatImage,
     LmStudioClient,
@@ -179,7 +179,7 @@ async def probe(
 ) -> VisionProfile:
     """Ask the loaded instance to box the shapes of both scenes, and decide (never loads a
     model: the instance is the one already loaded). A cancelled job stops at once."""
-    await budget.resize(int((instance.context_length or 8192) * 0.9), instance.parallel or 1)
+    await budget.resize(*budget_of(instance))
     started = datetime.now(UTC)
     rendered = [await anyio.to_thread.run_sync(draw_probe_scene, scene) for scene in SCENES]
     target = _Target(client, budget, model, instance)

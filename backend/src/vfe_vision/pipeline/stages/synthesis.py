@@ -25,8 +25,13 @@ import anyio
 from pydantic import BaseModel
 
 from vfe_vision.adapters.lmstudio import prompts
-from vfe_vision.adapters.lmstudio.budget import estimate_text_tokens
-from vfe_vision.adapters.lmstudio.catalog import LoadedInstance, ModelInfo
+from vfe_vision.adapters.lmstudio.budget import UNKNOWN_CONTEXT, estimate_text_tokens
+from vfe_vision.adapters.lmstudio.catalog import (
+    FILL_RATIO,
+    LoadedInstance,
+    ModelInfo,
+    budget_of,
+)
 from vfe_vision.adapters.lmstudio.client import LmStudioUnavailableError
 from vfe_vision.adapters.lmstudio.schema import field_guide
 from vfe_vision.core.errors import VfeError
@@ -221,12 +226,16 @@ class SynthesisStage(Stage):
             return skip
         picked = await pick_vision_model(ctx)
         if picked is None:
-            return StageOutcome.waiting_for_lmstudio("LM Studio injoignable ou aucun modèle chargé")
+            return StageOutcome.waiting_for_lmstudio(
+                ctx.tools.lmstudio.unavailable_note(vision=False)
+            )
         model, instance = picked
         language = ctx.prefs.language
         plan = await anyio.to_thread.run_sync(build_plan, facts, language)
-        capacity = int((instance.context_length or 8192) * 0.9)
-        await ctx.tools.lm_budget.resize(capacity, instance.parallel or 1)
+        # One request may fill the context (the synthesis runs alone); the budget follows the
+        # instance (a shared context, or one per request).
+        capacity = int((instance.context_length or UNKNOWN_CONTEXT) * FILL_RATIO)
+        await ctx.tools.lm_budget.resize(*budget_of(instance))
         ask = _Asker(ctx, model, instance)
         try:
             texts, strategy, variant = await _write(ask, plan, capacity)

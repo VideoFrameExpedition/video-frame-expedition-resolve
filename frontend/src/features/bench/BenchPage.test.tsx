@@ -81,6 +81,7 @@ function anOverview(patch: Partial<BenchOverview> = {}): BenchOverview {
     loaded: ["Qwen3 VL 4B"],
     running_jobs: 0,
     active_run_id: null,
+    needs_lmstudio: false,
     ...patch,
   };
 }
@@ -396,6 +397,23 @@ describe("BenchPage", () => {
     render(<BenchPage />);
     expect(screen.getByText(/analysez d'abord une vidéo/)).toBeVisible();
     expect(screen.getByRole("button", { name: /Lancer le test/ })).toBeDisabled();
+  });
+
+  it("needs LM Studio to start a test", () => {
+    const { rerender } = render(<BenchPage />);
+    expect(screen.queryByText(/Le banc d'essai demande LM Studio/)).not.toBeInTheDocument();
+
+    // An OpenAI-compatible server cannot load nor unload its models one by one: the notice
+    // alone, no model to tick, no "no vision model" line.
+    overview = anOverview({ needs_lmstudio: true, models: [] });
+    rerender(<BenchPage />);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Le banc d'essai demande LM Studio : il charge et décharge les modèles un par un, ce qu'un serveur compatible OpenAI ne permet pas.",
+    );
+    expect(screen.queryByText(/aucun modèle de vision/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: /Qwen3 VL 4B/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lancer le test" })).toBeDisabled();
+    expect(start).not.toHaveBeenCalled();
   });
 
   it("shows what each model measured", () => {
