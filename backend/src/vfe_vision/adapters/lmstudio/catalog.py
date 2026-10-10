@@ -1,10 +1,14 @@
-"""LM Studio model catalogue (native REST ``GET /api/v1/models``)."""
+"""LM Studio model catalogue (native REST ``GET /api/v1/models``, completed by
+``GET /api/v0/models`` for the models loaded from another variant)."""
 
 from __future__ import annotations
 
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict
+
+# LM Studio's own number of parallel requests for a model it loads (and the model bench's).
+DEFAULT_PARALLEL = 4
 
 
 class LoadedInstance(BaseModel):
@@ -29,6 +33,7 @@ class ModelInfo(BaseModel):
     max_context_length: int | None = None
     vision: bool = False
     reasoning_options: tuple[str, ...] = ()
+    variants: tuple[str, ...] = ()  # "qwen/qwen3-vl-4b@q4_k_m", "…@q6_k": the downloaded ones
     loaded_instances: tuple[LoadedInstance, ...] = ()
 
     @property
@@ -63,10 +68,43 @@ def parse_models(payload: dict[str, Any]) -> list[ModelInfo]:
                 max_context_length=raw.get("max_context_length"),
                 vision=bool(capabilities.get("vision", False)),
                 reasoning_options=tuple(reasoning.get("allowed_options") or ()),
+                variants=tuple(raw.get("variants") or ()),
                 loaded_instances=instances,
             )
         )
     return models
+
+
+def hides_its_instance(model: ModelInfo) -> bool:
+    """A model of several variants listed without an instance: it may be loaded from one of
+    the others (see ``with_other_variants``)."""
+    return len(model.variants) > 1 and not model.loaded_instances
+
+
+def with_other_variants(models: list[ModelInfo], older: dict[str, Any]) -> list[ModelInfo]:
+    """The instances ``GET /api/v1/models`` leaves out, taken from ``GET /api/v0/models``.
+
+    LM Studio lists the instances of a model under its selected variant only: loaded from
+    another one (Q6_K when Q4_K_M is selected), the model shows none. The older list still
+    says it is loaded, under the model's key, with its context but not its number of parallel
+    requests: LM Studio's default is taken. A request beyond the real number waits in
+    LM Studio's queue, and the token budget keeps them all within the context they share.
+    """
+    contexts: dict[str, int | None] = {}
+    for raw in older.get("data") or []:
+        if isinstance(raw, dict) and raw.get("state") == "loaded" and raw.get("id"):
+            context = raw.get("loaded_context_length")
+            contexts[str(raw["id"])] = context if isinstance(context, int) else None
+    completed: list[ModelInfo] = []
+    for model in models:
+        if not hides_its_instance(model) or model.key not in contexts:
+            completed.append(model)
+            continue
+        instance = LoadedInstance(
+            id=model.key, context_length=contexts[model.key], parallel=DEFAULT_PARALLEL
+        )
+        completed.append(model.model_copy(update={"loaded_instances": (instance,)}))
+    return completed
 
 
 def pick_vision_instance(

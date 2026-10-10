@@ -158,16 +158,65 @@ function Profile({
   );
 }
 
+/** The models' profiles side by side, the first of the ranking standing out. */
+function Profiles({
+  models,
+  axes,
+  hint,
+  firstApart,
+}: {
+  models: Ranked[];
+  axes: readonly Criterion[];
+  hint: string;
+  firstApart: boolean;
+}) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <div>
+        <h3 className="text-sm font-medium">{t("bench.rank.profiles")}</h3>
+        <p className="text-muted-foreground text-xs">{hint}</p>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        {models.map((model) => (
+          <Profile
+            key={model.row.id}
+            model={model}
+            axes={axes}
+            first={model.place === 1 && firstApart}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
 /** « Ranking »: the tested models ranked, measure by measure and in total, and each one's
  * profile. The total is a weighted mean of points out of 100, on the measures every model has;
- * the user says what matters most (kept in this browser). */
+ * the user says what matters most (kept in this browser). A model tested alone has nothing to
+ * be ranked against: only its profile is drawn, without the speed, which counts against the
+ * fastest model. */
 export function Ranking({ rows }: { rows: BenchRow[] }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const [priority, setPriority] = useState<Priority>(storedPriority);
   const { ranked, counted, left } = rank(rows, priority);
+  const [alone] = ranked;
+  if (ranked.length === 1 && alone) {
+    const axes = CRITERIA.filter((c) => c !== "speed" && alone.points[c] !== undefined);
+    return axes.length >= 3 ? (
+      <section aria-label={t("bench.rank.profiles")} className="grid gap-4">
+        <Profiles
+          models={[{ ...alone, total: null, place: null }]}
+          axes={axes}
+          hint={t("bench.rank.profileAlone")}
+          firstApart={false}
+        />
+      </section>
+    ) : null;
+  }
   if (ranked.length < 2) {
-    return null; // one model: nothing to rank
+    return null;
   }
   const shown = CRITERIA.filter((c) => counted.includes(c) || left.includes(c));
   const name = (criterion: Criterion): string => t(`bench.rank.criteria.${criterion}`);
@@ -243,7 +292,7 @@ export function Ranking({ rows }: { rows: BenchRow[] }) {
           );
         })}
       </ol>
-      <p className="text-muted-foreground max-w-prose text-xs">
+      <p className="text-muted-foreground text-xs">
         {[
           t("bench.rank.totalHint", { measures: counted.map(name).join(", ") }),
           priority !== "balanced" && counted.includes(priority)
@@ -326,7 +375,7 @@ export function Ranking({ rows }: { rows: BenchRow[] }) {
       </div>
       <details className="text-muted-foreground text-xs">
         <summary className="cursor-pointer text-sm">{t("bench.rank.how.title")}</summary>
-        <ul className="mt-2 grid max-w-prose gap-1.5">
+        <ul className="mt-2 grid gap-1.5">
           {(["vram", "speed", "shares", "quality", "total"] as const).map((line) => (
             <li key={line}>{t(`bench.rank.how.${line}`)}</li>
           ))}
@@ -334,22 +383,12 @@ export function Ranking({ rows }: { rows: BenchRow[] }) {
       </details>
 
       {shown.length >= 3 ? (
-        <>
-          <div>
-            <h3 className="text-sm font-medium">{t("bench.rank.profiles")}</h3>
-            <p className="text-muted-foreground text-xs">{t("bench.rank.profilesHint")}</p>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {ranked.map((model) => (
-              <Profile
-                key={model.row.id}
-                model={model}
-                axes={shown}
-                first={model.place === 1 && totalsApart}
-              />
-            ))}
-          </div>
-        </>
+        <Profiles
+          models={ranked}
+          axes={shown}
+          hint={t("bench.rank.profilesHint")}
+          firstApart={totalsApart}
+        />
       ) : null}
     </section>
   );

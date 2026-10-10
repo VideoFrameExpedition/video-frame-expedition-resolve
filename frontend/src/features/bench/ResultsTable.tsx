@@ -14,6 +14,8 @@ import {
   usualContext,
   type BenchRow,
 } from "./benchFormat";
+import { FamilyDot, ParamsChip, QuantChip } from "./CodeBadges";
+import { familyOf } from "./modelCodes";
 
 function Cell({
   main,
@@ -79,8 +81,6 @@ export function ResultsTable({
     const { model, rating, origin } = row;
     const s = model.scores;
     const facts = [
-      model.params,
-      model.quantization,
       formatNumber(fileGigabytes(model.size_bytes), locale, 1, gigabyte),
       model.context_length != null && context !== null && model.context_length !== context
         ? t("bench.results.context", { value: formatNumber(model.context_length, locale) })
@@ -88,10 +88,18 @@ export function ResultsTable({
     ]
       .filter(Boolean)
       .join(" · ");
+    const family = familyOf(model);
     const name = (
       <th scope="row" className="px-3 py-3 text-left align-top font-medium">
-        {model.display_name}
-        <span className="text-muted-foreground block text-xs font-normal">{facts}</span>
+        <span className="flex items-center gap-2" title={family || undefined}>
+          <FamilyDot family={family} />
+          {model.display_name}
+        </span>
+        <span className="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-normal">
+          <ParamsChip params={model.params} />
+          <QuantChip quantization={model.quantization} />
+          <span className="text-muted-foreground">{facts}</span>
+        </span>
         {origin && onOpen ? (
           <button
             type="button"
@@ -272,7 +280,7 @@ export function ResultsTable({
       </div>
       <details className="text-muted-foreground text-xs">
         <summary className="cursor-pointer text-sm">{t("bench.results.help.title")}</summary>
-        <ul className="mt-2 grid max-w-prose gap-1.5">
+        <ul className="mt-2 grid gap-1.5">
           {(["vram", "speed", "answers", "language", "text", "positions", "quality"] as const).map(
             (column) => (
               <li key={column}>{t(`bench.results.help.${column}`)}</li>

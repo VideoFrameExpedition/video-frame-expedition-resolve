@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -136,7 +137,7 @@ def _serve_listening(settings: Settings) -> None:
 
     from vfe_vision.api.app import create_app
     from vfe_vision.api.listen import access_config, open_listeners, plan_listen
-    from vfe_vision.api.server import Server
+    from vfe_vision.api.server import RESTART_EXIT, Server
 
     plan = plan_listen(settings)
     try:
@@ -162,8 +163,9 @@ def _serve_listening(settings: Settings) -> None:
         )
     for notice in access.notices:
         typer.secho(f"  {notice}", err=True, fg="yellow")
+    application = create_app(settings, access=access)
     config = uvicorn.Config(
-        create_app(settings, access=access),
+        application,
         host=settings.host,
         port=settings.port,
         log_config=None,
@@ -171,13 +173,22 @@ def _serve_listening(settings: Settings) -> None:
         server_header=False,
         timeout_graceful_shutdown=5,  # Ctrl+C: requests still open (folder dialog) are cut
     )
-    server = Server(config)
+    server = Server(config, on_stop=application.state.open_streams.close)
+    if os.environ.get("VFE_LAUNCHER"):
+        # run.bat or run.command start it again on RESTART_EXIT: the interface may ask for a
+        # restart (POST /system/restart). Started any other way, it would only stop.
+        application.state.server = server
     try:
         server.run(sockets=listeners.sockets)
     finally:
         listeners.close()
     if not server.started:
         raise typer.Exit(3)
+    if server.restart_requested:
+        typer.echo(
+            tr("Redémarrage demandé depuis l'interface…", "Restart asked from the interface…")
+        )
+        raise typer.Exit(RESTART_EXIT)
 
 
 def _started(url: str) -> str:

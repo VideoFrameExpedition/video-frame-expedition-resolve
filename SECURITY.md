@@ -91,6 +91,14 @@ Video Frame Expedition for DaVinci Resolve is a **local** application: the serve
   application's environment or anything else in the folder. Then they run the new version's
   installation. The installation puts "Video Frame Expedition - update" next to the
   application (Start menu, Applications folder): it opens them.
+- **Export, import and reset of the data** (System page): an export is prepared by a write
+  request (the `X-VFE-Client` header, see above), then downloaded once through an unguessable
+  link; it holds the settings, saved tokens included. An import keeps only the database and the
+  frames from an archive, refuses any path leading out of the data folder, and accepts only a
+  sound database of the application, of a version it knows. The import and the reset are
+  carried out at the next start, before anything opens the database, once a copy of the current
+  one is in the `backups` folder; the restart asked from the interface stops the application as
+  Ctrl+C does, and its launcher (`run.bat`, `run.command`) starts it again.
 
 ## Access from other devices
 

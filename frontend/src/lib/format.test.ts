@@ -27,9 +27,11 @@ describe("formatClock", () => {
 });
 
 describe("formatBytes", () => {
-  it("uses French units", () => {
+  it("uses the units of the language", () => {
     expect(formatBytes(512)).toBe("512\u00a0o");
     expect(formatBytes(50_790_884)).toBe("48,4\u00a0Mo");
+    expect(formatBytes(50_790_884, "en")).toBe("48.4\u00a0MB");
+    expect(formatBytes(2 ** 30, "en")).toBe("1\u00a0GB");
   });
 });
 

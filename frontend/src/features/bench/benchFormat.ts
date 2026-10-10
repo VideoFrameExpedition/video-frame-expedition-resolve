@@ -7,7 +7,7 @@ export type Mark = (typeof MARKS)[number];
 export const ALL_RUNS = "all";
 
 /** FNV-1a: a stable number from a string. */
-function hash(text: string): number {
+export function hash(text: string): number {
   let value = 0x811c9dc5;
   for (let index = 0; index < text.length; index += 1) {
     value ^= text.charCodeAt(index);
@@ -81,16 +81,22 @@ export interface BenchRow {
 
 type Unlabelled = Omit<BenchRow, "label">;
 
-function labelled(rows: Unlabelled[]): BenchRow[] {
+/** Each model's name, told apart from a namesake by its quantization. */
+export function modelLabels(models: BenchModelRun[]): string[] {
   const namesakes = new Map<string, number>();
-  for (const row of rows) {
-    namesakes.set(row.model.display_name, (namesakes.get(row.model.display_name) ?? 0) + 1);
+  for (const model of models) {
+    namesakes.set(model.display_name, (namesakes.get(model.display_name) ?? 0) + 1);
   }
-  return rows.map((row) => {
-    const name = row.model.display_name;
-    const twice = (namesakes.get(name) ?? 0) > 1 && row.model.quantization;
-    return { ...row, label: twice ? `${name} ${row.model.quantization ?? ""}` : name };
+  return models.map((model) => {
+    const name = model.display_name;
+    const twice = (namesakes.get(name) ?? 0) > 1 && model.quantization;
+    return twice ? `${name} ${model.quantization ?? ""}` : name;
   });
+}
+
+function labelled(rows: Unlabelled[]): BenchRow[] {
+  const labels = modelLabels(rows.map((row) => row.model));
+  return rows.map((row, index) => ({ ...row, label: labels[index] ?? row.model.display_name }));
 }
 
 /** The models of one run, in the order they were tested (the smallest first). */
@@ -219,13 +225,14 @@ const overlaps = (a: Box, b: Box): boolean =>
   a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
 /** Where to write the name of each point of a scatter chart: beside it, on the first side
- * where it covers neither another point nor a name already written, inside ``bounds``.
+ * where it covers neither another point nor a name already written, inside ``bounds``; null
+ * where no side is free (the point keeps its tooltip, and the bars below name every model).
  * ``width``: the name's width in pixels. */
 export function placeLabels(
   points: readonly { x: number; y: number; width: number }[],
   bounds: Box,
   { gap = 9, height = 13, radius = 6 } = {},
-): LabelSpot[] {
+): (LabelSpot | null)[] {
   const taken: Box[] = points.map((point) => ({
     left: point.x - radius,
     right: point.x + radius,
@@ -263,7 +270,10 @@ export function placeLabels(
         !taken.some((other) => overlaps(box, other))
       );
     };
-    const spot = candidates.find(fits) ?? candidates[0] ?? { ...point, anchor: "start" };
+    const spot = candidates.find(fits);
+    if (!spot) {
+      return null;
+    }
     taken.push(boxOf(spot));
     return spot;
   });

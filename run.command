@@ -143,8 +143,14 @@ if [ -z "${VFE_NO_BROWSER:-}" ]; then
 fi
 
 # --frozen: the versions of uv.lock, which is never rewritten; --no-dev: no development tools.
-uv run --frozen --no-dev --project backend python -m vfe_vision serve --port "$PORT"
-status=$?
+# Code 75: the interface asked for a restart (an import or a reset of the data): again.
+# VFE_LAUNCHER tells the server so: started any other way, nothing would start it again.
+export VFE_LAUNCHER=run.command
+while :; do
+  uv run --frozen --no-dev --project backend python -m vfe_vision serve --port "$PORT"
+  status=$?
+  [ "$status" -eq 75 ] || break
+done
 # Ctrl+C or a request to stop (SIGINT gives 130, SIGTERM 143): the application stopped as asked.
 case "$status" in
   0 | 130 | 143) exit 0 ;;

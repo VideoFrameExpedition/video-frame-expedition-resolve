@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatBytes } from "@/lib/format";
 
 import { AnalysisFilesCard } from "./AnalysisFilesCard";
+import { DataCard } from "./DataCard";
 import { HardwareCard } from "./HardwareCard";
 import { LanguagesCard } from "./LanguagesCard";
 import { LmStudioCard } from "./LmStudioCard";
@@ -80,6 +81,7 @@ export function SystemPage() {
       <LanguagesCard />
       <AnalysisFilesCard />
       <McpAccessCard />
+      <DataCard />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{t("system.models")}</CardTitle>

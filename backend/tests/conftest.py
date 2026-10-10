@@ -144,6 +144,59 @@ MODELS_PAYLOAD: dict[str, Any] = {
     ]
 }
 
+# LM Studio with a model downloaded in three variants, loaded from one that is not the selected
+# one (Q6_K, Q4_K_M selected): the main list shows no instance (checked against the real server).
+VARIANTS_PAYLOAD: dict[str, Any] = {
+    "models": [
+        {
+            "type": "llm",
+            "publisher": "qwen",
+            "key": "qwen/qwen3-vl-4b",
+            "display_name": "Qwen3 VL 4B",
+            "architecture": "qwen3vl",
+            "quantization": {"name": "Q4_K_M", "bits_per_weight": 4},
+            "size_bytes": 3_333_641_502,
+            "params_string": "4B",
+            "loaded_instances": [],
+            "max_context_length": 262144,
+            "format": "gguf",
+            "capabilities": {"vision": True, "trained_for_tool_use": True},
+            "variants": [
+                "qwen/qwen3-vl-4b@q4_k_m",
+                "qwen/qwen3-vl-4b@q6_k",
+                "qwen/qwen3-vl-4b@q8_0",
+            ],
+            "selected_variant": "qwen/qwen3-vl-4b@q4_k_m",
+        },
+        {
+            "type": "llm",
+            "publisher": "qwen",
+            "key": "qwen/qwen3-vl-8b",
+            "display_name": "Qwen3 VL 8B",
+            "loaded_instances": [],
+            "capabilities": {"vision": True},
+            "variants": ["qwen/qwen3-vl-8b@q8_0"],
+            "selected_variant": "qwen/qwen3-vl-8b@q8_0",
+        },
+    ]
+}
+
+# The older list of the same server (GET /api/v0/models): the model is loaded.
+OLDER_PAYLOAD: dict[str, Any] = {
+    "data": [
+        {
+            "id": "qwen/qwen3-vl-4b",
+            "object": "model",
+            "type": "vlm",
+            "quantization": "Q4_K_M",
+            "state": "loaded",
+            "max_context_length": 262144,
+            "loaded_context_length": 20224,
+        },
+        {"id": "qwen/qwen3-vl-8b", "object": "model", "type": "vlm", "state": "not-loaded"},
+    ]
+}
+
 
 SHOT_ANSWER: dict[str, Any] = {
     "summary": "La mire de test défile puis laisse place à des barres de couleur.",

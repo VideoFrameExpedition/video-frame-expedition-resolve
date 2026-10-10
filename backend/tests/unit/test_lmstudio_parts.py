@@ -9,14 +9,20 @@ import anyio
 import pytest
 from pydantic import BaseModel, ConfigDict, Field
 
-from tests.conftest import MODELS_PAYLOAD
+from tests.conftest import MODELS_PAYLOAD, OLDER_PAYLOAD, VARIANTS_PAYLOAD
 from vfe_vision.adapters.lmstudio import prompts
 from vfe_vision.adapters.lmstudio.budget import (
     TokenBudget,
     estimate_image_tokens,
     estimate_text_tokens,
 )
-from vfe_vision.adapters.lmstudio.catalog import parse_models, pick_vision_instance
+from vfe_vision.adapters.lmstudio.catalog import (
+    DEFAULT_PARALLEL,
+    hides_its_instance,
+    parse_models,
+    pick_vision_instance,
+    with_other_variants,
+)
 from vfe_vision.adapters.lmstudio.schema import field_guide, strict_json_schema
 from vfe_vision.domain.vision import FrameAnalysis
 
@@ -70,6 +76,28 @@ class TestCatalog:
         picked = pick_vision_instance(models, "qwen/qwen3-vl-8b")
         assert picked is not None
         assert picked[1].parallel == 4
+
+    def test_a_model_loaded_from_another_variant_is_loaded(self) -> None:
+        """Q6_K loaded while LM Studio selects Q4_K_M: the main list shows no instance, the
+        older one says the model is loaded."""
+        models = parse_models(VARIANTS_PAYLOAD)
+        assert [m.key for m in models if hides_its_instance(m)] == ["qwen/qwen3-vl-4b"]
+        assert pick_vision_instance(models) is None
+        completed = with_other_variants(models, OLDER_PAYLOAD)
+        picked = pick_vision_instance(completed)
+        assert picked is not None
+        model, instance = picked
+        assert (model.key, instance.id) == ("qwen/qwen3-vl-4b", "qwen/qwen3-vl-4b")
+        # Its parallel requests are not said: LM Studio's default.
+        assert (instance.context_length, instance.parallel) == (20224, DEFAULT_PARALLEL)
+
+    def test_only_a_model_of_several_variants_said_loaded_gets_an_instance(self) -> None:
+        # The 8B has one variant: the main list tells its instances, the older one is not read.
+        older = {"data": [{"id": "qwen/qwen3-vl-8b", "state": "loaded"},
+                          {"id": "qwen/qwen3-vl-4b", "state": "not-loaded"}]}  # fmt: skip
+        models = parse_models(VARIANTS_PAYLOAD)
+        assert not any(model.loaded_instances for model in with_other_variants(models, older))
+        assert with_other_variants(models, {"data": "?"}) == models
 
 
 class TestBudget:

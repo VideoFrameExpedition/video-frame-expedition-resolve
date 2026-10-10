@@ -308,6 +308,76 @@ describe("BenchPage", () => {
     expect(start.mock.calls[0]?.[0]).toEqual({ models: [SMALL, LARGE], images: 24 });
   });
 
+  it("finds the models in a tree of LM Studio's folders, and ticks a whole folder", async () => {
+    const user = userEvent.setup();
+    const inFamily = (key: string, name: string, size: number, family: string) => ({
+      ...model(key, name, size, "ok"),
+      publisher: family,
+    });
+    overview = anOverview({
+      models: [
+        inFamily("qwen3-vl-4b-instruct@q4_k_m", "Qwen3 VL 4B", 2_000, "Qwen3-VL"),
+        inFamily("qwen3-vl-4b-instruct@q6_k", "Qwen3 VL 4B", 3_000, "Qwen3-VL"),
+        inFamily("qwen3-vl-8b-instruct", "Qwen3 VL 8B", 8_000, "Qwen3-VL"),
+        inFamily("gemma-4-e4b-it", "Gemma 4 E4B", 7_000, "Gemma-4"),
+      ],
+      max_models: 2,
+    });
+    render(<BenchPage />);
+    const tree = screen.getByRole("navigation", { name: "Dossiers des modèles de LM Studio" });
+    const all = within(tree).getByRole("button", { name: "Tous les modèles, 4 modèles" });
+    expect(all).toHaveAttribute("aria-current", "page");
+    expect(screen.getAllByRole("checkbox")).toHaveLength(4);
+    expect(screen.getByRole("heading", { name: "Gemma-4" })).toBeVisible(); // grouped by family
+
+    await user.click(within(tree).getByRole("button", { name: "Qwen3-VL, 3 modèles" }));
+    expect(screen.getAllByRole("checkbox")).toHaveLength(3);
+    expect(screen.queryByRole("checkbox", { name: /Gemma 4 E4B/ })).not.toBeInTheDocument();
+    await user.click(within(tree).getByRole("button", { name: "qwen3-vl-4b-instruct, 2 modèles" }));
+    expect(screen.getAllByRole("checkbox")).toHaveLength(2);
+    await user.click(screen.getByRole("button", { name: "Cocher ces 2 modèles" }));
+    expect(screen.getByRole("button", { name: "Lancer le test (2 modèles)" })).toBeEnabled();
+
+    // Two at most: the 8B is not ticked with its family.
+    await user.click(within(tree).getByRole("button", { name: "Qwen3-VL, 3 modèles" }));
+    await user.click(screen.getByRole("button", { name: "Cocher ces 3 modèles" }));
+    expect(screen.getByRole("checkbox", { name: /Qwen3 VL 8B/ })).not.toBeChecked();
+    await user.click(screen.getByRole("button", { name: "Tout décocher ici" }));
+    expect(screen.getByRole("button", { name: "Lancer le test" })).toBeDisabled();
+  });
+
+  it("filters the models and the results by family, parameters and quantization", async () => {
+    const user = userEvent.setup();
+    runs = [aRun()];
+    render(<BenchPage />);
+    const filters = screen.getByRole("group", { name: "Filtres" });
+    // The filters are the legend too: every step, in its colour, with how many models it holds.
+    expect(within(filters).getByRole("button", { name: "≤ 5 B : 0 modèle" })).toBeVisible();
+    const four = within(filters).getByRole("button", { name: "4 bits : 3 modèles" });
+    expect(four).toHaveStyle({ backgroundColor: "#7fcdbb" });
+    const [chip] = screen.getAllByText("Q4_K_M");
+    expect(chip).toHaveStyle({ backgroundColor: "#7fcdbb" });
+
+    await user.click(screen.getByRole("checkbox", { name: /Qwen3 VL 4B/ }));
+    await user.click(four);
+    expect(four).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("checkbox", { name: /Qwen3 VL 4B/ })).toBeVisible();
+
+    await user.click(four);
+    await user.click(within(filters).getByRole("button", { name: "8 bits : 0 modèle" }));
+    expect(screen.getByText("Aucun modèle de LM Studio ne correspond aux filtres.")).toBeVisible();
+    expect(screen.getByText(/1 modèle coché est masqué par les filtres/)).toBeVisible();
+    expect(screen.getByText("Aucun résultat ne correspond aux filtres.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Lancer le test (1 modèle)" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "Effacer les filtres" }));
+    expect(screen.getAllByRole("table")).not.toHaveLength(0);
+    expect(within(filters).getByRole("button", { name: "qwen : 3 modèles" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
   it("remembers the ticked models, and never ticks one LM Studio no longer holds", () => {
     window.localStorage.setItem("vfe.bench.models", JSON.stringify([LARGE, "gone/model"]));
     render(<BenchPage />);
@@ -376,7 +446,7 @@ describe("BenchPage", () => {
     expect(memory.getByText("le moins est le mieux")).toBeVisible();
     expect(memory.getByText("5,3 Go")).toHaveClass("text-brand-teal");
     expect(memory.getByText("11,5 Go")).not.toHaveClass("text-brand-teal");
-    const positions = within(charts.getByRole("figure", { name: /Sujets retrouvés/ }));
+    const positions = within(charts.getByRole("figure", { name: /Positions retrouvées/ }));
     expect(positions.getByText("100 %")).toBeVisible();
     expect(positions.getByText("désactivées")).toBeVisible();
     const quality = within(charts.getByRole("figure", { name: /Qualité/ }));
@@ -440,6 +510,35 @@ describe("BenchPage", () => {
     expect(screen.getByRole("list", { name: "Classement total" })).toHaveTextContent(
       /66,9 points.*35,0 points/,
     );
+  });
+
+  it("draws the profile of a model tested alone, without ranking it", () => {
+    const alone = aRun({ models: ["Qwen3 VL 4B"] });
+    alone.model_runs = alone.model_runs.slice(0, 1);
+    runs = [alone];
+    run = alone;
+    render(<BenchPage />);
+    expect(screen.queryByRole("list", { name: "Classement total" })).not.toBeInTheDocument();
+    expect(screen.getByText(/La vitesse n'y figure pas/)).toBeVisible();
+    expect(
+      screen.getByRole("img", {
+        name: "Profil de Qwen3 VL 4B. Mémoire 56, Langue 75, Texte lu 25, Positions 100",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("figure", { name: "Qwen3 VL 4B" })).not.toHaveTextContent(/1er|points/);
+  });
+
+  it("names each quantization of a model apart in the history", () => {
+    const twins = aRun({ models: ["Qwen3 VL 4B", "Qwen3 VL 4B"] });
+    twins.model_runs = [
+      tested(SMALL, "Qwen3 VL 4B", {}),
+      { ...tested(`${SMALL}@q8_0`, "Qwen3 VL 4B", {}), quantization: "Q8_0" },
+    ];
+    runs = [twins];
+    run = twins;
+    render(<BenchPage />);
+    const history = within(screen.getByRole("table", { name: "Historique" }));
+    expect(history.getByText("Qwen3 VL 4B Q4_K_M · Qwen3 VL 4B Q8_0")).toBeVisible();
   });
 
   it("keeps every test in a history", async () => {
@@ -701,5 +800,13 @@ describe("benchFormat", () => {
     expect(first).toMatchObject({ anchor: "end", x: 91 }); // its right is the second point
     expect(second).toMatchObject({ anchor: "start", x: 113 });
     expect(third).toMatchObject({ anchor: "end", x: 271 });
+
+    // Hemmed in on every side: no name rather than one written over the others.
+    const crowd = [-1, 0, 1].flatMap((dx) =>
+      [-1, 0, 1].map((dy) => ({ x: 150 + dx * 14, y: 100 + dy * 14, width: 60 })),
+    );
+    const spots = placeLabels(crowd, bounds);
+    expect(spots[4]).toBeNull(); // the one in the middle
+    expect(spots.filter(Boolean).length).toBeGreaterThan(0);
   });
 });

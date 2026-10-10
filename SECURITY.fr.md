@@ -99,6 +99,15 @@ sur `127.0.0.1` par défaut. Il peut aussi écouter sur l'adresse Tailscale de l
   fichier `.env`, l'environnement de l'application ni rien d'autre du dossier. Ils lancent
   ensuite l'installation de la nouvelle version. L'installation met « Video Frame Expedition -
   mise à jour » à côté de l'application (menu Démarrer, dossier Applications) : il les ouvre.
+- **Export, import et réinitialisation des données** (page Système) : un export est préparé par
+  une requête d'écriture (en-tête `X-VFE-Client`, voir plus haut), puis téléchargé une seule
+  fois par un lien impossible à deviner ; il contient les réglages, jetons enregistrés compris.
+  Un import ne garde d'une archive que la base de données et les images extraites, refuse tout
+  chemin qui sortirait du dossier de données, et n'accepte qu'une base saine de l'application,
+  d'une version qu'il connaît. L'import et la réinitialisation se font au démarrage suivant,
+  avant que quoi que ce soit n'ouvre la base, une fois une copie de l'actuelle dans le dossier
+  `backups` ; le redémarrage demandé depuis l'interface arrête l'application comme un Ctrl+C, et
+  son lanceur (`run.bat`, `run.command`) la relance.
 
 ## Accès depuis d'autres appareils
 

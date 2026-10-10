@@ -3550,6 +3550,59 @@
         "title": "CutPointsOut",
         "type": "object"
       },
+      "DataOut": {
+        "properties": {
+          "backups_dir": {
+            "title": "Backups Dir",
+            "type": "string"
+          },
+          "can_restart": {
+            "default": false,
+            "title": "Can Restart",
+            "type": "boolean"
+          },
+          "database_bytes": {
+            "title": "Database Bytes",
+            "type": "integer"
+          },
+          "last": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LastOperationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "media_bytes": {
+            "title": "Media Bytes",
+            "type": "integer"
+          },
+          "pending": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "videos": {
+            "title": "Videos",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "database_bytes",
+          "media_bytes",
+          "videos",
+          "backups_dir"
+        ],
+        "title": "DataOut",
+        "type": "object"
+      },
       "DoctorReport": {
         "properties": {
           "checks": {
@@ -3918,6 +3971,18 @@
         "title": "ExifSummaryOut",
         "type": "object"
       },
+      "ExportChoice": {
+        "properties": {
+          "images": {
+            "default": true,
+            "description": "With the frames taken from the videos.",
+            "title": "Images",
+            "type": "boolean"
+          }
+        },
+        "title": "ExportChoice",
+        "type": "object"
+      },
       "ExportCsvRequest": {
         "additionalProperties": false,
         "properties": {
@@ -3993,6 +4058,29 @@
           "url"
         ],
         "title": "ExportOptionOut",
+        "type": "object"
+      },
+      "ExportOut": {
+        "properties": {
+          "images": {
+            "title": "Images",
+            "type": "boolean"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "size_bytes",
+          "images"
+        ],
+        "title": "ExportOut",
         "type": "object"
       },
       "ExportSidecarsOut": {
@@ -5148,6 +5236,89 @@
         "title": "KeyframeOut",
         "type": "object"
       },
+      "LastOperationOut": {
+        "description": "What the last start carried out.",
+        "properties": {
+          "action": {
+            "enum": [
+              "import",
+              "reset"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "backup": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backup"
+          },
+          "done_at": {
+            "format": "date-time",
+            "title": "Done At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "images": {
+            "default": false,
+            "title": "Images",
+            "type": "boolean"
+          },
+          "library": {
+            "title": "Library",
+            "type": "boolean"
+          },
+          "settings": {
+            "title": "Settings",
+            "type": "boolean"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "videos": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Videos"
+          }
+        },
+        "required": [
+          "action",
+          "library",
+          "settings",
+          "done_at"
+        ],
+        "title": "LastOperationOut",
+        "type": "object"
+      },
       "LightPhase": {
         "description": "Photographic phase (PhotoPills bands), mutually exclusive.",
         "enum": [
@@ -5678,6 +5849,14 @@
             "title": "Type",
             "type": "string"
           },
+          "variants": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Variants",
+            "type": "array"
+          },
           "vision": {
             "default": false,
             "title": "Vision",
@@ -5895,6 +6074,67 @@
           "has_token"
         ],
         "title": "PastConnectionOut",
+        "type": "object"
+      },
+      "PendingOut": {
+        "description": "An import or a reset waiting for the next start.",
+        "properties": {
+          "action": {
+            "enum": [
+              "import",
+              "reset"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "images": {
+            "default": false,
+            "title": "Images",
+            "type": "boolean"
+          },
+          "library": {
+            "title": "Library",
+            "type": "boolean"
+          },
+          "prepared_at": {
+            "format": "date-time",
+            "title": "Prepared At",
+            "type": "string"
+          },
+          "settings": {
+            "title": "Settings",
+            "type": "boolean"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "videos": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Videos"
+          }
+        },
+        "required": [
+          "action",
+          "library",
+          "settings",
+          "prepared_at"
+        ],
+        "title": "PendingOut",
         "type": "object"
       },
       "PickedFolderOut": {
@@ -6424,6 +6664,24 @@
           "notices"
         ],
         "title": "RemoteOut",
+        "type": "object"
+      },
+      "ResetChoice": {
+        "properties": {
+          "library": {
+            "default": true,
+            "description": "The videos, their analyses, their frames.",
+            "title": "Library",
+            "type": "boolean"
+          },
+          "settings": {
+            "default": false,
+            "description": "The settings of the application.",
+            "title": "Settings",
+            "type": "boolean"
+          }
+        },
+        "title": "ResetChoice",
         "type": "object"
       },
       "ResolveDatabaseOut": {
@@ -7103,6 +7361,19 @@
         ],
         "title": "Resource",
         "type": "string"
+      },
+      "RestartOut": {
+        "properties": {
+          "restarting": {
+            "title": "Restarting",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "restarting"
+        ],
+        "title": "RestartOut",
+        "type": "object"
       },
       "RootAnalyzeOut": {
         "properties": {
@@ -12943,7 +13214,7 @@
   "info": {
     "description": "Local video analysis API (LM Studio vision model).",
     "title": "Video Frame Expedition for DaVinci Resolve",
-    "version": "1.2.4"
+    "version": "1.3.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -15363,6 +15634,234 @@
         ]
       }
     },
+    "/api/v1/system/data": {
+      "get": {
+        "description": "The size of the database and of the frames, and the import or the reset waiting for the\nnext start (``POST /system/restart``).",
+        "operationId": "data_api_v1_system_data_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Data",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/data/export": {
+      "post": {
+        "description": "Prepare an archive of the database (and, at will, of the frames); its link downloads\nit once.",
+        "operationId": "export_data_api_v1_system_data_export_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportChoice"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Data",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/data/export/{token}": {
+      "get": {
+        "operationId": "download_export_api_v1_system_data_export__token__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download Export",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/data/import": {
+      "post": {
+        "description": "An export (or a database of the backups folder) as the body of the request: checked,\nit replaces the library at the next start; ``keep_settings`` keeps this computer's.",
+        "operationId": "import_data_api_v1_system_data_import_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 255,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keep_settings",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Keep Settings",
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Data",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/data/pending": {
+      "delete": {
+        "description": "Drop the import or the reset waiting for the next start.",
+        "operationId": "cancel_data_api_v1_system_data_pending_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Cancel Data",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/data/reset": {
+      "post": {
+        "description": "Erase the library, the settings, or both, at the next start.",
+        "operationId": "reset_data_api_v1_system_data_reset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetChoice"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Data",
+        "tags": [
+          "system"
+        ]
+      }
+    },
     "/api/v1/system/doctor": {
       "get": {
         "operationId": "doctor_api_v1_system_doctor_get",
@@ -15447,6 +15946,28 @@
           }
         },
         "summary": "Choose Folder",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/restart": {
+      "post": {
+        "description": "Stop the application as Ctrl+C does (analyses back in the queue), then start it again\nin its window: its launcher (run.bat, run.command) does.",
+        "operationId": "restart_api_v1_system_restart_post",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestartOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Restart",
         "tags": [
           "system"
         ]

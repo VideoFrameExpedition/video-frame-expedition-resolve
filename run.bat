@@ -77,7 +77,13 @@ if not defined VFE_NO_BROWSER (
 
 rem Python tools go through "python -m": Smart App Control blocks the .exe files of a venv.
 rem --frozen: the versions of uv.lock, which is never rewritten; --no-dev: no development tools.
+rem Code 75: the interface asked for a restart (an import or a reset of the data): again.
+rem VFE_LAUNCHER tells the server so: started any other way, nothing would start it again.
+set "VFE_LAUNCHER=run.bat"
+:serve
 uv run --frozen --no-dev --project backend python -m vfe_vision serve --port %PORT%
+if errorlevel 76 goto :failed
+if errorlevel 75 goto :serve
 if errorlevel 1 goto :failed
 exit /b 0
 

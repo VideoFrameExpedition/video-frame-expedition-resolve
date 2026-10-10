@@ -13,6 +13,7 @@ import {
 
 import { BenchCharts } from "./BenchCharts";
 import { historyLanguages, mixedImages, rowsOfHistory } from "./benchFormat";
+import { filtering, passes, type ModelFilters } from "./modelCodes";
 import { Ranking } from "./Ranking";
 import { ResultsTable } from "./ResultsTable";
 
@@ -22,10 +23,12 @@ import { ResultsTable } from "./ResultsTable";
 export function AllModels({
   runs,
   preferred,
+  filters,
   onOpen,
 }: {
   runs: BenchRunSummary[];
   preferred: string | undefined; // the language the analyses are written in now
+  filters: ModelFilters; // those of the page: only the models they keep
   onOpen: (runId: string) => void;
 }) {
   const { t } = useTranslation();
@@ -35,7 +38,9 @@ export function AllModels({
     (picked && languages.includes(picked) ? picked : undefined) ??
     (preferred && languages.includes(preferred) ? preferred : undefined) ??
     languages[0];
-  const rows = language ? rowsOfHistory(runs, language) : [];
+  const rows = (language ? rowsOfHistory(runs, language) : []).filter((row) =>
+    passes(row.model, filters),
+  );
   const name = (code: string): string => t(`bench.language.${code}`, { defaultValue: code });
   return (
     <Card>
@@ -56,20 +61,23 @@ export function AllModels({
           </Select>
         ) : null}
       </CardHeader>
-      <CardContent className="grid gap-4">
+      <CardContent className="grid gap-8">
         {language ? (
           <>
-            <div className="grid max-w-prose gap-1.5">
+            <div className="grid gap-1.5">
               <p className="text-muted-foreground text-sm">
                 {t("bench.all.intro", { count: rows.length, language: name(language) })}
               </p>
+              {rows.length === 0 && filtering(filters) ? (
+                <p className="text-muted-foreground text-sm">{t("bench.filters.noRows")}</p>
+              ) : null}
               {mixedImages(rows) ? (
                 <p className="text-warning-ink text-sm">{t("bench.all.mixed")}</p>
               ) : null}
             </div>
             <Ranking rows={rows} />
             <BenchCharts rows={rows} />
-            <ResultsTable rows={rows} onOpen={onOpen} />
+            {rows.length > 0 ? <ResultsTable rows={rows} onOpen={onOpen} /> : null}
           </>
         ) : (
           <p className="text-muted-foreground text-sm">{t("bench.all.empty")}</p>

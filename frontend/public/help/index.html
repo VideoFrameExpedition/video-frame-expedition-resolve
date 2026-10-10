@@ -376,6 +376,14 @@
       .block-body > :last-child {
         margin-bottom: 0;
       }
+      /* Running text in the muted colour, as in the introductions, the cards and the notes: the
+         titles and the words in bold stand out in the full one. */
+      .block-body p,
+      .block-body li,
+      .block > p,
+      td {
+        color: var(--fg-muted);
+      }
 
       /* ── Navigation bar ───────────────────────────────────────────────── */
       .skip {
@@ -3010,7 +3018,9 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                   le prêt de la <strong>carte graphique</strong>, la
                   <strong>langue de rédaction</strong> des modèles et la traduction des analyses
                   existantes, les <strong>fichiers d'analyse</strong> posés — ou non — à côté de vos
-                  vidéos, et l'<strong>accès de Claude</strong> par MCP.
+                  vidéos, l'<strong>accès de Claude</strong> par MCP, et
+                  <strong>vos données</strong>
+                  à exporter, importer ou réinitialiser.
                 </span>
                 <span class="en-only">
                   Below come the settings: the address of <strong>LM&nbsp;Studio</strong>, which
@@ -3018,42 +3028,143 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                   <strong>graphics card</strong> may be lent, the
                   <strong>language the models write in</strong> and the translation of existing
                   analyses, the <strong>analysis files</strong> written — or not — next to your
-                  videos, and <strong>Claude's access</strong> over MCP.
+                  videos, <strong>Claude's access</strong> over MCP, and <strong>your data</strong>,
+                  to export, import or reset.
                 </span>
               </p>
+            </div>
+            <div class="split" style="margin-top: 22px">
+              <div class="card">
+                <h4>
+                  <span class="fr-only">La carte «&nbsp;LM&nbsp;Studio&nbsp;»</span>
+                  <span class="en-only">The "LM&nbsp;Studio" card</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >Elle dit à quel LM&nbsp;Studio l'application parle, et s'il répond. Par défaut,
+                    c'est celui de cet ordinateur. Pour confier les images à un autre ordinateur de
+                    votre réseau — un PC dont la carte graphique est plus puissante, joint par le
+                    réseau local ou par Tailscale —, choisissez «&nbsp;Sur un autre
+                    ordinateur&nbsp;» et tapez son adresse&nbsp;: <code>192.168.1.20</code>,
+                    <code>100.64.12.34:1234</code> ou son nom.</span
+                  >
+                  <span class="en-only"
+                    >It says which LM&nbsp;Studio the application talks to, and whether it answers.
+                    By default it is the one of this computer. To hand the frames to another
+                    computer of your network — a PC with a more powerful graphics card, reached over
+                    the local network or Tailscale — pick "On another computer" and type its
+                    address: <code>192.168.1.20</code>, <code>100.64.12.34:1234</code> or its
+                    name.</span
+                  >
+                </p>
+                <p>
+                  <span class="fr-only"
+                    >Là-bas, LM&nbsp;Studio doit accepter les connexions du réseau (Developer&nbsp;›
+                    Server Settings&nbsp;› «&nbsp;Serve on Local Network&nbsp;»)&nbsp;; s'il demande
+                    un jeton d'API, saisissez-le avec l'adresse.
+                    <strong>«&nbsp;Tester&nbsp;»</strong> dit ce que ce LM&nbsp;Studio répond avant
+                    d'enregistrer. Le changement vaut tout de suite, sans redémarrer&nbsp;; il est
+                    refusé tant qu'une analyse est en cours. Les
+                    <strong>connexions passées</strong> restent listées&nbsp;: un clic y revient, la
+                    corbeille en oublie une.</span
+                  >
+                  <span class="en-only"
+                    >Over there, LM&nbsp;Studio must accept network connections (Developer&nbsp;›
+                    Server Settings&nbsp;› "Serve on Local Network"); if it asks for an API token,
+                    type it with the address. <strong>"Test"</strong> says what that LM&nbsp;Studio
+                    answers before you save. The change applies at once, without a restart; it is
+                    refused while an analysis is running. The <strong>past connections</strong> stay
+                    listed: one click goes back to one, the bin forgets it.</span
+                  >
+                </p>
+                <p>
+                  <span class="fr-only"
+                    >Les images de vos vidéos partent alors vers cet ordinateur&nbsp;: sur un réseau
+                    local elles voyagent sans chiffrement, Tailscale les chiffre.</span
+                  >
+                  <span class="en-only"
+                    >The frames of your videos then go to that computer: unencrypted on a local
+                    network, encrypted by Tailscale.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <h4>
+                  <span class="fr-only">La carte «&nbsp;Vos données&nbsp;»</span>
+                  <span class="en-only">The "Your data" card</span>
+                </h4>
+                <p>
+                  <span class="fr-only">Elle sauvegarde, déplace ou efface la bibliothèque.</span>
+                  <span class="en-only">It backs up, moves or erases the library.</span>
+                </p>
+                <ul>
+                  <li>
+                    <span class="fr-only"
+                      ><strong>Exporter</strong> prépare une archive ZIP de la base de données — la
+                      bibliothèque et les réglages, jetons enregistrés compris&nbsp;: rangez-la en
+                      lieu sûr —, avec ou sans les images extraites des vidéos. Sans elles,
+                      l'archive est bien plus légère, mais une bibliothèque importée sur un autre
+                      ordinateur n'aurait plus ses images.</span
+                    >
+                    <span class="en-only"
+                      ><strong>Export</strong> prepares a ZIP archive of the database — the library
+                      and the settings, saved tokens included: keep it somewhere safe —, with or
+                      without the frames taken from the videos. Without them the archive is much
+                      lighter, but a library imported on another computer would lose its
+                      frames.</span
+                    >
+                  </li>
+                  <li>
+                    <span class="fr-only"
+                      ><strong>Importer</strong> reprend une telle archive, ou une base du dossier
+                      <code>backups</code>, en gardant au choix les réglages de cet ordinateur.
+                      Celle d'une version plus récente de l'application est refusée.</span
+                    >
+                    <span class="en-only"
+                      ><strong>Import</strong> takes such an archive back, or a database of the
+                      <code>backups</code> folder, keeping this computer's settings if you wish. One
+                      from a newer version of the application is refused.</span
+                    >
+                  </li>
+                  <li>
+                    <span class="fr-only"
+                      ><strong>Réinitialiser</strong> efface la bibliothèque, les réglages (adresse
+                      de LM&nbsp;Studio comprise), ou les deux.</span
+                    >
+                    <span class="en-only"
+                      ><strong>Reset</strong> erases the library, the settings (LM&nbsp;Studio's
+                      address included), or both.</span
+                    >
+                  </li>
+                </ul>
+                <p>
+                  <span class="fr-only"
+                    >L'import et la réinitialisation se font au redémarrage de l'application&nbsp;:
+                    un avis apparaît sous le bouton, avec
+                    <strong>«&nbsp;Redémarrer maintenant&nbsp;»</strong>. La fenêtre du terminal la
+                    relance, et la page se recharge d'elle-même, sans ouvrir d'autre onglet.</span
+                  >
+                  <span class="en-only"
+                    >The import and the reset are done when the application starts again: a notice
+                    appears under the button, with <strong>"Restart now"</strong>. The terminal
+                    window starts it again, and the page reloads by itself, without opening another
+                    tab.</span
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="note cold" style="margin-top: 16px">
               <p>
-                <span class="fr-only">
-                  La carte <strong>«&nbsp;LM&nbsp;Studio&nbsp;»</strong> dit à quel LM&nbsp;Studio
-                  l'application parle, et s'il répond. Par défaut, c'est celui de cet ordinateur.
-                  Pour confier les images à un autre ordinateur de votre réseau — un PC dont la
-                  carte graphique est plus puissante, joint par le réseau local ou par Tailscale —,
-                  choisissez «&nbsp;Sur un autre ordinateur&nbsp;» et tapez son adresse&nbsp;:
-                  <code>192.168.1.20</code>, <code>100.64.12.34:1234</code> ou son nom. Là-bas,
-                  LM&nbsp;Studio doit accepter les connexions du réseau (Developer&nbsp;› Server
-                  Settings&nbsp;› «&nbsp;Serve on Local Network&nbsp;»)&nbsp;; s'il demande un jeton
-                  d'API, saisissez-le avec l'adresse. <strong>«&nbsp;Tester&nbsp;»</strong> dit ce
-                  que ce LM&nbsp;Studio répond avant d'enregistrer. Le changement vaut tout de
-                  suite, sans redémarrer&nbsp;; il est refusé tant qu'une analyse est en cours. Les
-                  <strong>connexions passées</strong> restent listées&nbsp;: un clic y revient, la
-                  corbeille en oublie une. Les images de vos vidéos partent alors vers cet
-                  ordinateur&nbsp;: sur un réseau local elles voyagent sans chiffrement, Tailscale
-                  les chiffre.
-                </span>
-                <span class="en-only">
-                  The <strong>"LM&nbsp;Studio"</strong> card says which LM&nbsp;Studio the
-                  application talks to, and whether it answers. By default it is the one of this
-                  computer. To hand the frames to another computer of your network — a PC with a
-                  more powerful graphics card, reached over the local network or Tailscale — pick
-                  "On another computer" and type its address: <code>192.168.1.20</code>,
-                  <code>100.64.12.34:1234</code> or its name. Over there, LM&nbsp;Studio must accept
-                  network connections (Developer&nbsp;› Server Settings&nbsp;› "Serve on Local
-                  Network"); if it asks for an API token, type it with the address.
-                  <strong>"Test"</strong> says what that LM&nbsp;Studio answers before you save. The
-                  change applies at once, without a restart; it is refused while an analysis is
-                  running. The <strong>past connections</strong> stay listed: one click goes back to
-                  one, the bin forgets it. The frames of your videos then go to that computer:
-                  unencrypted on a local network, encrypted by Tailscale.
-                </span>
+                <span class="fr-only"
+                  >Juste avant un import ou une réinitialisation, la base actuelle part dans le
+                  dossier <code>backups</code>. Vos vidéos, les sous-titres posés dans Resolve et
+                  les modèles téléchargés ne sont <strong>jamais touchés</strong>.</span
+                >
+                <span class="en-only"
+                  >Just before an import or a reset, the current database goes to the
+                  <code>backups</code> folder. Your videos, the subtitles laid in Resolve and the
+                  downloaded models are <strong>never touched</strong>.</span
+                >
               </p>
             </div>
             <div class="shots">
@@ -3115,6 +3226,40 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                 </figcaption>
               </figure>
             </div>
+            <div class="zones">
+              <figure class="zone fr-only">
+                <a href="img/z/01b-zone--systeme-vos-donnees.webp">
+                  <img
+                    src="img/z/01b-zone--systeme-vos-donnees.webp"
+                    alt="La carte Vos données de la page Système : exporter, importer, réinitialiser."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="490"
+                  />
+                </a>
+                <figcaption>
+                  <b>Vos données.</b> Exporter, importer, réinitialiser. Ce qu'a fait le dernier
+                  démarrage s'affiche sous son bouton, ici un import.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/01b-zone--systeme-vos-donnees-en.webp">
+                  <img
+                    src="img/z/01b-zone--systeme-vos-donnees-en.webp"
+                    alt="The Your data card of the System page: export, import, reset."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="490"
+                  />
+                </a>
+                <figcaption>
+                  <b>Your data.</b> Export, import, reset. What the last start did shows under its
+                  button, here an import.
+                </figcaption>
+              </figure>
+            </div>
           </div>
           <div class="block" id="banc-essai">
             <h3>
@@ -3123,157 +3268,363 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
             </h3>
             <div class="block-body">
               <p>
-                <span class="fr-only">
-                  LM&nbsp;Studio propose des dizaines de modèles de vision, et la mémoire de la
+                <span class="fr-only"
+                  >LM&nbsp;Studio propose des dizaines de modèles de vision, et la mémoire de la
                   carte graphique n'est pas extensible&nbsp;: un petit modèle suffit-il&nbsp;? La
-                  page liste les modèles de vision que LM&nbsp;Studio possède. Cochez ceux à
-                  comparer, puis lancez le test. Chacun est chargé <strong>seul</strong>, interrogé
-                  comme le font les analyses sur les
-                  <strong>mêmes images de votre bibliothèque</strong> — 12, 24 ou 48, toujours les
-                  mêmes d'un test à l'autre —, puis déchargé. Le modèle chargé avant le test revient
-                  à la fin, avec ses réglages. Pendant ce temps les analyses attendent, et rien
-                  n'est modifié dans la bibliothèque.
-                </span>
-                <span class="en-only">
-                  LM&nbsp;Studio offers dozens of vision models, and the graphics card's memory does
-                  not stretch: is a small model enough? The page lists the vision models
-                  LM&nbsp;Studio holds. Tick the ones to compare, then start the test. Each one is
-                  loaded <strong>alone</strong>, asked what the analyses ask about the
-                  <strong>same frames of your library</strong> — 12, 24 or 48, always the same from
-                  one test to the next — then unloaded. The model that was loaded before the test
-                  comes back at the end, with its settings. Meanwhile the analyses wait, and nothing
-                  changes in the library.
-                </span>
+                  page compare ceux que LM&nbsp;Studio possède, sur les
+                  <strong>mêmes images de votre bibliothèque</strong>, et les classe.</span
+                >
+                <span class="en-only"
+                  >LM&nbsp;Studio offers dozens of vision models, and the graphics card's memory
+                  does not stretch: is a small model enough? The page compares the ones
+                  LM&nbsp;Studio holds, on the <strong>same frames of your library</strong>, and
+                  ranks them.</span
+                >
               </p>
+            </div>
+            <div class="cards" style="margin-top: 22px">
+              <div class="card">
+                <span class="num">01</span>
+                <h4>
+                  <span class="fr-only">Choisir</span>
+                  <span class="en-only">Choose</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >À gauche, un arbre suit les dossiers de LM&nbsp;Studio&nbsp;: les
+                    <strong>familles</strong>, leurs modèles, une ligne par quantification.
+                    Choisissez une famille ou un dossier&nbsp;: «&nbsp;Cocher ces modèles&nbsp;» les
+                    coche d'un clic, par exemple pour comparer les quantifications d'un même
+                    modèle.</span
+                  >
+                  <span class="en-only"
+                    >On the left, a tree follows LM&nbsp;Studio's folders: the
+                    <strong>families</strong>, their models, one line per quantization. Choose a
+                    family or a folder: "Tick these models" ticks them in one click, for instance to
+                    compare the quantizations of one model.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <span class="num">02</span>
+                <h4>
+                  <span class="fr-only">Lire les couleurs</span>
+                  <span class="en-only">Read the colours</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >Un point pour la famille, une pastille pour le nombre de paramètres et une pour
+                    la quantification, de la plus claire à la plus foncée. En haut de la page, les
+                    <strong>filtres</strong> reprennent ces couleurs et servent de légende&nbsp;:
+                    ils ne gardent que les modèles choisis, dans la liste comme dans les
+                    résultats.</span
+                  >
+                  <span class="en-only"
+                    >A dot for the family, a chip for the number of parameters and one for the
+                    quantization, from the lightest to the darkest. At the top of the page, the
+                    <strong>filters</strong> use the same colours and serve as the legend: they keep
+                    only the models chosen, in the list as in the results.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <span class="num">03</span>
+                <h4>
+                  <span class="fr-only">Tester</span>
+                  <span class="en-only">Test</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >Chaque modèle est chargé <strong>seul</strong>, interrogé comme le font les
+                    analyses sur 12, 24 ou 48&nbsp;images — toujours les mêmes d'un test à l'autre
+                    —, puis déchargé. Le modèle chargé avant le test revient à la fin, avec ses
+                    réglages.</span
+                  >
+                  <span class="en-only"
+                    >Each model is loaded <strong>alone</strong>, asked what the analyses ask about
+                    12, 24 or 48&nbsp;frames — always the same from one test to the next — then
+                    unloaded. The model loaded before the test comes back at the end, with its
+                    settings.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <span class="num">04</span>
+                <h4>
+                  <span class="fr-only">Juger à l'aveugle</span>
+                  <span class="en-only">Rate blind</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >La justesse des descriptions, aucune machine ne la mesure à votre place.
+                    <strong>«&nbsp;Juger à l'aveugle&nbsp;»</strong> montre chaque image et ce que
+                    chaque modèle en a dit, sous des lettres qui changent à chaque image&nbsp;: vous
+                    notez sans savoir qui a écrit quoi.</span
+                  >
+                  <span class="en-only"
+                    >How right the descriptions are, no machine measures for you.
+                    <strong>"Blind rating"</strong> shows each frame and what each model said of it,
+                    under letters that change with every frame: you rate them without knowing who
+                    wrote what.</span
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="note cold" style="margin-top: 16px">
               <p>
-                <span class="fr-only">
-                  Le tableau donne ensuite, pour chaque modèle&nbsp;: la
-                  <strong>mémoire</strong> qu'il occupe sur la carte et ce qu'il en reste pour
-                  DaVinci Resolve et la transcription&nbsp;; le
-                  <strong>temps par image</strong>&nbsp;; les
-                  <strong>réponses valides</strong>&nbsp;; le respect de la
-                  <strong>langue</strong> demandée&nbsp;; le <strong>texte lu</strong>, comparé à la
-                  lecture optique de l'application&nbsp;; les <strong>positions</strong> des
-                  personnes et des animaux, comparées à celles du détecteur de l'application. La
-                  meilleure valeur de chaque colonne est mise en valeur.
-                </span>
-                <span class="en-only">
-                  The table then gives, for each model: the <strong>memory</strong> it takes on the
-                  card and what is left for DaVinci Resolve and transcription; the
-                  <strong>time per frame</strong>; the <strong>valid answers</strong>; whether the
-                  <strong>language</strong> asked for is kept; the <strong>text read</strong>,
-                  compared with the application's own text reading; the
-                  <strong>positions</strong> of people and animals, compared with those of the
-                  application's detector. The best value of each column stands out.
-                </span>
-              </p>
-              <p>
-                <span class="fr-only">
-                  Reste la justesse des descriptions, qu'aucune machine ne mesure à votre
-                  place&nbsp;: <strong>« Juger à l'aveugle »</strong> montre chaque image et ce que
-                  chaque modèle en a dit, sous des lettres qui changent à chaque image. Vous notez
-                  de « faux » à « juste » sans savoir qui a écrit quoi, et la moyenne rejoint le
-                  tableau.
-                </span>
-                <span class="en-only">
-                  What remains is how right the descriptions are, which no machine measures for you:
-                  <strong>"Blind rating"</strong> shows each frame and what each model said of it,
-                  under letters that change with every frame. You rate from "wrong" to "right"
-                  without knowing who wrote what, and the mean joins the table.
-                </span>
-              </p>
-              <p>
-                <span class="fr-only">
-                  Les mêmes mesures sont aussi tracées. Le graphique
-                  <strong>« Mémoire et vitesse »</strong> place chaque modèle selon la mémoire qu'il
-                  occupe et son temps par image&nbsp;: le meilleur coin est en bas à gauche. Six
-                  graphiques en barres comparent ensuite les modèles mesure par mesure.
-                </span>
-                <span class="en-only">
-                  The same measures are also drawn. The
-                  <strong>"Memory and speed"</strong> chart places each model by the memory it takes
-                  and its time per frame: the best corner is the bottom left one. Six bar charts
-                  then compare the models measure by measure.
-                </span>
-              </p>
-              <p>
-                <span class="fr-only">
-                  L'<strong>historique</strong> garde chaque test&nbsp;: un clic le réaffiche, et
-                  une note de votre main aide à le retrouver («&nbsp;avant la mise à jour de
-                  LM&nbsp;Studio&nbsp;»). <strong>« Classement général »</strong> met côte à côte le
-                  dernier résultat de chaque modèle, tous tests confondus&nbsp;: un modèle
-                  téléchargé aujourd'hui se compare à ceux du mois dernier sans les tester à
-                  nouveau. La page prévient quand ces tests n'ont pas porté sur les mêmes
-                  images&nbsp;; seules la mémoire et la vitesse se comparent alors exactement.
-                </span>
-                <span class="en-only">
-                  The <strong>history</strong> keeps every test: one click shows it again, and a
-                  note of your own helps you find it ("before the LM&nbsp;Studio update").
-                  <strong>"General ranking"</strong> puts the latest result of every model side by
-                  side, all tests together: a model downloaded today compares with last month's
-                  without testing them again. The page warns when these tests did not use the same
-                  frames; only memory and speed then compare exactly.
-                </span>
-              </p>
-              <p>
-                <span class="fr-only">
-                  Un test, comme le classement général, commence par un
-                  <strong>classement</strong>. Chaque mesure y devient des points sur 100&nbsp;: la
-                  part de la carte laissée libre pour la mémoire, l'écart au plus rapide pour la
-                  vitesse, le pourcentage mesuré pour la langue, le texte et les positions, la
-                  moyenne de vos notes pour la qualité. Le <strong>classement total</strong> fait la
-                  moyenne de ces points, sur les seules mesures que tous les modèles ont. Le réglage
-                  <strong>« Ce qui compte le plus »</strong> fait compter triple la mémoire, la
-                  vitesse ou la qualité. Le <strong>classement par mesure</strong> donne la place de
-                  chaque modèle, et les <strong>profils</strong> dessinent chacun en étoile&nbsp;:
-                  plus la surface est grande, meilleur est le modèle.
-                </span>
-                <span class="en-only">
-                  A test, like the general ranking, opens with a <strong>ranking</strong>. Each
-                  measure becomes points out of 100: the share of the card left free for memory, the
-                  gap to the fastest for speed, the share measured for language, text and positions,
-                  the mean of your ratings for quality. The <strong>overall ranking</strong> is the
-                  mean of these points, on the measures every model has. The
-                  <strong>"What matters most"</strong> setting makes memory, speed or quality count
-                  three times. The <strong>ranking by measure</strong> gives each model's place, and
-                  the <strong>profiles</strong> draw each one as a star: the larger the surface, the
-                  better the model.
-                </span>
+                <span class="fr-only"
+                  >Pendant un test, les analyses attendent, et
+                  <strong>rien n'est modifié dans la bibliothèque</strong>.</span
+                >
+                <span class="en-only"
+                  >During a test, the analyses wait, and
+                  <strong>nothing changes in the library</strong>.</span
+                >
               </p>
             </div>
             <div class="zones">
               <figure class="zone fr-only">
-                <a href="img/z/40a-zone--banc-classement-general.webp">
+                <a href="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs.webp">
                   <img
-                    src="img/z/40a-zone--banc-classement-general.webp"
-                    alt="Le classement général du Banc d'essai : dix modèles de vision classés sur 100 points."
+                    src="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs.webp"
+                    alt="La carte Faire un test : l'arbre des dossiers de LM Studio, la famille Qwen3-VL choisie, ses modèles en couleurs, puis le panneau de lancement."
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="284"
+                    height="488"
                   />
                 </a>
                 <figcaption>
-                  <b>Classement général.</b> Le dernier résultat de dix modèles, tous tests
-                  confondus&nbsp;: le classement total, sur 100&nbsp;points.
+                  <b>Faire un test.</b> La famille Qwen3-VL choisie dans l'arbre&nbsp;: ses
+                  dossiers, une ligne par quantification, avec les couleurs de la famille, des
+                  paramètres et de la quantification. Dessous, le panneau de lancement.
                 </figcaption>
               </figure>
               <figure class="zone en-only">
-                <a href="img/z/40a-zone--banc-classement-general-en.webp">
+                <a href="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs-en.webp">
                   <img
-                    src="img/z/40a-zone--banc-classement-general-en.webp"
-                    alt="The Model bench's general ranking: ten vision models ranked out of 100 points."
+                    src="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs-en.webp"
+                    alt="The Run a test card: the tree of LM Studio's folders, the Qwen3-VL family chosen, its models in colours, then the launch panel."
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="296"
+                    height="488"
                   />
                 </a>
                 <figcaption>
-                  <b>General ranking.</b> The latest result of ten models, all tests together: the
-                  overall ranking, out of 100&nbsp;points.
+                  <b>Run a test.</b> The Qwen3-VL family chosen in the tree: its folders, one line
+                  per quantization, with the colours of the family, the parameters and the
+                  quantization. Below, the launch panel.
                 </figcaption>
               </figure>
+              <figure class="zone fr-only">
+                <a href="img/z/40d-zone--banc-filtres.webp">
+                  <img
+                    src="img/z/40d-zone--banc-filtres.webp"
+                    alt="Les filtres du Banc d'essai : familles, paramètres et quantifications, dans leurs couleurs."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="130"
+                  />
+                </a>
+                <figcaption>
+                  <b>Les filtres.</b> En haut de la page, dans les mêmes couleurs, avec le nombre de
+                  modèles de chacun&nbsp;: ils servent aussi de légende.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40d-zone--banc-filtres-en.webp">
+                  <img
+                    src="img/z/40d-zone--banc-filtres-en.webp"
+                    alt="The Model bench's filters: families, parameters and quantizations, in their colours."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="130"
+                  />
+                </a>
+                <figcaption>
+                  <b>The filters.</b> At the top of the page, in the same colours, with the number
+                  of models of each: they serve as the legend too.
+                </figcaption>
+              </figure>
+            </div>
+            <div class="block-body" style="margin-top: 34px">
+              <h4>
+                <span class="fr-only">Ce qui est mesuré</span>
+                <span class="en-only">What is measured</span>
+              </h4>
+              <p>
+                <span class="fr-only"
+                  >Le tableau des résultats donne sept mesures par modèle, la meilleure de chaque
+                  colonne mise en valeur. Le classement en compte six, chacune ramenée à des points
+                  sur 100&nbsp;:</span
+                >
+                <span class="en-only"
+                  >The results table gives seven measures per model, the best of each column
+                  standing out. The ranking counts six of them, each brought to points out of
+                  100:</span
+                >
+              </p>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th><span class="fr-only">Mesure</span><span class="en-only">Measure</span></th>
+                    <th>
+                      <span class="fr-only">Ce qu'elle dit</span
+                      ><span class="en-only">What it tells</span>
+                    </th>
+                    <th>
+                      <span class="fr-only">Points sur 100</span
+                      ><span class="en-only">Points out of 100</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Mémoire</strong></span>
+                      <span class="en-only"><strong>Memory</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Ce que le modèle occupe sur la carte graphique, et ce qu'il en reste pour
+                        DaVinci Resolve et la transcription.</span
+                      >
+                      <span class="en-only"
+                        >What the model takes on the graphics card, and what is left for DaVinci
+                        Resolve and transcription.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >La part de la carte laissée libre&nbsp;: 75 pour un modèle qui en occupe le
+                        quart.</span
+                      >
+                      <span class="en-only"
+                        >The share of the card left free: 75 for a model that takes a quarter of
+                        it.</span
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Vitesse</strong></span>
+                      <span class="en-only"><strong>Speed</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only">Le temps par image.</span>
+                      <span class="en-only">The time per frame.</span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >100 pour le plus rapide, 50 pour un modèle deux fois plus lent.</span
+                      >
+                      <span class="en-only"
+                        >100 for the fastest, 50 for a model twice as slow.</span
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Réponses valides</strong></span>
+                      <span class="en-only"><strong>Valid answers</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Les réponses que l'application a pu lire, sans erreur.</span
+                      >
+                      <span class="en-only"
+                        >The answers the application could read, with no error.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only">Aucun&nbsp;: le tableau seulement.</span>
+                      <span class="en-only">None: the table only.</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Langue respectée</strong></span>
+                      <span class="en-only"><strong>Language kept</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only">Les descriptions écrites dans la langue demandée.</span>
+                      <span class="en-only"
+                        >The descriptions written in the language asked for.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only">Le pourcentage mesuré.</span>
+                      <span class="en-only">The share measured.</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Texte lu</strong></span>
+                      <span class="en-only"><strong>Text read</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Le texte à l'écran, comparé à la lecture optique de l'application.</span
+                      >
+                      <span class="en-only"
+                        >The on-screen text, compared with the application's own text reading.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only">Le pourcentage mesuré.</span>
+                      <span class="en-only">The share measured.</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Positions</strong></span>
+                      <span class="en-only"><strong>Positions</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Les personnes et les animaux, comparés à ceux que trouve le détecteur de
+                        l'application.</span
+                      >
+                      <span class="en-only"
+                        >People and animals, compared with those the application's detector
+                        finds.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Le pourcentage retrouvé&nbsp;; 0 quand elles sont désactivées.</span
+                      >
+                      <span class="en-only">The share found; 0 when they are disabled.</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Qualité</strong></span>
+                      <span class="en-only"><strong>Quality</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Vos notes à l'aveugle, de 0 («&nbsp;faux&nbsp;») à 3
+                        («&nbsp;juste&nbsp;»).</span
+                      >
+                      <span class="en-only"
+                        >Your blind ratings, from 0 ("wrong") to 3 ("right").</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only">Leur moyenne, ramenée sur 100.</span>
+                      <span class="en-only">Their mean, brought to 100.</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="zones">
               <figure class="zone fr-only">
                 <a href="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures.webp">
                   <img
@@ -3282,13 +3633,13 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="464"
+                    height="703"
                   />
                 </a>
                 <figcaption>
-                  <b>Les graphiques.</b> En haut, la mémoire et la vitesse&nbsp;: le meilleur coin
-                  est en bas à gauche. Dessous, une mesure par graphique, la meilleure valeur mise
-                  en valeur.
+                  <b>Les graphiques.</b> En haut, «&nbsp;Mémoire et vitesse&nbsp;»&nbsp;: le
+                  meilleur coin est en bas à gauche. Dessous, six graphiques en barres, une mesure
+                  chacun, la meilleure valeur mise en valeur.
                 </figcaption>
               </figure>
               <figure class="zone en-only">
@@ -3299,12 +3650,150 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="464"
+                    height="703"
                   />
                 </a>
                 <figcaption>
-                  <b>The charts.</b> At the top, memory and speed: the best corner is the bottom
-                  left one. Below, one measure per chart, the best value standing out.
+                  <b>The charts.</b> At the top, "Memory and speed": the best corner is the bottom
+                  left one. Below, six bar charts, one measure each, the best value standing out.
+                </figcaption>
+              </figure>
+            </div>
+            <div class="block-body" style="margin-top: 34px">
+              <h4>
+                <span class="fr-only">Le classement</span>
+                <span class="en-only">The ranking</span>
+              </h4>
+              <p>
+                <span class="fr-only"
+                  >Chaque test commence par un classement, vu de trois façons, et le classement
+                  général fait de même pour tous les tests réunis.</span
+                >
+                <span class="en-only"
+                  >Each test opens with a ranking, seen in three ways, and the general ranking does
+                  the same for all the tests together.</span
+                >
+              </p>
+            </div>
+            <div class="cards" style="margin-top: 18px">
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Classement total</span>
+                  <span class="en-only">Overall ranking</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >La moyenne des points, sur les seules mesures que tous les modèles ont. Le
+                    réglage <strong>«&nbsp;Ce qui compte le plus&nbsp;»</strong> fait compter triple
+                    la mémoire, la vitesse ou la qualité.</span
+                  >
+                  <span class="en-only"
+                    >The mean of the points, on the measures every model has. The
+                    <strong>"What matters most"</strong> setting makes memory, speed or quality
+                    count three times.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Par mesure</span>
+                  <span class="en-only">By measure</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >La place de chaque modèle dans chacune des six mesures, pour voir où il gagne
+                    et où il perd.</span
+                  >
+                  <span class="en-only"
+                    >Each model's place in each of the six measures, to see where it wins and where
+                    it loses.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Profils</span>
+                  <span class="en-only">Profiles</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >Chaque modèle dessiné en étoile, une branche par mesure&nbsp;: plus la surface
+                    est grande, meilleur est le modèle. Un modèle testé seul n'a que son profil,
+                    sans la vitesse, qui se compte par rapport au plus rapide.</span
+                  >
+                  <span class="en-only"
+                    >Each model drawn as a star, one branch per measure: the larger the surface, the
+                    better the model. A model tested alone has its profile only, without the speed,
+                    which counts against the fastest.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Tous les tests</span>
+                  <span class="en-only">Every test</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >L'<strong>historique</strong> garde chaque test&nbsp;: un clic le réaffiche, et
+                    une note de votre main aide à le retrouver.
+                    <strong>«&nbsp;Classement général&nbsp;»</strong> met côte à côte le dernier
+                    résultat de chaque modèle&nbsp;: un modèle téléchargé aujourd'hui se compare à
+                    ceux du mois dernier sans les tester à nouveau.</span
+                  >
+                  <span class="en-only"
+                    >The <strong>history</strong> keeps every test: one click shows it again, and a
+                    note of your own helps you find it. <strong>"General ranking"</strong> puts the
+                    latest result of every model side by side: a model downloaded today compares
+                    with last month's without testing them again.</span
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="note" style="margin-top: 16px">
+              <p>
+                <span class="fr-only"
+                  >Quand les tests réunis par le classement général n'ont pas porté sur les mêmes
+                  images, la page le dit&nbsp;: seules la mémoire et la vitesse se comparent alors
+                  exactement.</span
+                >
+                <span class="en-only"
+                  >When the tests brought together by the general ranking did not use the same
+                  frames, the page says so: only memory and speed then compare exactly.</span
+                >
+              </p>
+            </div>
+            <div class="zones">
+              <figure class="zone fr-only">
+                <a href="img/z/40a-zone--banc-classement-general.webp">
+                  <img
+                    src="img/z/40a-zone--banc-classement-general.webp"
+                    alt="Le classement général du Banc d'essai : quatorze modèles de vision classés sur 100 points."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="368"
+                  />
+                </a>
+                <figcaption>
+                  <b>Classement général.</b> Le dernier résultat de quatorze modèles, tous tests
+                  confondus&nbsp;: le classement total, sur 100&nbsp;points.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40a-zone--banc-classement-general-en.webp">
+                  <img
+                    src="img/z/40a-zone--banc-classement-general-en.webp"
+                    alt="The Model bench's general ranking: fourteen vision models ranked out of 100 points."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="368"
+                  />
+                </a>
+                <figcaption>
+                  <b>General ranking.</b> The latest result of fourteen models, all tests together:
+                  the overall ranking, out of 100&nbsp;points.
                 </figcaption>
               </figure>
               <figure class="zone fr-only">
@@ -3315,7 +3804,7 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="488"
+                    height="770"
                   />
                 </a>
                 <figcaption>
@@ -3332,7 +3821,7 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="490"
+                    height="770"
                   />
                 </a>
                 <figcaption>

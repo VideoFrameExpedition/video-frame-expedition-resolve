@@ -9,9 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-import { ALL_RUNS, isActive } from "./benchFormat";
+import { ALL_RUNS, isActive, modelLabels } from "./benchFormat";
 
 const SHOWN = 6; // more runs than that: the older ones are folded
+
+/** The models of a run, named as its results name them. */
+const namesOf = (run: BenchRunSummary): string =>
+  (run.model_runs.length > 0 ? modelLabels(run.model_runs) : run.models).join(" · ");
 
 /** « History »: every run, the latest first; one click shows a run again, and « General
  * ranking » ranks the latest result of every model, all runs together. */
@@ -92,7 +96,7 @@ export function RunHistory({
                       {run.note ?? <span className="text-muted-foreground">—</span>}
                     </td>
                     <td className="text-muted-foreground max-w-[20rem] px-3 py-2 align-top text-xs">
-                      {run.models.join(" · ")}
+                      {namesOf(run)}
                     </td>
                     <td className="px-3 py-2 align-top tabular-nums">{run.images}</td>
                     <td className="px-3 py-2 align-top">

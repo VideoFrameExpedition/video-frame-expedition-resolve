@@ -88,6 +88,7 @@ function model(overrides: Partial<ModelInfo> = {}): ModelInfo {
     type: "llm",
     vision: true,
     reasoning_options: [],
+    variants: [],
     loaded_instances: [{ id: "qwen/qwen3-vl-4b", context_length: 19456, parallel: 4 }],
     ...overrides,
   };

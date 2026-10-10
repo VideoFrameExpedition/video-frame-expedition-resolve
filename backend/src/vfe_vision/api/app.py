@@ -33,6 +33,7 @@ from vfe_vision.api.routers import (
 from vfe_vision.api.routers import settings as settings_routes
 from vfe_vision.api.schemas import API_PREFIX
 from vfe_vision.api.security import FrameGuardMiddleware, LocalSecurityMiddleware, allowed_origins
+from vfe_vision.api.streams import OpenStreams, OpenStreamsMiddleware
 from vfe_vision.core.config import Settings
 from vfe_vision.core.errors import NotFoundError
 from vfe_vision.core.logging import get_logger
@@ -41,6 +42,7 @@ from vfe_vision.db.migrate import upgrade_database
 from vfe_vision.jobs.supervisor import WorkerSupervisor
 from vfe_vision.mcp.server import build_mcp_server
 from vfe_vision.services.container import AppContainer
+from vfe_vision.services.database import apply_pending
 
 log = get_logger(__name__)
 WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
@@ -73,6 +75,8 @@ def create_app(
     @contextlib.asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         settings.ensure_dirs()
+        # An import or a reset prepared from the interface, before anything opens the database.
+        await anyio.to_thread.run_sync(apply_pending, settings)
         await anyio.to_thread.run_sync(upgrade_database, settings.db_path, settings.backups_dir)
         container = AppContainer.create(settings)
         holder["container"] = container
@@ -104,6 +108,8 @@ def create_app(
     )
     install_error_handlers(app)
     app.state.access_guard = guard
+    app.state.open_streams = OpenStreams()  # ended by ``vfe serve`` when it stops
+    app.add_middleware(OpenStreamsMiddleware, streams=app.state.open_streams)
     app.add_middleware(LocalSecurityMiddleware, origins=origins, guard=guard)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=hosts)
     app.add_middleware(FrameGuardMiddleware)

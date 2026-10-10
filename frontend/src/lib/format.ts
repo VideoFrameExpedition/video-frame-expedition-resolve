@@ -15,11 +15,14 @@ export function formatClock(seconds: number | null | undefined, withMillis = fal
   return withMillis ? `${base}.${pad(ms, 3)}` : base;
 }
 
+/** A size in the units of the language: octets in French (Mo, Go), bytes otherwise (MB, GB). */
 export function formatBytes(bytes: number | null | undefined, locale = "fr"): string {
   if (bytes === null || bytes === undefined) {
     return "—";
   }
-  const units = ["o", "Ko", "Mo", "Go", "To"];
+  const units = locale.startsWith("fr")
+    ? ["o", "Ko", "Mo", "Go", "To"]
+    : ["B", "KB", "MB", "GB", "TB"];
   let value = bytes;
   let unit = 0;
   while (value >= 1024 && unit < units.length - 1) {

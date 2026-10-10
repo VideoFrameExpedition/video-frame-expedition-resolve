@@ -58,6 +58,7 @@ export const queryKeys = {
   analysisSettings: ["settings", "analysis"] as const,
   models: ["lmstudio-models"] as const,
   lmStudioLink: ["settings", "lmstudio"] as const,
+  data: ["system", "data"] as const,
   preferences: ["preferences"] as const,
   search: (params: SearchParams) => ["search", params] as const,
   searchAll: ["search"] as const,
@@ -578,6 +579,84 @@ export function useTestLmStudio() {
   return useMutation({
     mutationFn: (body: Schemas["LmStudioChoice"]) =>
       unwrap(api.POST("/api/v1/settings/lmstudio/test", { body })),
+  });
+}
+
+/** The database as a whole: its size, the import or the reset waiting for the restart, and
+ * what the last start carried out. */
+export function useDataState() {
+  return useQuery({
+    queryKey: queryKeys.data,
+    queryFn: () => unwrap(api.GET("/api/v1/system/data")),
+  });
+}
+
+/** Prepare an archive of the database (and, at will, of the frames): its link
+ * (``exportUrl``) downloads it once. */
+export function useExportData() {
+  return useMutation({
+    mutationFn: (images: boolean) =>
+      unwrap(api.POST("/api/v1/system/data/export", { body: { images } })),
+  });
+}
+
+export function exportUrl(token: string): string {
+  return `/api/v1/system/data/export/${token}`;
+}
+
+/** Send an export (or a database of the backups folder) as it is: checked, it replaces the
+ * library at the next start. */
+export function useImportData() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ file, keepSettings }: { file: File; keepSettings: boolean }) =>
+      unwrap(
+        api.POST("/api/v1/system/data/import", {
+          params: { query: { name: file.name, keep_settings: keepSettings } },
+          body: file as unknown as string,
+          bodySerializer: (body: unknown) => body as BodyInit,
+          headers: { "Content-Type": "application/octet-stream" },
+        }),
+      ),
+    onSuccess: (pending) => {
+      queryClient.setQueryData<Schemas["DataOut"]>(queryKeys.data, (data) =>
+        data ? { ...data, pending } : data,
+      );
+    },
+  });
+}
+
+/** Erase the library, the settings, or both, at the next start. */
+export function useResetData() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (choice: Schemas["ResetChoice"]) =>
+      unwrap(api.POST("/api/v1/system/data/reset", { body: choice })),
+    onSuccess: (pending) => {
+      queryClient.setQueryData<Schemas["DataOut"]>(queryKeys.data, (data) =>
+        data ? { ...data, pending } : data,
+      );
+    },
+  });
+}
+
+/** Drop the import or the reset waiting for the next start. */
+export function useCancelPendingData() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => unwrap(api.DELETE("/api/v1/system/data/pending")),
+    onSuccess: () => {
+      queryClient.setQueryData<Schemas["DataOut"]>(queryKeys.data, (data) =>
+        data ? { ...data, pending: null } : data,
+      );
+    },
+  });
+}
+
+/** Stop the application (analyses back in the queue) and start it again in its window. */
+export function useRestart() {
+  return useMutation({
+    mutationFn: () => unwrap(api.POST("/api/v1/system/restart")),
   });
 }
 

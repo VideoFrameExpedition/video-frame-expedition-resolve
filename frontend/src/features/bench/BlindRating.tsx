@@ -65,7 +65,7 @@ export function BlindRating({ run }: { run: BenchRun }) {
         </div>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <p className="text-muted-foreground max-w-prose text-sm">{t("bench.blind.intro")}</p>
+        <p className="text-muted-foreground text-sm leading-relaxed">{t("bench.blind.intro")}</p>
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <figure className="grid gap-1 lg:sticky lg:top-20">
             <img

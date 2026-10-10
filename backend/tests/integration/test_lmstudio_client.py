@@ -7,9 +7,11 @@ import json
 import httpx
 import pytest
 
-from tests.conftest import FRAME_ANSWER, FakeLmStudio
+from tests.conftest import FRAME_ANSWER, OLDER_PAYLOAD, VARIANTS_PAYLOAD, FakeLmStudio
+from vfe_vision.adapters.lmstudio.catalog import LoadedInstance
 from vfe_vision.adapters.lmstudio.client import (
     ChatImage,
+    LmStudioClient,
     LmStudioResponseError,
     LmStudioTruncatedError,
     LmStudioUnavailableError,
@@ -75,6 +77,37 @@ async def test_list_models(fake_lmstudio: FakeLmStudio) -> None:
     finally:
         await client.aclose()
     assert [m.key for m in models if m.vision] == ["qwen/qwen3-vl-8b"]
+    assert fake_lmstudio.requested_paths == ["/api/v1/models"]  # nothing hidden: one list
+
+
+@pytest.mark.parametrize("older", [200, 404, "down"])
+async def test_a_model_loaded_from_another_variant(older: int | str) -> None:
+    """The main list leaves its instance out: the older list says it is loaded. Without it (a
+    future LM Studio, a server gone between two requests), the model stays unloaded."""
+    paths: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        paths.append(request.url.path)
+        if request.url.path == "/api/v1/models":
+            return httpx.Response(200, json=VARIANTS_PAYLOAD)
+        if older == "down":
+            raise httpx.ConnectError("connection refused", request=request)
+        if older == 200:
+            return httpx.Response(200, json=OLDER_PAYLOAD)
+        return httpx.Response(404, text="not found")
+
+    client = LmStudioClient("http://lmstudio.test", transport=httpx.MockTransport(handler))
+    try:
+        models = await client.list_models()
+    finally:
+        await client.aclose()
+    assert paths == ["/api/v1/models", "/api/v0/models"]
+    loaded = {m.key: m.loaded_instances for m in models if m.loaded_instances}
+    if older == 200:
+        instance = LoadedInstance(id="qwen/qwen3-vl-4b", context_length=20224, parallel=4)
+        assert loaded == {"qwen/qwen3-vl-4b": (instance,)}
+    else:
+        assert loaded == {}
 
 
 async def test_a_connection_dropped_mid_request_is_unavailable(

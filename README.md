@@ -81,7 +81,9 @@ them).
   and never reloads it or loads another one during the analyses. It decodes videos on the GPU
   only when that model leaves enough free memory (with `qwen/qwen3-vl-4b`, for example).
 - **Choosing your vision model**: the "Model bench" page compares the LM Studio models you tick,
-  on frames from your library. Each one is loaded alone, queried the way the analyses query it,
+  on frames from your library. It shows them as LM Studio's folders arrange them (a tree of
+  families and models, each quantization on its own line), coloured and filtered by family,
+  number of parameters and quantization. Each one is loaded alone, queried the way the analyses query it,
   then unloaded; a table gives the graphics memory used, the time per frame, the valid answers,
   whether the answers are in the requested language, the text read and the positions, and you
   grade the descriptions blind. A ranking, profiles and charts sum these measures up, and a
@@ -240,6 +242,16 @@ folder>` (`update.command --from …`) installs that version instead.
 Up to version 1.2.1, which did not have it, update by hand once: download the new version
 (Code › Download ZIP), unzip it and double-click `install.bat` in the new folder (copy your
 `.env` file over if you made one); on a Mac, paste the installation line again.
+
+### Your data: export, import, reset
+
+On the System page, the "Your data" card **exports** the library and the settings as a ZIP
+archive, with or without the frames taken from the videos, to keep somewhere safe or to import on
+another computer. It **imports** such an archive (or a database of the `backups` folder), keeping
+this computer's settings if you wish, and **resets** the library, the settings, or both. The
+import and the reset are done when the application starts again, which the card offers in one
+click: the current database first goes to `backups`. Your videos, the subtitles laid in Resolve
+and the downloaded models are never touched.
 
 ### LM Studio on another computer
 

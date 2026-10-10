@@ -26,7 +26,12 @@ from vfe_vision.adapters.lmstudio.budget import (
     estimate_image_tokens,
     estimate_text_tokens,
 )
-from vfe_vision.adapters.lmstudio.catalog import ModelInfo, parse_models
+from vfe_vision.adapters.lmstudio.catalog import (
+    ModelInfo,
+    hides_its_instance,
+    parse_models,
+    with_other_variants,
+)
 from vfe_vision.adapters.lmstudio.schema import strict_json_schema
 from vfe_vision.core.errors import ServiceUnavailableError, VfeError
 from vfe_vision.core.logging import get_logger
@@ -172,7 +177,20 @@ class LmStudioClient:
             )
         if response.status_code != 200:
             raise LmStudioResponseError(f"/api/v1/models a renvoyé {response.status_code}")
-        return parse_models(response.json())
+        models = parse_models(response.json())
+        if any(hides_its_instance(model) for model in models):
+            models = with_other_variants(models, await self._older_list())
+        return models
+
+    async def _older_list(self) -> dict[str, Any]:
+        """``GET /api/v0/models``, or nothing: it only completes the list above."""
+        url, headers = self._to("/api/v0/models")
+        try:
+            response = await self._http.get(url, headers=headers)
+            body = response.json() if response.status_code == 200 else {}
+        except (httpx.HTTPError, ValueError):
+            return {}
+        return body if isinstance(body, dict) else {}
 
     # ------------------------------------------------------------------ loading (model bench)
     async def load_model(

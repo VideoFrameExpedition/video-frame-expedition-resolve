@@ -86,8 +86,12 @@ page d'aide charge ses polices depuis Google Fonts, et ses vidéos de présentat
   décode les vidéos sur le GPU que si ce modèle laisse assez de mémoire libre (par exemple avec
   `qwen/qwen3-vl-4b`).
 - **Choisir son modèle de vision** : la page « Banc d'essai » compare les modèles de LM Studio
-  que vous cochez, sur des images de votre bibliothèque. Chacun est chargé seul, interrogé comme
-  le font les analyses, puis déchargé ; un tableau donne la mémoire occupée sur la carte, le
+  que vous cochez, sur des images de votre bibliothèque. Elle les montre rangés comme dans les
+  dossiers de LM Studio (un arbre des familles et des modèles, chaque quantification sur sa
+  ligne), en couleur et avec des filtres selon la famille, le nombre de paramètres et la
+  quantification. Chacun est
+  chargé seul, interrogé comme le font les analyses, puis déchargé ; un tableau donne la mémoire
+  occupée sur la carte, le
   temps par image, les réponses valides, les réponses dans la langue demandée, le texte lu et
   les positions, et vous notez les descriptions à l'aveugle. Un classement, des profils et des
   graphiques résument ces mesures, et un historique garde chaque test : le classement général y
@@ -257,6 +261,16 @@ Jusqu'à la version 1.2.1, qui ne l'avait pas, mettez à jour une fois à la mai
 nouvelle version (Code › Download ZIP), décompressez-la et double-cliquez sur `install.bat` dans
 le nouveau dossier (recopiez votre fichier `.env` si vous en avez fait un) ; sur un Mac, recollez
 la ligne d'installation.
+
+### Vos données : exporter, importer, réinitialiser
+
+Page Système, la carte « Vos données » **exporte** la bibliothèque et les réglages dans une
+archive ZIP, avec ou sans les images extraites des vidéos, à garder en lieu sûr ou à importer sur
+un autre ordinateur. Elle **importe** une telle archive (ou une base du dossier `backups`), en
+gardant au choix les réglages de cet ordinateur, et **réinitialise** la bibliothèque, les
+réglages, ou les deux. L'import et la réinitialisation se font au redémarrage de l'application,
+que la carte propose d'un clic : la base actuelle part d'abord dans `backups`. Vos vidéos, les
+sous-titres posés dans Resolve et les modèles téléchargés ne sont jamais touchés.
 
 ### LM Studio sur un autre ordinateur
 

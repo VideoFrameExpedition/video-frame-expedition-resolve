@@ -807,6 +807,126 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/system/data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Data
+         * @description The size of the database and of the frames, and the import or the reset waiting for the
+         *     next start (``POST /system/restart``).
+         */
+        get: operations["data_api_v1_system_data_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/system/data/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export Data
+         * @description Prepare an archive of the database (and, at will, of the frames); its link downloads
+         *     it once.
+         */
+        post: operations["export_data_api_v1_system_data_export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/system/data/export/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Export */
+        get: operations["download_export_api_v1_system_data_export__token__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/system/data/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Data
+         * @description An export (or a database of the backups folder) as the body of the request: checked,
+         *     it replaces the library at the next start; ``keep_settings`` keeps this computer's.
+         */
+        post: operations["import_data_api_v1_system_data_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/system/data/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Cancel Data
+         * @description Drop the import or the reset waiting for the next start.
+         */
+        delete: operations["cancel_data_api_v1_system_data_pending_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/system/data/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Data
+         * @description Erase the library, the settings, or both, at the next start.
+         */
+        post: operations["reset_data_api_v1_system_data_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/system/doctor": {
         parameters: {
             query?: never;
@@ -873,6 +993,27 @@ export interface paths {
          *     reserved for a browser open on this computer.
          */
         post: operations["choose_folder_api_v1_system_pick_folder_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/system/restart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restart
+         * @description Stop the application as Ctrl+C does (analyses back in the queue), then start it again
+         *     in its window: its launcher (run.bat, run.command) does.
+         */
+        post: operations["restart_api_v1_system_restart_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2935,6 +3076,24 @@ export interface components {
              */
             shots: number[];
         };
+        /** DataOut */
+        DataOut: {
+            /** Backups Dir */
+            backups_dir: string;
+            /**
+             * Can Restart
+             * @default false
+             */
+            can_restart: boolean;
+            /** Database Bytes */
+            database_bytes: number;
+            last?: components["schemas"]["LastOperationOut"] | null;
+            /** Media Bytes */
+            media_bytes: number;
+            pending?: components["schemas"]["PendingOut"] | null;
+            /** Videos */
+            videos: number;
+        };
         /** DoctorReport */
         DoctorReport: {
             /** Checks */
@@ -3028,6 +3187,15 @@ export interface components {
             /** Warnings */
             warnings: string[];
         };
+        /** ExportChoice */
+        ExportChoice: {
+            /**
+             * Images
+             * @description With the frames taken from the videos.
+             * @default true
+             */
+            images: boolean;
+        };
         /** ExportCsvRequest */
         ExportCsvRequest: {
             /**
@@ -3064,6 +3232,15 @@ export interface components {
              * @description Download (GET).
              */
             url: string;
+        };
+        /** ExportOut */
+        ExportOut: {
+            /** Images */
+            images: boolean;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Token */
+            token: string;
         };
         /** ExportSidecarsOut */
         ExportSidecarsOut: {
@@ -3527,6 +3704,39 @@ export interface components {
             width: number;
         };
         /**
+         * LastOperationOut
+         * @description What the last start carried out.
+         */
+        LastOperationOut: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "import" | "reset";
+            /** Backup */
+            backup?: string | null;
+            /**
+             * Done At
+             * Format: date-time
+             */
+            done_at: string;
+            /** Error */
+            error?: string | null;
+            /**
+             * Images
+             * @default false
+             */
+            images: boolean;
+            /** Library */
+            library: boolean;
+            /** Settings */
+            settings: boolean;
+            /** Source */
+            source?: string | null;
+            /** Videos */
+            videos?: number | null;
+        };
+        /**
          * LightPhase
          * @description Photographic phase (PhotoPills bands), mutually exclusive.
          * @enum {string}
@@ -3713,6 +3923,11 @@ export interface components {
             /** Type */
             type: string;
             /**
+             * Variants
+             * @default []
+             */
+            variants: string[];
+            /**
              * Vision
              * @default false
              */
@@ -3806,6 +4021,35 @@ export interface components {
             local: boolean;
             /** Url */
             url: string;
+        };
+        /**
+         * PendingOut
+         * @description An import or a reset waiting for the next start.
+         */
+        PendingOut: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "import" | "reset";
+            /**
+             * Images
+             * @default false
+             */
+            images: boolean;
+            /** Library */
+            library: boolean;
+            /**
+             * Prepared At
+             * Format: date-time
+             */
+            prepared_at: string;
+            /** Settings */
+            settings: boolean;
+            /** Source */
+            source?: string | null;
+            /** Videos */
+            videos?: number | null;
         };
         /** PickedFolderOut */
         PickedFolderOut: {
@@ -3990,6 +4234,21 @@ export interface components {
              * @description Addresses of the interface from the other devices.
              */
             urls: string[];
+        };
+        /** ResetChoice */
+        ResetChoice: {
+            /**
+             * Library
+             * @description The videos, their analyses, their frames.
+             * @default true
+             */
+            library: boolean;
+            /**
+             * Settings
+             * @description The settings of the application.
+             * @default false
+             */
+            settings: boolean;
         };
         /** ResolveDatabaseOut */
         ResolveDatabaseOut: {
@@ -4291,6 +4550,11 @@ export interface components {
          * @enum {string}
          */
         Resource: "cpu" | "gpu" | "lmstudio" | "network" | "asr";
+        /** RestartOut */
+        RestartOut: {
+            /** Restarting */
+            restarting: boolean;
+        };
         /** RootAnalyzeOut */
         RootAnalyzeOut: {
             /**
@@ -7885,6 +8149,175 @@ export interface operations {
             };
         };
     };
+    data_api_v1_system_data_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataOut"];
+                };
+            };
+        };
+    };
+    export_data_api_v1_system_data_export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExportChoice"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_export_api_v1_system_data_export__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_data_api_v1_system_data_import_post: {
+        parameters: {
+            query?: {
+                name?: string | null;
+                keep_settings?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_data_api_v1_system_data_pending_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    reset_data_api_v1_system_data_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetChoice"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     doctor_api_v1_system_doctor_get: {
         parameters: {
             query?: never;
@@ -7961,6 +8394,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PickedFolderOut"];
+                };
+            };
+        };
+    };
+    restart_api_v1_system_restart_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestartOut"];
                 };
             };
         };
