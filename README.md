@@ -57,7 +57,8 @@ Resolve were tried on an M1 Mac.
 > This is the new version of *Video Frame Expedition*; it replaces the earlier one.
 
 Your frames and sounds never leave your machine, except, if you choose, to go to the model server
-(LM Studio, vLLM…) of another of your computers; the vision model runs on your graphics card.
+(LM Studio, vLLM, Strata…) of another of your computers; the vision model runs on your graphics
+card.
 The analyses make only two network calls (an approximate position and a date, to find the place
 and the weather), and one switch on the System page turns them off; the same switch hides the
 OpenStreetMap map of the Context tab, which loads its tiles from the internet. The help page
@@ -83,27 +84,16 @@ loads its fonts from Google Fonts, and its presentation videos from YouTube
   video also receives its own: `<name>_EN.srt` (what is said, in the spoken language) and
   `<name>_SHOTS_EN.srt` (the shots, in the interface language). A file the application did not
   write, or that you have changed, is never replaced.
-- **The vision model stays on the GPU**: the application uses the model you loaded in LM Studio
-  (or the one your OpenAI-compatible server serves), and never reloads it or loads another one
-  during the analyses. It decodes videos on the GPU
+- **The vision model stays on the GPU**: the application uses the model you loaded in your
+  model server (vLLM, Strata or LM Studio), and never reloads it or loads another one during the
+  analyses. It decodes videos on the GPU
   only when that model leaves enough free memory (with `qwen/qwen3-vl-4b`, for example).
-- **Choosing your vision model**: the "Model bench" page compares the LM Studio models you tick,
-  on frames from your library. It shows them as LM Studio's folders arrange them (a tree of
-  families and models, each quantization on its own line), coloured and filtered by family,
-  number of parameters and quantization. Each one is loaded alone, queried the way the analyses query it,
-  then unloaded; a table gives the graphics memory used, the time per frame, the valid answers,
-  whether the answers are in the requested language, the text read and the positions, and you
-  grade the descriptions blind. A ranking, profiles and charts sum these measures up, and a
-  history keeps every test: the overall ranking compares the latest result of each model across
-  all tests. This is the only place where the application loads a model, at your request; it
-  then reloads the one that was there before. The page needs LM Studio, since it loads and
-  unloads the models one by one: with an OpenAI-compatible server, it says so and does not start.
 - **A model server here or elsewhere**: by default the application talks to LM Studio on this
   computer. The "Model server" card of the System page can point it to another computer on your
-  local network or on Tailscale, one with a more powerful graphics card, running LM Studio or a
-  server compatible with OpenAI's API (vLLM…). The application tests that server before
-  switching to it and keeps the past connections one click away. The frames of your videos then
-  go to that computer, and to that computer only.
+  local network or on Tailscale, one with a more powerful graphics card, running Strata,
+  LM Studio, vLLM or another server compatible with OpenAI's API. The application tests that
+  server before switching to it and keeps the past connections one click away. The frames of
+  your videos then go to that computer, and to that computer only.
 - **Two languages**: every analysis exists in French and in English. The models write in one
   language (System page), then the "Translation" step translates their texts into the other,
   without redoing anything; the interface shows them, and exports them (files, timelines,
@@ -140,6 +130,17 @@ loads its fonts from Google Fonts, and its presentation videos from YouTube
   become markers. The download is a ZIP: OTIO for Resolve, FCPXML for Final Cut Pro, SRT files
   and a README.txt. When the timeline is created directly, the subtitles are placed on it (a
   "Transcript" track, a "Shots" track) and also written next to each video.
+- **Choosing your vision model**: the "Model bench" page compares the LM Studio models you tick,
+  on frames from your library. It shows them as LM Studio's folders arrange them (a tree of
+  families and models, each quantization on its own line), coloured and filtered by family,
+  number of parameters and quantization. Each one is loaded alone, queried the way the analyses query it,
+  then unloaded; a table gives the graphics memory used, the time per frame, the valid answers,
+  whether the answers are in the requested language, the text read and the positions, and you
+  grade the descriptions blind. A ranking, profiles and charts sum these measures up, and a
+  history keeps every test: the overall ranking compares the latest result of each model across
+  all tests. This is the only place where the application loads a model, at your request; it
+  then reloads the one that was there before. The page needs LM Studio, since it loads and
+  unloads the models one by one: with an OpenAI-compatible server, it says so and does not start.
 
 ## Requirements
 
@@ -149,10 +150,10 @@ loads its fonts from Google Fonts, and its presentation videos from YouTube
   start), FFmpeg and ExifTool: `scripts/bootstrap.ps1` (Windows) or `scripts/bootstrap.sh` (Mac)
   installs them. On a Mac, FFmpeg comes in its full build, `ffmpeg-full`, whose zscale filter
   turns HDR videos into frames for the vision model.
-- **LM Studio**, with the local server enabled and a vision model loaded (e.g.
-  `qwen/qwen3-vl-8b`): on the same computer or on another one, under Windows, macOS or Linux.
-  The vision model can also run in a server compatible with OpenAI's API (vLLM…):
-  [see below](#with-vllm-or-another-openai-compatible-server).
+- **A model server** with a vision model loaded (e.g. `qwen/qwen3-vl-8b`), on the same computer
+  or on another one. By default, LM Studio with its local server enabled, under Windows, macOS
+  or Linux; the vision model can also run in a server compatible with OpenAI's API, such as
+  vLLM or Strata: [see below](#with-vllm-strata-or-another-openai-compatible-server).
 - **DaVinci Resolve Studio 21.1 or later**, for the link with Resolve: on the same computer or
   on another one, under Windows, macOS or Linux.
 
@@ -186,12 +187,12 @@ or GitHub's "Code › Download ZIP" button, then unzip it.
    python.org, signed, on which the application runs; then it asks Windows whether it refuses
    any of the application's compiled files, and names those. It asks
    whether to install LM Studio on this PC: the vision model
-   can also run in the LM Studio of another computer. `-WithLMStudio` or `-NoLMStudio` gives
+   can also run in the model server of another computer. `-WithLMStudio` or `-NoLMStudio` gives
    the answer in advance. Accept the Windows (UAC) prompts. Its messages are in English, or in
    French on a Windows set to French; `VFE_LANG=en` or `VFE_LANG=fr` in the `.env` file decides,
    for `run.bat` and the `vfe` commands too.
 2. In LM Studio, download a vision model (for example `qwen/qwen3-vl-8b`), load it and start the
-   local server (see below when it runs on another computer).
+   local server (see below when it runs on another computer, and for vLLM or Strata).
 3. Open "Video Frame Expedition" from the Start menu, or double-click `run.bat`. The first time,
    it builds the web interface (one or two minutes), then opens the browser. Started before the
    installation, `run.bat` offers to do it.
@@ -264,11 +265,15 @@ import and the reset are done when the application starts again, which the card 
 click: the current database first goes to `backups`. Your videos, the subtitles laid in Resolve
 and the downloaded models are never touched.
 
-### LM Studio on another computer
+<a id="lm-studio-on-another-computer"></a>
 
-When LM Studio runs on another computer, download and load the model over there, and let its
-server accept the local network (Developer › Server Settings › "Serve on Local Network"); once
-the application is open, give its address on the System page, "Model server" card.
+### A model server on another computer
+
+When the model server runs on another computer, download and load the model over there, and
+let the server accept the local network (in LM Studio: Developer › Server Settings › "Serve on
+Local Network"); once the application is open, give its address on the System page, "Model
+server" card. For vLLM or Strata, see
+[below](#with-vllm-strata-or-another-openai-compatible-server).
 
 **Command line.** In this page, `vfe <command>` stands for the following command, typed in
 PowerShell (on a Mac, in the Terminal) from the application's folder:
@@ -277,15 +282,17 @@ PowerShell (on a Mac, in the Terminal) from the application's folder:
 uv run --frozen --no-dev --project backend python -m vfe_vision <command>
 ```
 
-For example, `vfe doctor` checks FFmpeg, ExifTool, the model server (LM Studio…) and the GPU (on
-a Mac, the chip and its memory); `vfe doctor --binaries` only what Windows (Smart App Control)
-thinks of the application's compiled files.
+For example, `vfe doctor` checks FFmpeg, ExifTool, the model server (Strata, LM Studio, vLLM…)
+and the GPU (on a Mac, the chip and its memory); `vfe doctor --binaries` only what Windows (Smart
+App Control) thinks of the application's compiled files.
 
-### With vLLM or another OpenAI-compatible server
+<a id="with-vllm-or-another-openai-compatible-server"></a>
 
-LM Studio remains the simplest choice. If you already run a server compatible with OpenAI's API
-(vLLM, llama.cpp's server…), for instance with a 30-billion-parameter vision model on one
-machine, the application can use it instead.
+### With vLLM, Strata or another OpenAI-compatible server
+
+LM Studio, the default server, remains the simplest. If you already run a server compatible
+with OpenAI's API (Strata, vLLM, llama.cpp's server…), for instance with a 30-billion-parameter
+vision model on one machine, the application can use it instead.
 
 On the server side, with vLLM:
 
@@ -320,8 +327,8 @@ never loads or unloads a model there. It switches thinking off
 (`chat_template_kwargs: {"enable_thinking": false}`, dropped if the server refuses that field),
 and says in plain words when a model refuses images, or when a request holds more images than
 the server allows. The "Model bench" page needs LM Studio, since it loads and unloads the models
-one by one: with an OpenAI-compatible server, it says so and does not start. As with an
-LM Studio on another computer, the frames of your videos go to that server, unencrypted on a
+one by one: with an OpenAI-compatible server, it says so and does not start. As with any
+model server on another computer, the frames of your videos go to that server, unencrypted on a
 local network; Tailscale, or an `https` address, encrypts them.
 
 ## Quick start
@@ -334,9 +341,9 @@ rebuilds the web interface; `run.bat build` (or `run.command build`) rebuilds it
 nothing has changed. To stop the application, close its window (on a Mac, the Terminal's, or
 press Ctrl+C).
 
-**The "Help" page** in the sidebar is the complete guide: twelve parts, the seven tabs of a video
-one by one, some fifty screenshots of the French interface, with the text in French and in
-English. It is the file
+**The "Help" page** in the sidebar is the complete guide: thirteen parts, the seven tabs of a video
+one by one, some sixty screenshots, of the English interface for the English text and of the
+French interface for the French text. It is the file
 [`frontend/public/help/index.html`](frontend/public/help/index.html), served at
 http://127.0.0.1:8765/help/index.html. It is also online, at
 [videoframeexpedition.github.io/video-frame-expedition-resolve](https://videoframeexpedition.github.io/video-frame-expedition-resolve/?lang=en), and the
@@ -386,8 +393,8 @@ ticked (off by default). The approach:
    `get_cut_points` for safe in and out points (never in the middle of a word, with J-cuts and
    L-cuts);
 3. `plan_reframe` prepares the reframing for another aspect ratio (9:16…): the image work is
-   done locally, by the vision model of LM Studio or of your model server (answers kept in a
-   cache), and Claude only looks at the contact sheets of the shots that were flagged;
+   done locally, by the vision model of your model server (answers kept in a cache), and Claude
+   only looks at the contact sheets of the shots that were flagged;
 4. `build_timeline` builds a **new** timeline "… - vfe vN" with these shots and these reframes,
    reads every duration and every value back, and `apply_markers` places chapters, highlights and
    metadata. No existing timeline is modified and **the project is not saved**: press Ctrl+S
@@ -432,5 +439,5 @@ the other products named here are trademarks of their respective owners.
 
 This repository is published so that the application can be installed and its code read. It does
 not take code contributions: pull requests are not merged. To report a bug, [open an
-issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/issues/new/choose): the form asks for the system (Windows or macOS, and its version), the graphics card or the Mac, the model loaded in
-LM Studio and the error message. To report a security flaw, see [SECURITY.md](SECURITY.md).
+issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/issues/new/choose): the form asks for the system (Windows or macOS, and its version), the graphics card or the Mac, the model server and
+the model loaded, and the error message. To report a security flaw, see [SECURITY.md](SECURITY.md).

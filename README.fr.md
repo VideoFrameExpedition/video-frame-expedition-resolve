@@ -61,8 +61,8 @@ avec DaVinci Resolve ont été essayés sur un Mac M1.
 > C'est la nouvelle version de *Video Frame Expedition* ; elle remplace l'ancienne.
 
 Vos images et vos sons ne quittent jamais votre machine, sauf, si vous le choisissez, vers le
-serveur de modèles (LM Studio, vLLM…) d'un autre de vos ordinateurs ; le modèle de vision tourne
-sur votre carte graphique. Les analyses ne font que deux appels réseau (une position arrondie et
+serveur de modèles (LM Studio, vLLM, Strata…) d'un autre de vos ordinateurs ; le modèle de
+vision tourne sur votre carte graphique. Les analyses ne font que deux appels réseau (une position arrondie et
 une date, pour trouver le lieu et la météo), et un seul interrupteur de la page Système les
 coupe ; le même interrupteur masque la carte OpenStreetMap de l'onglet Contexte, qui charge ses
 tuiles depuis internet. La page d'aide charge ses polices depuis Google Fonts, et ses vidéos de
@@ -88,30 +88,16 @@ présentation depuis YouTube (youtube-nocookie.com, seulement quand vous arrivez
   langue parlée) et `<nom>_SHOTS_FR.srt` (les plans, dans la langue de l'interface). Un fichier
   que l'application n'a pas écrit, ou que vous avez modifié, n'est jamais remplacé.
 - **Le modèle de vision reste sur le GPU** : l'application utilise le modèle que vous avez chargé
-  dans LM Studio (ou celui que sert votre serveur compatible OpenAI), sans jamais le recharger ni
-  en charger d'autres pendant les analyses. Elle ne
+  dans votre serveur de modèles (vLLM, Strata ou LM Studio), sans jamais le recharger ni en
+  charger d'autres pendant les analyses. Elle ne
   décode les vidéos sur le GPU que si ce modèle laisse assez de mémoire libre (par exemple avec
   `qwen/qwen3-vl-4b`).
-- **Choisir son modèle de vision** : la page « Banc d'essai » compare les modèles de LM Studio
-  que vous cochez, sur des images de votre bibliothèque. Elle les montre rangés comme dans les
-  dossiers de LM Studio (un arbre des familles et des modèles, chaque quantification sur sa
-  ligne), en couleur et avec des filtres selon la famille, le nombre de paramètres et la
-  quantification. Chacun est
-  chargé seul, interrogé comme le font les analyses, puis déchargé ; un tableau donne la mémoire
-  occupée sur la carte, le
-  temps par image, les réponses valides, les réponses dans la langue demandée, le texte lu et
-  les positions, et vous notez les descriptions à l'aveugle. Un classement, des profils et des
-  graphiques résument ces mesures, et un historique garde chaque test : le classement général y
-  compare le dernier résultat de chaque modèle, tous tests confondus. C'est le seul endroit où
-  l'application charge un modèle, à votre demande ; elle recharge ensuite celui qui était là.
-  La page a besoin de LM Studio, car elle charge et décharge les modèles un par un : avec un
-  serveur compatible OpenAI, elle le dit et ne se lance pas.
 - **Un serveur de modèles ici ou ailleurs** : par défaut, l'application parle au LM Studio de
   l'ordinateur. La carte « Serveur de modèles » de la page Système en désigne un autre — un PC de
-  votre réseau local ou de Tailscale, dont la carte graphique est plus puissante, avec LM Studio
-  ou un serveur compatible avec l'API d'OpenAI (vLLM…) —, le teste avant de l'adopter et garde
-  les connexions passées à portée de clic. Les images de vos vidéos partent alors vers cet
-  ordinateur, et seulement vers lui.
+  votre réseau local ou de Tailscale, dont la carte graphique est plus puissante, avec Strata,
+  LM Studio, vLLM ou un autre serveur compatible avec l'API d'OpenAI —, le teste avant de l'adopter
+  et garde les connexions passées à portée de clic. Les images de vos vidéos partent alors vers
+  cet ordinateur, et seulement vers lui.
 - **Deux langues** : chaque analyse existe en français et en anglais. Les modèles écrivent dans
   une langue (page Système), puis l'étape « Traduction » traduit leurs textes dans l'autre, sans
   rien refaire ; l'interface les montre, et les exporte (fichiers, timelines, sous-titres), dans
@@ -150,6 +136,20 @@ présentation depuis YouTube (youtube-nocookie.com, seulement quand vous arrivez
   Final Cut Pro, fichiers SRT et LISEZ-MOI.txt. En création directe, les sous-titres sont posés
   sur la timeline (une piste « Transcription », une piste « Plans ») et écrits aussi à côté de
   chaque vidéo.
+- **Choisir son modèle de vision** : la page « Banc d'essai » compare les modèles de LM Studio
+  que vous cochez, sur des images de votre bibliothèque. Elle les montre rangés comme dans les
+  dossiers de LM Studio (un arbre des familles et des modèles, chaque quantification sur sa
+  ligne), en couleur et avec des filtres selon la famille, le nombre de paramètres et la
+  quantification. Chacun est
+  chargé seul, interrogé comme le font les analyses, puis déchargé ; un tableau donne la mémoire
+  occupée sur la carte, le
+  temps par image, les réponses valides, les réponses dans la langue demandée, le texte lu et
+  les positions, et vous notez les descriptions à l'aveugle. Un classement, des profils et des
+  graphiques résument ces mesures, et un historique garde chaque test : le classement général y
+  compare le dernier résultat de chaque modèle, tous tests confondus. C'est le seul endroit où
+  l'application charge un modèle, à votre demande ; elle recharge ensuite celui qui était là.
+  La page a besoin de LM Studio, car elle charge et décharge les modèles un par un : avec un
+  serveur compatible OpenAI, elle le dit et ne se lance pas.
 
 ## Prérequis
 
@@ -160,10 +160,11 @@ présentation depuis YouTube (youtube-nocookie.com, seulement quand vous arrivez
   `scripts/bootstrap.sh` (Mac) les installe. Sur Mac, FFmpeg vient dans sa version complète,
   `ffmpeg-full`, dont le filtre zscale convertit les vidéos HDR en images pour le modèle de
   vision.
-- **LM Studio**, avec le serveur local activé et un modèle de vision chargé (ex.
-  `qwen/qwen3-vl-8b`) : sur le même ordinateur ou sur un autre, sous Windows, macOS ou Linux.
-  Le modèle de vision peut aussi tourner dans un serveur compatible avec l'API d'OpenAI
-  (vLLM…) : [voir plus bas](#avec-vllm-ou-un-autre-serveur-compatible-openai).
+- **Un serveur de modèles** avec un modèle de vision chargé (ex. `qwen/qwen3-vl-8b`), sur le
+  même ordinateur ou sur un autre. Par défaut, LM Studio avec son serveur local activé, sous
+  Windows, macOS ou Linux ; le modèle de vision peut aussi tourner dans un serveur compatible
+  avec l'API d'OpenAI, comme vLLM ou Strata :
+  [voir plus bas](#avec-vllm-strata-ou-un-autre-serveur-compatible-openai).
 - **DaVinci Resolve Studio 21.1 ou plus récent**, pour le lien avec Resolve : sur le même
   ordinateur ou sur un autre, sous Windows, macOS ou Linux.
 
@@ -198,14 +199,15 @@ ou le bouton « Code › Download ZIP » de GitHub, puis décompressez-la.
    Quand Smart App Control (Windows 11) est actif ou en évaluation, il installe aussi le
    Python 3.12 de python.org, signé, sur lequel l'application tourne ; puis il demande à
    Windows s'il refuse l'un des fichiers compilés de l'application, et nomme ceux-là.
-   Il demande s'il faut installer LM Studio sur ce PC : le
-   modèle de vision peut aussi tourner dans le LM Studio d'un autre ordinateur. `-AvecLMStudio`
-   ou `-SansLMStudio` donne la réponse d'avance. Acceptez les demandes d'autorisation de Windows
+   Il demande s'il faut installer LM Studio sur ce PC : le modèle de vision peut aussi tourner
+   dans le serveur de modèles d'un autre ordinateur. `-AvecLMStudio` ou `-SansLMStudio` donne la
+   réponse d'avance. Acceptez les demandes d'autorisation de Windows
    (UAC). Ses messages sont en français sur un Windows en français, en anglais sinon ;
    `VFE_LANG=fr` ou `VFE_LANG=en` dans le fichier `.env` impose l'une des deux langues, pour
    `run.bat` et les commandes `vfe` aussi.
 2. Dans LM Studio, téléchargez un modèle de vision (par exemple `qwen/qwen3-vl-8b`), chargez-le
-   et activez le serveur local (voir plus bas quand il tourne sur un autre ordinateur).
+   et activez le serveur local (voir plus bas quand il tourne sur un autre ordinateur, et pour
+   vLLM ou Strata).
 3. Ouvrez « Video Frame Expedition » depuis le menu Démarrer, ou double-cliquez sur `run.bat`.
    La première fois, il construit l'interface web (une à deux minutes), puis ouvre le
    navigateur. Lancé avant l'installation, `run.bat` propose de la faire.
@@ -284,12 +286,15 @@ réglages, ou les deux. L'import et la réinitialisation se font au redémarrage
 que la carte propose d'un clic : la base actuelle part d'abord dans `backups`. Vos vidéos, les
 sous-titres posés dans Resolve et les modèles téléchargés ne sont jamais touchés.
 
-### LM Studio sur un autre ordinateur
+<a id="lm-studio-sur-un-autre-ordinateur"></a>
 
-Quand LM Studio tourne sur un autre ordinateur, téléchargez et chargez le modèle là-bas, et
-laissez son serveur accepter le réseau local (Developer › Server Settings › « Serve on Local
-Network ») ; une fois l'application ouverte, donnez son adresse page Système, carte
-« Serveur de modèles ».
+### Un serveur de modèles sur un autre ordinateur
+
+Quand le serveur de modèles tourne sur un autre ordinateur, téléchargez et chargez le modèle
+là-bas, et laissez le serveur accepter le réseau local (dans LM Studio : Developer › Server
+Settings › « Serve on Local Network ») ; une fois l'application ouverte, donnez son adresse
+page Système, carte « Serveur de modèles ». Pour vLLM ou Strata, voir
+[plus bas](#avec-vllm-strata-ou-un-autre-serveur-compatible-openai).
 
 **Ligne de commande.** Dans cette page, `vfe <commande>` désigne la commande suivante, tapée
 dans PowerShell (sur un Mac, dans le Terminal) depuis le dossier de l'application :
@@ -298,15 +303,18 @@ dans PowerShell (sur un Mac, dans le Terminal) depuis le dossier de l'applicatio
 uv run --frozen --no-dev --project backend python -m vfe_vision <commande>
 ```
 
-Par exemple, `vfe doctor` vérifie FFmpeg, ExifTool, le serveur de modèles (LM Studio…) et le GPU
-(sur un Mac, la puce et sa mémoire) ; `vfe doctor --binaries`, seulement ce que Windows (Smart
-App Control) pense des fichiers compilés de l'application.
+Par exemple, `vfe doctor` vérifie FFmpeg, ExifTool, le serveur de modèles (Strata, LM Studio,
+vLLM…) et le GPU (sur un Mac, la puce et sa mémoire) ; `vfe doctor --binaries`, seulement ce que
+Windows (Smart App Control) pense des fichiers compilés de l'application.
 
-### Avec vLLM ou un autre serveur compatible OpenAI
+<a id="avec-vllm-ou-un-autre-serveur-compatible-openai"></a>
 
-LM Studio reste le choix le plus simple. Si vous faites déjà tourner un serveur compatible avec
-l'API d'OpenAI (vLLM, le serveur de llama.cpp…), par exemple avec un modèle de vision de
-30 milliards de paramètres sur une machine, l'application peut s'en servir à la place.
+### Avec vLLM, Strata ou un autre serveur compatible OpenAI
+
+LM Studio, le serveur par défaut, reste le plus simple. Si vous faites déjà tourner un serveur
+compatible avec l'API d'OpenAI (Strata, vLLM, le serveur de llama.cpp…), par exemple avec un
+modèle de vision de 30 milliards de paramètres sur une machine, l'application peut s'en servir à
+la place.
 
 Côté serveur, avec vLLM :
 
@@ -344,9 +352,9 @@ réflexion (`chat_template_kwargs: {"enable_thinking": false}`, retiré si le se
 champ), et dit en clair quand un modèle refuse les images, ou quand une requête porte plus
 d'images que le serveur n'en accepte. La page « Banc d'essai » a besoin de LM Studio, car elle
 charge et décharge les modèles un par un : avec un serveur compatible OpenAI, elle le dit et ne
-se lance pas. Comme pour le LM Studio d'un autre ordinateur, les images de vos vidéos partent
-vers ce serveur, sans chiffrement sur un réseau local ; Tailscale, ou une adresse `https`, les
-chiffre.
+se lance pas. Comme pour tout serveur de modèles sur un autre ordinateur, les images de vos
+vidéos partent vers ce serveur, sans chiffrement sur un réseau local ; Tailscale, ou une adresse
+`https`, les chiffre.
 
 ## Démarrage rapide
 
@@ -358,9 +366,9 @@ d'abord l'interface web ; `run.bat build` (ou `run.command build`) la reconstrui
 rien n'a changé. Pour arrêter l'application, fermez
 sa fenêtre (sur Mac, celle du Terminal, ou Ctrl+C).
 
-**La page « Aide »** de la barre latérale est le guide complet : douze parties, les sept onglets
-d'une vidéo un par un, une cinquantaine de captures de l'interface en français, avec le texte
-en français et en anglais. C'est le fichier
+**La page « Aide »** de la barre latérale est le guide complet : treize parties, les sept onglets
+d'une vidéo un par un, une soixantaine de captures, de l'interface en français pour le texte
+français et de l'interface en anglais pour le texte anglais. C'est le fichier
 [`frontend/public/help/index.html`](frontend/public/help/index.html), servi à
 http://127.0.0.1:8765/help/index.html. Il est aussi en ligne, à l'adresse
 [videoframeexpedition.github.io/video-frame-expedition-resolve](https://videoframeexpedition.github.io/video-frame-expedition-resolve/?lang=fr), et le
@@ -409,8 +417,8 @@ Connexions est cochée (désactivée par défaut). La démarche :
 2. Claude choisit les plans (`find_clips`, `get_synthesis`, `get_frames`) et demande à
    `get_cut_points` des entrées et sorties sûres (jamais dans un mot, J-cut et L-cut) ;
 3. `plan_reframe` prépare le recadrage pour une autre forme (9:16…) : le travail d'image se
-   fait en local, avec le modèle de vision de LM Studio ou de votre serveur de modèles (réponses
-   gardées en cache), et Claude ne regarde que les planches de contrôle des plans signalés ;
+   fait en local, avec le modèle de vision de votre serveur de modèles (réponses gardées en
+   cache), et Claude ne regarde que les planches de contrôle des plans signalés ;
 4. `build_timeline` construit une timeline **neuve** « … - vfe vN » avec ces plans et ces
    recadrages, relit chaque durée et chaque valeur, et `apply_markers` pose chapitres, moments
    forts et métadonnées. Aucune timeline existante n'est modifiée et **le projet n'est pas
@@ -454,7 +462,7 @@ quel, sans garantie ni support.
 Ce dépôt est publié pour que l'application puisse être installée et son code lu. Il ne prend pas
 de contributions de code : les demandes de fusion (pull requests) ne sont pas intégrées. Pour
 signaler un bug, [ouvrez une issue](https://github.com/VideoFrameExpedition/video-frame-expedition-resolve/issues/new/choose) : le formulaire demande le système (Windows ou macOS, et sa version), la
-carte graphique ou le Mac, le modèle chargé dans LM Studio et le message d'erreur. Pour signaler une faille
+carte graphique ou le Mac, le serveur de modèles et le modèle chargé, et le message d'erreur. Pour signaler une faille
 de sécurité, voir [SECURITY.fr.md](SECURITY.fr.md).
 
 Projet indépendant, ni affilié à Blackmagic Design ou à Anthropic, ni approuvé par eux ; DaVinci

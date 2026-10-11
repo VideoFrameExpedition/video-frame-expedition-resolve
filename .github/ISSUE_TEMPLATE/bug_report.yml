@@ -34,8 +34,8 @@ body:
   - type: input
     id: model
     attributes:
-      label: Model loaded in LM Studio · Modèle chargé dans LM Studio
-      placeholder: qwen/qwen3-vl-8b
+      label: Model server and model loaded · Serveur de modèles et modèle chargé
+      placeholder: LM Studio, qwen/qwen3-vl-8b
     validations:
       required: true
   - type: textarea

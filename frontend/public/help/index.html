@@ -1028,6 +1028,44 @@
           grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
         }
       }
+      /* A card across the width, its text in columns. */
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+      .card-cols {
+        display: grid;
+        gap: 14px 32px;
+      }
+      .card-cols > * {
+        margin: 0;
+      }
+      .card-cols > div > :last-child {
+        margin-bottom: 0;
+      }
+      @media (min-width: 720px) {
+        .card-cols {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (min-width: 980px) {
+        .card-cols.three,
+        .split.three,
+        .cards.three {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      /* Three cards on two columns: the third takes the whole row. */
+      @media (min-width: 720px) and (max-width: 979px) {
+        .split.three,
+        .cards.three {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .split.three > :nth-child(3),
+        .cards.three > :nth-child(3) {
+          grid-column: 1 / -1;
+        }
+      }
       .table-scroll {
         overflow-x: auto;
         border: 1px solid var(--line);
@@ -1660,7 +1698,7 @@
               <span class="fr-only">Sommaire</span><span class="en-only">Contents</span>
             </p>
             <h2>
-              <span class="fr-only">Douze parties</span><span class="en-only">Twelve parts</span>
+              <span class="fr-only">Treize parties</span><span class="en-only">Thirteen parts</span>
             </h2>
           </div>
           <nav class="toc" aria-label="Sommaire">
@@ -1678,11 +1716,8 @@
                 ><span class="fr-only">Installer et vérifier</span
                 ><span class="en-only">Install and check</span>
                 <small
-                  ><span class="fr-only"
-                    >prérequis, modèles, diagnostic, banc d'essai, préférences</span
-                  ><span class="en-only"
-                    >requirements, models, diagnostic, model bench, preferences</span
-                  ></small
+                  ><span class="fr-only">prérequis, modèles, diagnostic, préférences</span
+                  ><span class="en-only">requirements, models, diagnostic, preferences</span></small
                 ></span
               ></a
             >
@@ -1767,6 +1802,16 @@
                 ></span
               ></a
             >
+            <a href="#banc-essai"
+              ><span
+                ><span class="fr-only">Choisir son modèle de vision</span
+                ><span class="en-only">Choosing your vision model</span>
+                <small
+                  ><span class="fr-only">le banc d'essai, sur vos propres images</span
+                  ><span class="en-only">the model bench, on your own frames</span></small
+                ></span
+              ></a
+            >
             <a href="#vie-privee"
               ><span
                 ><span class="fr-only">Vie privée</span><span class="en-only">Privacy</span>
@@ -1846,7 +1891,7 @@
             </div>
           </div>
 
-          <div class="cards">
+          <div class="cards three">
             <div class="card">
               <span class="num">01</span>
               <h3><span class="fr-only">Seule</span><span class="en-only">On its own</span></h3>
@@ -2427,20 +2472,20 @@
             <p>
               <span class="fr-only">
                 <strong>Le modèle de vision reste sur le GPU.</strong>
-                L'application se sert du modèle que <em>vous</em> avez chargé dans
-                LM&nbsp;Studio&nbsp;: pendant les analyses, elle n'en charge, n'en décharge et n'en
-                remplace jamais aucun. Seule la page « Banc d'essai » en charge, à votre demande,
-                pour les comparer. Le décodage vidéo et la transcription n'empruntent la carte que
-                s'il reste assez de mémoire libre, avec une marge&nbsp;; sinon ils restent sur le
-                processeur.
+                L'application se sert du modèle que <em>vous</em> avez chargé dans votre serveur de
+                modèles (vLLM, Strata ou LM&nbsp;Studio)&nbsp;: pendant les analyses, elle n'en
+                charge, n'en décharge et n'en remplace jamais aucun. Seule la page « Banc d'essai »
+                en charge, à votre demande, pour les comparer. Le décodage vidéo et la transcription
+                n'empruntent la carte que s'il reste assez de mémoire libre, avec une marge&nbsp;;
+                sinon ils restent sur le processeur.
               </span>
               <span class="en-only">
                 <strong>The vision model stays on the GPU.</strong>
-                The application uses the model <em>you</em> loaded in LM&nbsp;Studio: during the
-                analyses it never loads, unloads or swaps one. Only the "Model bench" page loads
-                models, at your request, to compare them. Video decoding and transcription only
-                borrow the card when enough memory is free, with a margin; otherwise they stay on
-                the CPU.
+                The application uses the model <em>you</em> loaded in your model server (vLLM,
+                Strata or LM&nbsp;Studio): during the analyses it never loads, unloads or swaps one.
+                Only the "Model bench" page loads models, at your request, to compare them. Video
+                decoding and transcription only borrow the card when enough memory is free, with a
+                margin; otherwise they stay on the CPU.
               </span>
             </p>
           </div>
@@ -2464,7 +2509,7 @@
               <span class="fr-only">Ce qu'il vous faut</span
               ><span class="en-only">What you need</span>
             </h3>
-            <div class="split" style="margin-top: 0">
+            <div class="split three" style="margin-top: 0">
               <div class="card">
                 <h4>
                   <span class="fr-only">L'application</span
@@ -2526,56 +2571,6 @@
               </div>
               <div class="card">
                 <h4>
-                  <span class="fr-only">Le modèle de vision</span>
-                  <span class="en-only">The vision model</span>
-                </h4>
-                <p>
-                  <span class="fr-only">
-                    <a href="https://lmstudio.ai">LM&nbsp;Studio</a> doit tourner, son
-                    <strong>serveur local activé</strong>, et un modèle <em>de vision</em> chargé —
-                    par exemple <code>qwen/qwen3-vl-4b</code> ou <code>qwen/qwen3-vl-8b</code>. Sur
-                    le même ordinateur ou sur un autre, sous Windows, macOS ou Linux&nbsp;:
-                    <a href="#systeme">page Système</a>, carte «&nbsp;Serveur de modèles&nbsp;».
-                  </span>
-                  <span class="en-only">
-                    <a href="https://lmstudio.ai">LM&nbsp;Studio</a> must be running, its
-                    <strong>local server on</strong>, and a <em>vision</em> model loaded — for
-                    instance <code>qwen/qwen3-vl-4b</code> or <code>qwen/qwen3-vl-8b</code>. On the
-                    same computer or on another one, under Windows, macOS or Linux:
-                    <a href="#systeme">System page</a>, "Model server" card.
-                  </span>
-                </p>
-                <p>
-                  <span class="fr-only"
-                    >Le modèle de vision peut aussi tourner dans un serveur compatible avec l'API
-                    d'OpenAI, comme vLLM, si vous en faites déjà tourner un&nbsp;: voir
-                    <a href="#faq-vllm"
-                      >«&nbsp;Puis-je utiliser vLLM plutôt que LM&nbsp;Studio&nbsp;?&nbsp;»</a
-                    >.</span
-                  >
-                  <span class="en-only"
-                    >The vision model can also run in a server compatible with OpenAI's API, such as
-                    vLLM, if you already run one: see
-                    <a href="#faq-vllm">"Can I use vLLM instead of LM&nbsp;Studio?"</a>.</span
-                  >
-                </p>
-                <p>
-                  <span class="fr-only"
-                    >C'est vous qui décidez ce qui occupe la carte&nbsp;: pendant les analyses,
-                    l'application ne charge jamais de modèle elle-même. Pour choisir entre plusieurs
-                    modèles, la page <a href="#banc-essai">Banc d'essai</a> les compare sur vos
-                    propres images.</span
-                  >
-                  <span class="en-only"
-                    >What occupies the card is your call: during the analyses, the application never
-                    loads a model itself. To choose between several models, the
-                    <a href="#banc-essai">Model bench</a> page compares them on your own
-                    frames.</span
-                  >
-                </p>
-              </div>
-              <div class="card">
-                <h4>
                   <span class="fr-only win-only">La carte graphique</span>
                   <span class="fr-only mac-only">La mémoire du Mac</span
                   ><span class="en-only win-only">The graphics card</span>
@@ -2608,8 +2603,8 @@
                 <p>
                   <span class="fr-only win-only">
                     Sans elle, le même travail se fait sur le processeur, et le modèle de vision
-                    tourne sur ce que LM&nbsp;Studio prend en charge sur votre ordinateur&nbsp;;
-                    cela n'a pas été testé sur d'autres cartes.
+                    tourne sur ce que votre serveur de modèles prend en charge sur votre
+                    ordinateur&nbsp;; cela n'a pas été testé sur d'autres cartes.
                   </span>
                   <span class="fr-only mac-only">
                     Comptez 32&nbsp;Go pour un modèle de vision de 8&nbsp;milliards de paramètres à
@@ -2619,8 +2614,8 @@
                   </span>
                   <span class="en-only win-only">
                     Without one, the same work is done on the processor, and the vision model runs
-                    on whatever LM&nbsp;Studio supports on your computer; this has not been tested
-                    on other cards.
+                    on whatever your model server supports on your computer; this has not been
+                    tested on other cards.
                   </span>
                   <span class="en-only mac-only">
                     Count on 32&nbsp;GB for an 8-billion-parameter vision model next to Resolve;
@@ -2643,6 +2638,64 @@
                     Resolve: on the same computer or on another one, under Windows, macOS or Linux
                     (<a href="#combo-autre-ordinateur">diagram 06</a>).
                   </span>
+                </p>
+              </div>
+            </div>
+            <div class="card" style="margin-top: 16px">
+              <h4>
+                <span class="fr-only">Le modèle de vision</span>
+                <span class="en-only">The vision model</span>
+              </h4>
+              <div class="card-cols three">
+                <p>
+                  <span class="fr-only">
+                    Un <strong>serveur de modèles</strong> doit tourner, avec un modèle
+                    <em>de vision</em> chargé — par exemple <code>qwen/qwen3-vl-4b</code> ou
+                    <code>qwen/qwen3-vl-8b</code>. Par défaut, c'est
+                    <a href="https://lmstudio.ai">LM&nbsp;Studio</a>, son
+                    <strong>serveur local activé</strong>, sur le même ordinateur ou sur un autre,
+                    sous Windows, macOS ou Linux&nbsp;: <a href="#systeme">page Système</a>, carte
+                    «&nbsp;Serveur de modèles&nbsp;».
+                  </span>
+                  <span class="en-only">
+                    A <strong>model server</strong> must be running, with a <em>vision</em> model
+                    loaded — for instance <code>qwen/qwen3-vl-4b</code> or
+                    <code>qwen/qwen3-vl-8b</code>. By default it is
+                    <a href="https://lmstudio.ai">LM&nbsp;Studio</a>, its
+                    <strong>local server on</strong>, on the same computer or on another one, under
+                    Windows, macOS or Linux: <a href="#systeme">System page</a>, "Model server"
+                    card.
+                  </span>
+                </p>
+                <p>
+                  <span class="fr-only"
+                    >Le modèle de vision peut aussi tourner dans un serveur compatible avec l'API
+                    d'OpenAI, comme Strata ou vLLM, si vous en faites déjà tourner un&nbsp;: voir
+                    <a href="#faq-vllm"
+                      >«&nbsp;Puis-je utiliser vLLM ou Strata plutôt que
+                      LM&nbsp;Studio&nbsp;?&nbsp;»</a
+                    >.</span
+                  >
+                  <span class="en-only"
+                    >The vision model can also run in a server compatible with OpenAI's API, such as
+                    Strata or vLLM, if you already run one: see
+                    <a href="#faq-vllm">"Can I use vLLM or Strata instead of LM&nbsp;Studio?"</a
+                    >.</span
+                  >
+                </p>
+                <p>
+                  <span class="fr-only"
+                    >C'est vous qui décidez ce qui occupe la carte&nbsp;: pendant les analyses,
+                    l'application ne charge jamais de modèle elle-même. Pour choisir entre plusieurs
+                    modèles, la page <a href="#banc-essai">Banc d'essai</a> les compare sur vos
+                    propres images.</span
+                  >
+                  <span class="en-only"
+                    >What occupies the card is your call: during the analyses, the application never
+                    loads a model itself. To choose between several models, the
+                    <a href="#banc-essai">Model bench</a> page compares them on your own
+                    frames.</span
+                  >
                 </p>
               </div>
             </div>
@@ -2711,7 +2764,7 @@
                     nomme ceux-là&nbsp;; la <a href="#systeme">page Système</a> le redit
                     (vérification «&nbsp;Modules natifs&nbsp;»). Il demande s'il faut installer
                     LM&nbsp;Studio sur ce PC&nbsp;: le modèle de vision peut aussi tourner dans le
-                    LM&nbsp;Studio d'un autre ordinateur. <code>-AvecLMStudio</code> ou
+                    serveur de modèles d'un autre ordinateur. <code>-AvecLMStudio</code> ou
                     <code>-SansLMStudio</code> donne la réponse d'avance. Acceptez les demandes
                     d'autorisation de Windows (UAC). Ses messages suivent la langue de Windows
                     (français ou anglais).
@@ -2725,14 +2778,14 @@
                     ses modèles (environ 2&nbsp;Go, une seule fois), et ajoute «&nbsp;Video Frame
                     Expedition&nbsp;» à votre dossier Applications. Elle demande s'il faut installer
                     LM&nbsp;Studio sur ce Mac&nbsp;: le modèle de vision peut aussi tourner dans le
-                    LM&nbsp;Studio d'un autre ordinateur. La même ligne, relancée, met l'application
-                    à jour. Ses messages suivent la langue du Mac (français ou anglais). Vous avez
-                    déjà le dossier de l'application (<code>git clone</code> ou ZIP)&nbsp;?
-                    Double-cliquez sur <code>install.command</code>&nbsp;: la même installation,
-                    depuis ce dossier, sans rien télécharger de nouveau. Venu d'un ZIP, macOS refuse
-                    de l'ouvrir la première fois&nbsp;: Réglages Système › Confidentialité et
-                    sécurité › «&nbsp;Ouvrir quand même&nbsp;». Il retire ensuite la marque de
-                    quarantaine de tout le dossier.
+                    serveur de modèles d'un autre ordinateur. La même ligne, relancée, met
+                    l'application à jour. Ses messages suivent la langue du Mac (français ou
+                    anglais). Vous avez déjà le dossier de l'application (<code>git clone</code> ou
+                    ZIP)&nbsp;? Double-cliquez sur <code>install.command</code>&nbsp;: la même
+                    installation, depuis ce dossier, sans rien télécharger de nouveau. Venu d'un
+                    ZIP, macOS refuse de l'ouvrir la première fois&nbsp;: Réglages Système ›
+                    Confidentialité et sécurité › «&nbsp;Ouvrir quand même&nbsp;». Il retire ensuite
+                    la marque de quarantaine de tout le dossier.
                   </span>
                   <span class="en-only win-only">
                     The script installs through <code>winget</code> what is missing (uv, Node.js,
@@ -2744,7 +2797,7 @@
                     refuses any of the application's compiled files and names those; the
                     <a href="#systeme">System page</a> says it again (the "Modules natifs" check).
                     It asks whether to install LM&nbsp;Studio on this PC: the vision model can also
-                    run in the LM&nbsp;Studio of another computer. <code>-WithLMStudio</code> or
+                    run in the model server of another computer. <code>-WithLMStudio</code> or
                     <code>-NoLMStudio</code> gives the answer in advance. Accept the Windows (UAC)
                     prompts. Its messages follow the language of Windows (English or French).
                   </span>
@@ -2756,7 +2809,7 @@
                     full build of FFmpeg, ExifTool), the application's Python packages and its
                     models (about 2&nbsp;GB, once only), and adds "Video Frame Expedition" to your
                     Applications folder. It asks whether to install LM&nbsp;Studio on this Mac: the
-                    vision model can also run in the LM&nbsp;Studio of another computer. Run again,
+                    vision model can also run in the model server of another computer. Run again,
                     the same line updates the application. Its messages follow the language of the
                     Mac (English or French). Already have the application's folder (<code
                       >git clone</code
@@ -3036,7 +3089,7 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
               <p>
                 <span class="fr-only">
                   Plus bas viennent les réglages&nbsp;: le
-                  <strong>serveur de modèles</strong> (LM&nbsp;Studio, vLLM…), le
+                  <strong>serveur de modèles</strong> (vLLM, LM&nbsp;Studio, Strata…), le
                   <strong>modèle de vision</strong> à employer, le prêt de la
                   <strong>carte graphique</strong>, la <strong>langue de rédaction</strong> des
                   modèles et la traduction des analyses existantes, les
@@ -3046,8 +3099,8 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                   à exporter, importer ou réinitialiser.
                 </span>
                 <span class="en-only">
-                  Below come the settings: the <strong>model server</strong> (LM&nbsp;Studio,
-                  vLLM…), which <strong>vision model</strong> to use, whether the
+                  Below come the settings: the <strong>model server</strong> (vLLM, LM&nbsp;Studio,
+                  Strata…), which <strong>vision model</strong> to use, whether the
                   <strong>graphics card</strong> may be lent, the
                   <strong>language the models write in</strong> and the translation of existing
                   analyses, the <strong>analysis files</strong> written — or not — next to your
@@ -3056,186 +3109,209 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                 </span>
               </p>
             </div>
-            <div class="split" style="margin-top: 22px">
+            <div class="stack" style="margin-top: 22px">
               <div class="card">
                 <h4>
                   <span class="fr-only">La carte «&nbsp;Serveur de modèles&nbsp;»</span>
                   <span class="en-only">The "Model server" card</span>
                 </h4>
-                <p>
-                  <span class="fr-only"
-                    >Elle dit à quel serveur l'application confie les images, et s'il répond. Par
-                    défaut, c'est le LM&nbsp;Studio de cet ordinateur. Pour un autre ordinateur de
-                    votre réseau — un PC dont la carte graphique est plus puissante, joint par le
-                    réseau local ou par Tailscale — ou un autre serveur de modèles, choisissez
-                    «&nbsp;À une autre adresse&nbsp;» et tapez-la&nbsp;: <code>192.168.1.20</code>,
-                    <code>100.64.12.34:1234</code>, le nom de l'ordinateur, ou
-                    <code>127.0.0.1:8000</code> pour vLLM sur cet ordinateur.</span
-                  >
-                  <span class="en-only"
-                    >It says which server the application hands the frames to, and whether it
-                    answers. By default it is the LM&nbsp;Studio of this computer. For another
-                    computer of your network — a PC with a more powerful graphics card, reached over
-                    the local network or Tailscale — or another model server, pick "At another
-                    address" and type it: <code>192.168.1.20</code>, <code>100.64.12.34:1234</code>,
-                    the computer's name, or <code>127.0.0.1:8000</code> for vLLM on this
-                    computer.</span
-                  >
-                </p>
-                <p>
-                  <span class="fr-only"
-                    >Le <strong>type de serveur</strong> se trouve tout seul&nbsp;: l'application
-                    cherche LM&nbsp;Studio d'abord, puis, quand l'API propre de LM&nbsp;Studio
-                    manque, demande ses modèles à un serveur compatible OpenAI
-                    (<code>/v1/models</code>). Vous pouvez aussi le dire&nbsp;:
-                    «&nbsp;LM&nbsp;Studio&nbsp;», ou «&nbsp;Compatible OpenAI (vLLM,
-                    llama.cpp…)&nbsp;» pour un serveur comme <a href="#faq-vllm">vLLM</a>. Pour
-                    celui-ci&nbsp;:</span
-                  >
-                  <span class="en-only"
-                    >The <strong>server type</strong> is found out on its own: the application looks
-                    for LM&nbsp;Studio first and, when LM&nbsp;Studio's own API is missing, asks an
-                    OpenAI-compatible server for its models (<code>/v1/models</code>). You can also
-                    say it: "LM&nbsp;Studio", or "OpenAI-compatible (vLLM, llama.cpp…)" for a server
-                    such as <a href="#faq-vllm">vLLM</a>. For the latter:</span
-                  >
-                </p>
-                <ul>
-                  <li>
-                    <span class="fr-only"
-                      >l'adresse garde son port et son chemin, <code>/v1</code> s'il n'y en a
-                      pas&nbsp;: <code>gpu-box:8000</code> devient
-                      <code>http://gpu-box:8000/v1</code>&nbsp;;</span
-                    >
-                    <span class="en-only"
-                      >the address keeps its port and its path, <code>/v1</code> when there is none:
-                      <code>gpu-box:8000</code> becomes <code>http://gpu-box:8000/v1</code>;</span
-                    >
-                  </li>
-                  <li>
-                    <span class="fr-only"
-                      ><strong>«&nbsp;Requêtes envoyées à la fois&nbsp;»</strong>, de 1 à 32, 4 par
-                      défaut&nbsp;: vLLM traite les requêtes par lots, et 4 à 8 lui font décrire
-                      plusieurs images à la fois&nbsp;;</span
-                    >
-                    <span class="en-only"
-                      ><strong>"Requests sent at once"</strong>, 1 to 32, 4 by default: vLLM handles
-                      requests in batches, and 4 to 8 let it describe several frames at once;</span
-                    >
-                  </li>
-                  <li>
-                    <span class="fr-only"
-                      ><strong>«&nbsp;Ce serveur voit les images&nbsp;»</strong>, coché par
-                      défaut&nbsp;: un tel serveur ne dit pas si ses modèles voient les
-                      images.</span
-                    >
-                    <span class="en-only"
-                      ><strong>"This server sees images"</strong>, ticked by default: such a server
-                      does not say whether its models see images.</span
-                    >
-                  </li>
-                </ul>
-                <p>
-                  <span class="fr-only"
-                    >Sur un autre ordinateur, LM&nbsp;Studio doit accepter les connexions du réseau
-                    (Developer&nbsp;› Server Settings&nbsp;› «&nbsp;Serve on Local Network&nbsp;»).
-                    Si le serveur demande un jeton d'API (celui de LM&nbsp;Studio, ou le
-                    <code>--api-key</code> de vLLM), saisissez-le avec l'adresse&nbsp;: il n'est
-                    envoyé qu'à elle. <strong>«&nbsp;Tester&nbsp;»</strong> dit ce qui a répondu
-                    avant d'enregistrer&nbsp;; à un serveur compatible OpenAI, il montre en plus une
-                    toute petite image, pour savoir si son premier modèle de vision voit les images.
-                    Le changement vaut tout de suite, sans redémarrer&nbsp;; il est refusé tant
-                    qu'une analyse est en cours. Les <strong>connexions passées</strong> restent
-                    listées, avec leur type et leurs réglages&nbsp;: un clic y revient, la corbeille
-                    en oublie une.</span
-                  >
-                  <span class="en-only"
-                    >On another computer, LM&nbsp;Studio must accept network connections
-                    (Developer&nbsp;› Server Settings&nbsp;› "Serve on Local Network"). If the
-                    server asks for an API token (LM&nbsp;Studio's, or vLLM's
-                    <code>--api-key</code>), type it with the address: it is sent to that address
-                    only. <strong>"Test"</strong> says what answered before you save; to an
-                    OpenAI-compatible server, it also shows a tiny image, to tell whether its first
-                    vision model sees images. The change applies at once, without a restart; it is
-                    refused while an analysis is running. The <strong>past connections</strong> stay
-                    listed, with their type and settings: one click goes back to one, the bin
-                    forgets it.</span
-                  >
-                </p>
-                <p>
-                  <span class="fr-only"
-                    >Les images de vos vidéos partent alors vers cette adresse&nbsp;: sur un réseau
-                    local elles voyagent sans chiffrement, Tailscale les chiffre.</span
-                  >
-                  <span class="en-only"
-                    >The frames of your videos then go to that address: unencrypted on a local
-                    network, encrypted by Tailscale.</span
-                  >
-                </p>
+                <div class="card-cols">
+                  <div>
+                    <p>
+                      <span class="fr-only"
+                        >Elle dit à quel serveur l'application confie les images, et s'il répond.
+                        Par défaut, c'est le LM&nbsp;Studio de cet ordinateur. Pour un autre
+                        ordinateur de votre réseau — un PC dont la carte graphique est plus
+                        puissante, joint par le réseau local ou par Tailscale — ou un autre serveur
+                        de modèles, choisissez «&nbsp;À une autre adresse&nbsp;» et tapez-la&nbsp;:
+                        <code>192.168.1.20</code>, <code>100.64.12.34:1234</code>, le nom de
+                        l'ordinateur, ou <code>127.0.0.1:8000</code> pour vLLM sur cet
+                        ordinateur.</span
+                      >
+                      <span class="en-only"
+                        >It says which server the application hands the frames to, and whether it
+                        answers. By default it is the LM&nbsp;Studio of this computer. For another
+                        computer of your network — a PC with a more powerful graphics card, reached
+                        over the local network or Tailscale — or another model server, pick "At
+                        another address" and type it: <code>192.168.1.20</code>,
+                        <code>100.64.12.34:1234</code>, the computer's name, or
+                        <code>127.0.0.1:8000</code> for vLLM on this computer.</span
+                      >
+                    </p>
+                    <p>
+                      <span class="fr-only"
+                        >Sur un autre ordinateur, LM&nbsp;Studio doit accepter les connexions du
+                        réseau (Developer&nbsp;› Server Settings&nbsp;› «&nbsp;Serve on Local
+                        Network&nbsp;»). Si le serveur demande un jeton d'API (celui de
+                        LM&nbsp;Studio, ou le <code>--api-key</code> de vLLM), saisissez-le avec
+                        l'adresse&nbsp;: il n'est envoyé qu'à elle.
+                        <strong>«&nbsp;Tester&nbsp;»</strong> dit ce qui a répondu avant
+                        d'enregistrer&nbsp;; à un serveur compatible OpenAI, il montre en plus une
+                        toute petite image, pour savoir si son premier modèle de vision voit les
+                        images. Le changement vaut tout de suite, sans redémarrer&nbsp;; il est
+                        refusé tant qu'une analyse est en cours. Les
+                        <strong>connexions passées</strong> restent listées, avec leur type et leurs
+                        réglages&nbsp;: un clic y revient, la corbeille en oublie une.</span
+                      >
+                      <span class="en-only"
+                        >On another computer, LM&nbsp;Studio must accept network connections
+                        (Developer&nbsp;› Server Settings&nbsp;› "Serve on Local Network"). If the
+                        server asks for an API token (LM&nbsp;Studio's, or vLLM's
+                        <code>--api-key</code>), type it with the address: it is sent to that
+                        address only. <strong>"Test"</strong> says what answered before you save; to
+                        an OpenAI-compatible server, it also shows a tiny image, to tell whether its
+                        first vision model sees images. The change applies at once, without a
+                        restart; it is refused while an analysis is running. The
+                        <strong>past connections</strong> stay listed, with their type and settings:
+                        one click goes back to one, the bin forgets it.</span
+                      >
+                    </p>
+                  </div>
+                  <div>
+                    <p>
+                      <span class="fr-only"
+                        >Le <strong>type de serveur</strong> se trouve tout seul&nbsp;:
+                        l'application cherche LM&nbsp;Studio d'abord, puis, quand l'API propre de
+                        LM&nbsp;Studio manque, demande ses modèles à un serveur compatible OpenAI
+                        (<code>/v1/models</code>). Vous pouvez aussi le dire&nbsp;:
+                        «&nbsp;LM&nbsp;Studio&nbsp;», ou «&nbsp;Compatible OpenAI (vLLM,
+                        llama.cpp…)&nbsp;» pour un serveur comme
+                        <a href="#faq-vllm">vLLM ou Strata</a>. Pour celui-ci&nbsp;:</span
+                      >
+                      <span class="en-only"
+                        >The <strong>server type</strong> is found out on its own: the application
+                        looks for LM&nbsp;Studio first and, when LM&nbsp;Studio's own API is
+                        missing, asks an OpenAI-compatible server for its models
+                        (<code>/v1/models</code>). You can also say it: "LM&nbsp;Studio", or
+                        "OpenAI-compatible (vLLM, llama.cpp…)" for a server such as
+                        <a href="#faq-vllm">vLLM or Strata</a>. For the latter:</span
+                      >
+                    </p>
+                    <ul>
+                      <li>
+                        <span class="fr-only"
+                          >l'adresse garde son port et son chemin, <code>/v1</code> s'il n'y en a
+                          pas&nbsp;: <code>gpu-box:8000</code> devient
+                          <code>http://gpu-box:8000/v1</code>&nbsp;;</span
+                        >
+                        <span class="en-only"
+                          >the address keeps its port and its path, <code>/v1</code> when there is
+                          none: <code>gpu-box:8000</code> becomes
+                          <code>http://gpu-box:8000/v1</code>;</span
+                        >
+                      </li>
+                      <li>
+                        <span class="fr-only"
+                          ><strong>«&nbsp;Requêtes envoyées à la fois&nbsp;»</strong>, de 1 à 32, 4
+                          par défaut&nbsp;: vLLM traite les requêtes par lots, et 4 à 8 lui font
+                          décrire plusieurs images à la fois&nbsp;;</span
+                        >
+                        <span class="en-only"
+                          ><strong>"Requests sent at once"</strong>, 1 to 32, 4 by default: vLLM
+                          handles requests in batches, and 4 to 8 let it describe several frames at
+                          once;</span
+                        >
+                      </li>
+                      <li>
+                        <span class="fr-only"
+                          ><strong>«&nbsp;Ce serveur voit les images&nbsp;»</strong>, coché par
+                          défaut&nbsp;: un tel serveur ne dit pas si ses modèles voient les
+                          images.</span
+                        >
+                        <span class="en-only"
+                          ><strong>"This server sees images"</strong>, ticked by default: such a
+                          server does not say whether its models see images.</span
+                        >
+                      </li>
+                    </ul>
+                    <p>
+                      <span class="fr-only"
+                        >Les images de vos vidéos partent alors vers cette adresse&nbsp;: sur un
+                        réseau local elles voyagent sans chiffrement, Tailscale les chiffre.</span
+                      >
+                      <span class="en-only"
+                        >The frames of your videos then go to that address: unencrypted on a local
+                        network, encrypted by Tailscale.</span
+                      >
+                    </p>
+                  </div>
+                </div>
               </div>
               <div class="card">
                 <h4>
                   <span class="fr-only">La carte «&nbsp;Vos données&nbsp;»</span>
                   <span class="en-only">The "Your data" card</span>
                 </h4>
-                <p>
-                  <span class="fr-only">Elle sauvegarde, déplace ou efface la bibliothèque.</span>
-                  <span class="en-only">It backs up, moves or erases the library.</span>
-                </p>
-                <ul>
-                  <li>
-                    <span class="fr-only"
-                      ><strong>Exporter</strong> prépare une archive ZIP de la base de données — la
-                      bibliothèque et les réglages, jetons enregistrés compris&nbsp;: rangez-la en
-                      lieu sûr —, avec ou sans les images extraites des vidéos. Sans elles,
-                      l'archive est bien plus légère, mais une bibliothèque importée sur un autre
-                      ordinateur n'aurait plus ses images.</span
-                    >
-                    <span class="en-only"
-                      ><strong>Export</strong> prepares a ZIP archive of the database — the library
-                      and the settings, saved tokens included: keep it somewhere safe —, with or
-                      without the frames taken from the videos. Without them the archive is much
-                      lighter, but a library imported on another computer would lose its
-                      frames.</span
-                    >
-                  </li>
-                  <li>
-                    <span class="fr-only"
-                      ><strong>Importer</strong> reprend une telle archive, ou une base du dossier
-                      <code>backups</code>, en gardant au choix les réglages de cet ordinateur.
-                      Celle d'une version plus récente de l'application est refusée.</span
-                    >
-                    <span class="en-only"
-                      ><strong>Import</strong> takes such an archive back, or a database of the
-                      <code>backups</code> folder, keeping this computer's settings if you wish. One
-                      from a newer version of the application is refused.</span
-                    >
-                  </li>
-                  <li>
-                    <span class="fr-only"
-                      ><strong>Réinitialiser</strong> efface la bibliothèque, les réglages (adresse
-                      du serveur de modèles comprise), ou les deux.</span
-                    >
-                    <span class="en-only"
-                      ><strong>Reset</strong> erases the library, the settings (the model server's
-                      address included), or both.</span
-                    >
-                  </li>
-                </ul>
-                <p>
-                  <span class="fr-only"
-                    >L'import et la réinitialisation se font au redémarrage de l'application&nbsp;:
-                    un avis apparaît sous le bouton, avec
-                    <strong>«&nbsp;Redémarrer maintenant&nbsp;»</strong>. La fenêtre du terminal la
-                    relance, et la page se recharge d'elle-même, sans ouvrir d'autre onglet.</span
-                  >
-                  <span class="en-only"
-                    >The import and the reset are done when the application starts again: a notice
-                    appears under the button, with <strong>"Restart now"</strong>. The terminal
-                    window starts it again, and the page reloads by itself, without opening another
-                    tab.</span
-                  >
-                </p>
+                <div class="card-cols">
+                  <div>
+                    <p>
+                      <span class="fr-only"
+                        >Elle sauvegarde, déplace ou efface la bibliothèque.</span
+                      >
+                      <span class="en-only">It backs up, moves or erases the library.</span>
+                    </p>
+                    <ul>
+                      <li>
+                        <span class="fr-only"
+                          ><strong>Exporter</strong> prépare une archive ZIP de la base de données —
+                          la bibliothèque et les réglages, jetons enregistrés compris&nbsp;:
+                          rangez-la en lieu sûr —, avec ou sans les images extraites des vidéos.
+                          Sans elles, l'archive est bien plus légère, mais une bibliothèque importée
+                          sur un autre ordinateur n'aurait plus ses images.</span
+                        >
+                        <span class="en-only"
+                          ><strong>Export</strong> prepares a ZIP archive of the database — the
+                          library and the settings, saved tokens included: keep it somewhere safe —,
+                          with or without the frames taken from the videos. Without them the archive
+                          is much lighter, but a library imported on another computer would lose its
+                          frames.</span
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <ul>
+                      <li>
+                        <span class="fr-only"
+                          ><strong>Importer</strong> reprend une telle archive, ou une base du
+                          dossier <code>backups</code>, en gardant au choix les réglages de cet
+                          ordinateur. Celle d'une version plus récente de l'application est
+                          refusée.</span
+                        >
+                        <span class="en-only"
+                          ><strong>Import</strong> takes such an archive back, or a database of the
+                          <code>backups</code> folder, keeping this computer's settings if you wish.
+                          One from a newer version of the application is refused.</span
+                        >
+                      </li>
+                      <li>
+                        <span class="fr-only"
+                          ><strong>Réinitialiser</strong> efface la bibliothèque, les réglages
+                          (adresse du serveur de modèles comprise), ou les deux.</span
+                        >
+                        <span class="en-only"
+                          ><strong>Reset</strong> erases the library, the settings (the model
+                          server's address included), or both.</span
+                        >
+                      </li>
+                    </ul>
+                    <p>
+                      <span class="fr-only"
+                        >L'import et la réinitialisation se font au redémarrage de
+                        l'application&nbsp;: un avis apparaît sous le bouton, avec
+                        <strong>«&nbsp;Redémarrer maintenant&nbsp;»</strong>. La fenêtre du terminal
+                        la relance, et la page se recharge d'elle-même, sans ouvrir d'autre
+                        onglet.</span
+                      >
+                      <span class="en-only"
+                        >The import and the reset are done when the application starts again: a
+                        notice appears under the button, with <strong>"Restart now"</strong>. The
+                        terminal window starts it again, and the page reloads by itself, without
+                        opening another tab.</span
+                      >
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="note cold" style="margin-top: 16px">
@@ -3282,10 +3358,30 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
                 </figcaption>
               </figure>
               <figure class="shot">
-                <a class="shot-link" href="img/z/02-page--preferences-menu-langue-et-theme.webp">
+                <a
+                  class="fr-only shot-link"
+                  href="img/z/02-page--preferences-menu-langue-et-theme.webp"
+                >
                   <img
                     src="img/t/02-page--preferences-menu-langue-et-theme.webp"
                     alt="Le menu des préférences : la langue de l'interface et le thème."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/02-page--preferences-menu-langue-et-theme-en.webp"
+                >
+                  <img
+                    src="img/t/02-page--preferences-menu-langue-et-theme-en.webp"
+                    alt="The preferences menu: the interface language and the theme."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -3312,6 +3408,39 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
               </figure>
             </div>
             <div class="zones">
+              <figure class="zone fr-only">
+                <a href="img/z/01c-zone--systeme-serveur-de-modeles.webp">
+                  <img
+                    src="img/z/01c-zone--systeme-serveur-de-modeles.webp"
+                    alt="La carte Serveur de modèles de la page Système : l'adresse utilisée, où tourne le serveur, les connexions passées."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="262"
+                  />
+                </a>
+                <figcaption>
+                  <b>Serveur de modèles.</b> LM&nbsp;Studio sur cet ordinateur par défaut, ou une
+                  autre adresse&nbsp;: un autre ordinateur, ou un serveur compatible OpenAI comme
+                  vLLM ou Strata.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/01c-zone--systeme-serveur-de-modeles-en.webp">
+                  <img
+                    src="img/z/01c-zone--systeme-serveur-de-modeles-en.webp"
+                    alt="The Model server card of the System page: the address in use, where the server runs, the past connections."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="262"
+                  />
+                </a>
+                <figcaption>
+                  <b>Model server.</b> LM&nbsp;Studio on this computer by default, or another
+                  address: another computer, or an OpenAI-compatible server such as vLLM or Strata.
+                </figcaption>
+              </figure>
               <figure class="zone fr-only">
                 <a href="img/z/01b-zone--systeme-vos-donnees.webp">
                   <img
@@ -3346,589 +3475,6 @@ vfe models cuda-runtime  <span class="fr-only"># en option : Whisper sur le GPU<
               </figure>
             </div>
           </div>
-          <div class="block" id="banc-essai">
-            <h3>
-              <span class="fr-only">La page Banc d'essai&nbsp;: choisir son modèle de vision</span>
-              <span class="en-only">The Model bench page: choosing your vision model</span>
-            </h3>
-            <div class="block-body">
-              <p>
-                <span class="fr-only"
-                  >LM&nbsp;Studio propose des dizaines de modèles de vision, et la mémoire de la
-                  carte graphique n'est pas extensible&nbsp;: un petit modèle suffit-il&nbsp;? La
-                  page compare ceux que LM&nbsp;Studio possède, sur les
-                  <strong>mêmes images de votre bibliothèque</strong>, et les classe.</span
-                >
-                <span class="en-only"
-                  >LM&nbsp;Studio offers dozens of vision models, and the graphics card's memory
-                  does not stretch: is a small model enough? The page compares the ones
-                  LM&nbsp;Studio holds, on the <strong>same frames of your library</strong>, and
-                  ranks them.</span
-                >
-              </p>
-            </div>
-            <div class="cards" style="margin-top: 22px">
-              <div class="card">
-                <span class="num">01</span>
-                <h4>
-                  <span class="fr-only">Choisir</span>
-                  <span class="en-only">Choose</span>
-                </h4>
-                <p>
-                  <span class="fr-only"
-                    >À gauche, un arbre suit les dossiers de LM&nbsp;Studio&nbsp;: les
-                    <strong>familles</strong>, leurs modèles, une ligne par quantification.
-                    Choisissez une famille ou un dossier&nbsp;: «&nbsp;Cocher ces modèles&nbsp;» les
-                    coche d'un clic, par exemple pour comparer les quantifications d'un même
-                    modèle.</span
-                  >
-                  <span class="en-only"
-                    >On the left, a tree follows LM&nbsp;Studio's folders: the
-                    <strong>families</strong>, their models, one line per quantization. Choose a
-                    family or a folder: "Tick these models" ticks them in one click, for instance to
-                    compare the quantizations of one model.</span
-                  >
-                </p>
-              </div>
-              <div class="card">
-                <span class="num">02</span>
-                <h4>
-                  <span class="fr-only">Lire les couleurs</span>
-                  <span class="en-only">Read the colours</span>
-                </h4>
-                <p>
-                  <span class="fr-only"
-                    >Un point pour la famille, une pastille pour le nombre de paramètres et une pour
-                    la quantification, de la plus claire à la plus foncée. En haut de la page, les
-                    <strong>filtres</strong> reprennent ces couleurs et servent de légende&nbsp;:
-                    ils ne gardent que les modèles choisis, dans la liste comme dans les
-                    résultats.</span
-                  >
-                  <span class="en-only"
-                    >A dot for the family, a chip for the number of parameters and one for the
-                    quantization, from the lightest to the darkest. At the top of the page, the
-                    <strong>filters</strong> use the same colours and serve as the legend: they keep
-                    only the models chosen, in the list as in the results.</span
-                  >
-                </p>
-              </div>
-              <div class="card">
-                <span class="num">03</span>
-                <h4>
-                  <span class="fr-only">Tester</span>
-                  <span class="en-only">Test</span>
-                </h4>
-                <p>
-                  <span class="fr-only"
-                    >Chaque modèle est chargé <strong>seul</strong>, interrogé comme le font les
-                    analyses sur 12, 24 ou 48&nbsp;images — toujours les mêmes d'un test à l'autre
-                    —, puis déchargé. Le modèle chargé avant le test revient à la fin, avec ses
-                    réglages.</span
-                  >
-                  <span class="en-only"
-                    >Each model is loaded <strong>alone</strong>, asked what the analyses ask about
-                    12, 24 or 48&nbsp;frames — always the same from one test to the next — then
-                    unloaded. The model loaded before the test comes back at the end, with its
-                    settings.</span
-                  >
-                </p>
-              </div>
-              <div class="card">
-                <span class="num">04</span>
-                <h4>
-                  <span class="fr-only">Juger à l'aveugle</span>
-                  <span class="en-only">Rate blind</span>
-                </h4>
-                <p>
-                  <span class="fr-only"
-                    >La justesse des descriptions, aucune machine ne la mesure à votre place.
-                    <strong>«&nbsp;Juger à l'aveugle&nbsp;»</strong> montre chaque image et ce que
-                    chaque modèle en a dit, sous des lettres qui changent à chaque image&nbsp;: vous
-                    notez sans savoir qui a écrit quoi.</span
-                  >
-                  <span class="en-only"
-                    >How right the descriptions are, no machine measures for you.
-                    <strong>"Blind rating"</strong> shows each frame and what each model said of it,
-                    under letters that change with every frame: you rate them without knowing who
-                    wrote what.</span
-                  >
-                </p>
-              </div>
-            </div>
-            <div class="note cold" style="margin-top: 16px">
-              <p>
-                <span class="fr-only"
-                  >Pendant un test, les analyses attendent, et
-                  <strong>rien n'est modifié dans la bibliothèque</strong>.</span
-                >
-                <span class="en-only"
-                  >During a test, the analyses wait, and
-                  <strong>nothing changes in the library</strong>.</span
-                >
-              </p>
-              <p>
-                <span class="fr-only"
-                  >Le banc d'essai a besoin de LM&nbsp;Studio, car il charge et décharge les modèles
-                  un par un&nbsp;: avec un serveur compatible OpenAI (vLLM…), la page le dit et ne
-                  lance pas de test.</span
-                >
-                <span class="en-only"
-                  >The model bench needs LM&nbsp;Studio, since it loads and unloads the models one
-                  by one: with an OpenAI-compatible server (vLLM…), the page says so and starts no
-                  test.</span
-                >
-              </p>
-            </div>
-            <div class="zones">
-              <figure class="zone fr-only">
-                <a href="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs.webp">
-                  <img
-                    src="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs.webp"
-                    alt="La carte Faire un test : l'arbre des dossiers de LM Studio, la famille Qwen3-VL choisie, ses modèles en couleurs, puis le panneau de lancement."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="488"
-                  />
-                </a>
-                <figcaption>
-                  <b>Faire un test.</b> La famille Qwen3-VL choisie dans l'arbre&nbsp;: ses
-                  dossiers, une ligne par quantification, avec les couleurs de la famille, des
-                  paramètres et de la quantification. Dessous, le panneau de lancement.
-                </figcaption>
-              </figure>
-              <figure class="zone en-only">
-                <a href="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs-en.webp">
-                  <img
-                    src="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs-en.webp"
-                    alt="The Run a test card: the tree of LM Studio's folders, the Qwen3-VL family chosen, its models in colours, then the launch panel."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="488"
-                  />
-                </a>
-                <figcaption>
-                  <b>Run a test.</b> The Qwen3-VL family chosen in the tree: its folders, one line
-                  per quantization, with the colours of the family, the parameters and the
-                  quantization. Below, the launch panel.
-                </figcaption>
-              </figure>
-              <figure class="zone fr-only">
-                <a href="img/z/40d-zone--banc-filtres.webp">
-                  <img
-                    src="img/z/40d-zone--banc-filtres.webp"
-                    alt="Les filtres du Banc d'essai : familles, paramètres et quantifications, dans leurs couleurs."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="130"
-                  />
-                </a>
-                <figcaption>
-                  <b>Les filtres.</b> En haut de la page, dans les mêmes couleurs, avec le nombre de
-                  modèles de chacun&nbsp;: ils servent aussi de légende.
-                </figcaption>
-              </figure>
-              <figure class="zone en-only">
-                <a href="img/z/40d-zone--banc-filtres-en.webp">
-                  <img
-                    src="img/z/40d-zone--banc-filtres-en.webp"
-                    alt="The Model bench's filters: families, parameters and quantizations, in their colours."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="130"
-                  />
-                </a>
-                <figcaption>
-                  <b>The filters.</b> At the top of the page, in the same colours, with the number
-                  of models of each: they serve as the legend too.
-                </figcaption>
-              </figure>
-            </div>
-            <div class="block-body" style="margin-top: 34px">
-              <h4>
-                <span class="fr-only">Ce qui est mesuré</span>
-                <span class="en-only">What is measured</span>
-              </h4>
-              <p>
-                <span class="fr-only"
-                  >Le tableau des résultats donne sept mesures par modèle, la meilleure de chaque
-                  colonne mise en valeur. Le classement en compte six, chacune ramenée à des points
-                  sur 100&nbsp;:</span
-                >
-                <span class="en-only"
-                  >The results table gives seven measures per model, the best of each column
-                  standing out. The ranking counts six of them, each brought to points out of
-                  100:</span
-                >
-              </p>
-            </div>
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th><span class="fr-only">Mesure</span><span class="en-only">Measure</span></th>
-                    <th>
-                      <span class="fr-only">Ce qu'elle dit</span
-                      ><span class="en-only">What it tells</span>
-                    </th>
-                    <th>
-                      <span class="fr-only">Points sur 100</span
-                      ><span class="en-only">Points out of 100</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <span class="fr-only"><strong>Mémoire</strong></span>
-                      <span class="en-only"><strong>Memory</strong></span>
-                    </td>
-                    <td>
-                      <span class="fr-only"
-                        >Ce que le modèle occupe sur la carte graphique, et ce qu'il en reste pour
-                        DaVinci Resolve et la transcription.</span
-                      >
-                      <span class="en-only"
-                        >What the model takes on the graphics card, and what is left for DaVinci
-                        Resolve and transcription.</span
-                      >
-                    </td>
-                    <td>
-                      <span class="fr-only"
-                        >La part de la carte laissée libre&nbsp;: 75 pour un modèle qui en occupe le
-                        quart.</span
-                      >
-                      <span class="en-only"
-                        >The share of the card left free: 75 for a model that takes a quarter of
-                        it.</span
-                      >
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <span class="fr-only"><strong>Vitesse</strong></span>
-                      <span class="en-only"><strong>Speed</strong></span>
-                    </td>
-                    <td>
-                      <span class="fr-only">Le temps par image.</span>
-                      <span class="en-only">The time per frame.</span>
-                    </td>
-                    <td>
-                      <span class="fr-only"
-                        >100 pour le plus rapide, 50 pour un modèle deux fois plus lent.</span
-                      >
-                      <span class="en-only"
-                        >100 for the fastest, 50 for a model twice as slow.</span
-                      >
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <span class="fr-only"><strong>Réponses valides</strong></span>
-                      <span class="en-only"><strong>Valid answers</strong></span>
-                    </td>
-                    <td>
-                      <span class="fr-only"
-                        >Les réponses que l'application a pu lire, sans erreur.</span
-                      >
-                      <span class="en-only"
-                        >The answers the application could read, with no error.</span
-                      >
-                    </td>
-                    <td>
-                      <span class="fr-only">Aucun&nbsp;: le tableau seulement.</span>
-                      <span class="en-only">None: the table only.</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <span class="fr-only"><strong>Langue respectée</strong></span>
-                      <span class="en-only"><strong>Language kept</strong></span>
-                    </td>
-                    <td>
-                      <span class="fr-only">Les descriptions écrites dans la langue demandée.</span>
-                      <span class="en-only"
-                        >The descriptions written in the language asked for.</span
-                      >
-                    </td>
-                    <td>
-                      <span class="fr-only">Le pourcentage mesuré.</span>
-                      <span class="en-only">The share measured.</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <span class="fr-only"><strong>Texte lu</strong></span>
-                      <span class="en-only"><strong>Text read</strong></span>
-                    </td>
-                    <td>
-                      <span class="fr-only"
-                        >Le texte à l'écran, comparé à la lecture optique de l'application.</span
-                      >
-                      <span class="en-only"
-                        >The on-screen text, compared with the application's own text reading.</span
-                      >
-                    </td>
-                    <td>
-                      <span class="fr-only">Le pourcentage mesuré.</span>
-                      <span class="en-only">The share measured.</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <span class="fr-only"><strong>Positions</strong></span>
-                      <span class="en-only"><strong>Positions</strong></span>
-                    </td>
-                    <td>
-                      <span class="fr-only"
-                        >Les personnes et les animaux, comparés à ceux que trouve le détecteur de
-                        l'application.</span
-                      >
-                      <span class="en-only"
-                        >People and animals, compared with those the application's detector
-                        finds.</span
-                      >
-                    </td>
-                    <td>
-                      <span class="fr-only"
-                        >Le pourcentage retrouvé&nbsp;; 0 quand elles sont désactivées.</span
-                      >
-                      <span class="en-only">The share found; 0 when they are disabled.</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <span class="fr-only"><strong>Qualité</strong></span>
-                      <span class="en-only"><strong>Quality</strong></span>
-                    </td>
-                    <td>
-                      <span class="fr-only"
-                        >Vos notes à l'aveugle, de 0 («&nbsp;faux&nbsp;») à 3
-                        («&nbsp;juste&nbsp;»).</span
-                      >
-                      <span class="en-only"
-                        >Your blind ratings, from 0 ("wrong") to 3 ("right").</span
-                      >
-                    </td>
-                    <td>
-                      <span class="fr-only">Leur moyenne, ramenée sur 100.</span>
-                      <span class="en-only">Their mean, brought to 100.</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="zones">
-              <figure class="zone fr-only">
-                <a href="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures.webp">
-                  <img
-                    src="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures.webp"
-                    alt="Les graphiques du Banc d'essai : mémoire et vitesse de chaque modèle, puis six mesures comparées."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="703"
-                  />
-                </a>
-                <figcaption>
-                  <b>Les graphiques.</b> En haut, «&nbsp;Mémoire et vitesse&nbsp;»&nbsp;: le
-                  meilleur coin est en bas à gauche. Dessous, six graphiques en barres, une mesure
-                  chacun, la meilleure valeur mise en valeur.
-                </figcaption>
-              </figure>
-              <figure class="zone en-only">
-                <a href="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures-en.webp">
-                  <img
-                    src="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures-en.webp"
-                    alt="The Model bench's charts: memory and speed of each model, then six measures compared."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="703"
-                  />
-                </a>
-                <figcaption>
-                  <b>The charts.</b> At the top, "Memory and speed": the best corner is the bottom
-                  left one. Below, six bar charts, one measure each, the best value standing out.
-                </figcaption>
-              </figure>
-            </div>
-            <div class="block-body" style="margin-top: 34px">
-              <h4>
-                <span class="fr-only">Le classement</span>
-                <span class="en-only">The ranking</span>
-              </h4>
-              <p>
-                <span class="fr-only"
-                  >Chaque test commence par un classement, vu de trois façons, et le classement
-                  général fait de même pour tous les tests réunis.</span
-                >
-                <span class="en-only"
-                  >Each test opens with a ranking, seen in three ways, and the general ranking does
-                  the same for all the tests together.</span
-                >
-              </p>
-            </div>
-            <div class="cards" style="margin-top: 18px">
-              <div class="card">
-                <h4>
-                  <span class="fr-only">Classement total</span>
-                  <span class="en-only">Overall ranking</span>
-                </h4>
-                <p>
-                  <span class="fr-only"
-                    >La moyenne des points, sur les seules mesures que tous les modèles ont. Le
-                    réglage <strong>«&nbsp;Ce qui compte le plus&nbsp;»</strong> fait compter triple
-                    la mémoire, la vitesse ou la qualité.</span
-                  >
-                  <span class="en-only"
-                    >The mean of the points, on the measures every model has. The
-                    <strong>"What matters most"</strong> setting makes memory, speed or quality
-                    count three times.</span
-                  >
-                </p>
-              </div>
-              <div class="card">
-                <h4>
-                  <span class="fr-only">Par mesure</span>
-                  <span class="en-only">By measure</span>
-                </h4>
-                <p>
-                  <span class="fr-only"
-                    >La place de chaque modèle dans chacune des six mesures, pour voir où il gagne
-                    et où il perd.</span
-                  >
-                  <span class="en-only"
-                    >Each model's place in each of the six measures, to see where it wins and where
-                    it loses.</span
-                  >
-                </p>
-              </div>
-              <div class="card">
-                <h4>
-                  <span class="fr-only">Profils</span>
-                  <span class="en-only">Profiles</span>
-                </h4>
-                <p>
-                  <span class="fr-only"
-                    >Chaque modèle dessiné en étoile, une branche par mesure&nbsp;: plus la surface
-                    est grande, meilleur est le modèle. Un modèle testé seul n'a que son profil,
-                    sans la vitesse, qui se compte par rapport au plus rapide.</span
-                  >
-                  <span class="en-only"
-                    >Each model drawn as a star, one branch per measure: the larger the surface, the
-                    better the model. A model tested alone has its profile only, without the speed,
-                    which counts against the fastest.</span
-                  >
-                </p>
-              </div>
-              <div class="card">
-                <h4>
-                  <span class="fr-only">Tous les tests</span>
-                  <span class="en-only">Every test</span>
-                </h4>
-                <p>
-                  <span class="fr-only"
-                    >L'<strong>historique</strong> garde chaque test&nbsp;: un clic le réaffiche, et
-                    une note de votre main aide à le retrouver.
-                    <strong>«&nbsp;Classement général&nbsp;»</strong> met côte à côte le dernier
-                    résultat de chaque modèle&nbsp;: un modèle téléchargé aujourd'hui se compare à
-                    ceux du mois dernier sans les tester à nouveau.</span
-                  >
-                  <span class="en-only"
-                    >The <strong>history</strong> keeps every test: one click shows it again, and a
-                    note of your own helps you find it. <strong>"General ranking"</strong> puts the
-                    latest result of every model side by side: a model downloaded today compares
-                    with last month's without testing them again.</span
-                  >
-                </p>
-              </div>
-            </div>
-            <div class="note" style="margin-top: 16px">
-              <p>
-                <span class="fr-only"
-                  >Quand les tests réunis par le classement général n'ont pas porté sur les mêmes
-                  images, la page le dit&nbsp;: seules la mémoire et la vitesse se comparent alors
-                  exactement.</span
-                >
-                <span class="en-only"
-                  >When the tests brought together by the general ranking did not use the same
-                  frames, the page says so: only memory and speed then compare exactly.</span
-                >
-              </p>
-            </div>
-            <div class="zones">
-              <figure class="zone fr-only">
-                <a href="img/z/40a-zone--banc-classement-general.webp">
-                  <img
-                    src="img/z/40a-zone--banc-classement-general.webp"
-                    alt="Le classement général du Banc d'essai : quatorze modèles de vision classés sur 100 points."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="368"
-                  />
-                </a>
-                <figcaption>
-                  <b>Classement général.</b> Le dernier résultat de quatorze modèles, tous tests
-                  confondus&nbsp;: le classement total, sur 100&nbsp;points.
-                </figcaption>
-              </figure>
-              <figure class="zone en-only">
-                <a href="img/z/40a-zone--banc-classement-general-en.webp">
-                  <img
-                    src="img/z/40a-zone--banc-classement-general-en.webp"
-                    alt="The Model bench's general ranking: fourteen vision models ranked out of 100 points."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="368"
-                  />
-                </a>
-                <figcaption>
-                  <b>General ranking.</b> The latest result of fourteen models, all tests together:
-                  the overall ranking, out of 100&nbsp;points.
-                </figcaption>
-              </figure>
-              <figure class="zone fr-only">
-                <a href="img/z/40c-zone--banc-profils-des-modeles.webp">
-                  <img
-                    src="img/z/40c-zone--banc-profils-des-modeles.webp"
-                    alt="Les profils du Banc d'essai : une étoile à six branches par modèle."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="770"
-                  />
-                </a>
-                <figcaption>
-                  <b>Les profils.</b> Une étoile par modèle&nbsp;: plus la surface est grande,
-                  meilleur est le modèle. «&nbsp;Qualité&nbsp;» est barrée quand le modèle n'a pas
-                  été noté à l'aveugle.
-                </figcaption>
-              </figure>
-              <figure class="zone en-only">
-                <a href="img/z/40c-zone--banc-profils-des-modeles-en.webp">
-                  <img
-                    src="img/z/40c-zone--banc-profils-des-modeles-en.webp"
-                    alt="The Model bench's profiles: one six-pointed star per model."
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="770"
-                  />
-                </a>
-                <figcaption>
-                  <b>Profiles.</b> One star per model: the larger the surface, the better the model.
-                  "Quality" is struck through when the model was not rated blind.
-                </figcaption>
-              </figure>
-            </div>
-          </div>
-
           <div class="block" id="developper">
             <h3>
               <span class="fr-only">Pour développer l'application</span>
@@ -4038,12 +3584,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="shots one">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/07-page--bibliotheque-dialogue-ajouter-un-dossier.webp"
                 >
                   <img
                     src="img/t/07-page--bibliotheque-dialogue-ajouter-un-dossier.webp"
                     alt="Le dialogue « Ajouter un dossier » : chemin, nom affiché, objectif d'analyse, sous-dossiers, mise à jour automatique."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/07-page--bibliotheque-dialogue-ajouter-un-dossier-en.webp"
+                >
+                  <img
+                    src="img/t/07-page--bibliotheque-dialogue-ajouter-un-dossier-en.webp"
+                    alt="The “Add a folder” dialog: path, display name, analysis focus, subfolders, automatic update."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -4107,12 +3670,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="shots">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/03-page--bibliotheque-grille-chutiers-filtres.webp"
                 >
                   <img
                     src="img/t/03-page--bibliotheque-grille-chutiers-filtres.webp"
                     alt="La bibliothèque : la grille des vignettes, l'arborescence des chutiers, les filtres."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/03-page--bibliotheque-grille-chutiers-filtres-en.webp"
+                >
+                  <img
+                    src="img/t/03-page--bibliotheque-grille-chutiers-filtres-en.webp"
+                    alt="The library: the grid of thumbnails, the tree of bins, the filters."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -4137,10 +3717,30 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 </figcaption>
               </figure>
               <figure class="shot">
-                <a class="shot-link" href="img/z/04-page--bibliotheque-filtre-lumiere-deroule.webp">
+                <a
+                  class="fr-only shot-link"
+                  href="img/z/04-page--bibliotheque-filtre-lumiere-deroule.webp"
+                >
                   <img
                     src="img/t/04-page--bibliotheque-filtre-lumiere-deroule.webp"
                     alt="Le filtre des lumières déroulé : les six phases du jour."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/04-page--bibliotheque-filtre-lumiere-deroule-en.webp"
+                >
+                  <img
+                    src="img/t/04-page--bibliotheque-filtre-lumiere-deroule-en.webp"
+                    alt="The light filter open: the six phases of the day."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -4201,12 +3801,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="shots one">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/05-page--bibliotheque-selection-barre-actions.webp"
                 >
                   <img
                     src="img/t/05-page--bibliotheque-selection-barre-actions.webp"
                     alt="Les onze vidéos cochées, et les actions qui apparaissent alors."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/05-page--bibliotheque-selection-barre-actions-en.webp"
+                >
+                  <img
+                    src="img/t/05-page--bibliotheque-selection-barre-actions-en.webp"
+                    alt="The videos ticked, and the actions that then appear."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -4269,7 +3886,7 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 >
                   <img
                     src="img/t/35-page--resolve-projet-ouvert-et-sa-timeline.webp"
-                    alt="DaVinci Resolve : le projet « cats 2026 » ouvert, sa Timeline 1 de 98 plans."
+                    alt="DaVinci Resolve : le projet « Videos samples » ouvert, sa timeline « Sample edit » de 4 plans, avec la transcription en sous-titres et les marqueurs."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -4282,37 +3899,56 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 </a>
                 <figcaption>
                   <span class="fr-only"
-                    ><b>Dans Resolve, avant l'import.</b> Le projet « cats 2026 » est ouvert, avec
-                    sa timeline de 98 plans&nbsp;: c'est elle que le dialogue ci-dessous propose
-                    d'importer.</span
+                    ><b>Dans Resolve, avant l'import.</b> Le projet « Videos samples » est ouvert,
+                    avec la timeline « Sample edit » que l'application y a créée&nbsp;: 4 plans, la
+                    transcription en sous-titres, les marqueurs sur les clips. C'est elle que le
+                    dialogue ci-dessous propose d'importer.</span
                   >
                   <span class="en-only"
-                    ><b>In Resolve, before the import.</b> The "cats 2026" project is open, with its
-                    98-shot timeline: that is the one the dialog below offers to import.</span
+                    ><b>In Resolve, before the import.</b> The "Videos samples" project is open,
+                    with the "Sample edit" timeline the application created there: 4 clips, the
+                    transcript as subtitles, the markers on the clips. That is the one the dialog
+                    below offers to import.</span
                   >
                 </figcaption>
               </figure>
             </div>
             <div class="zones two">
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/36-zone--dialogue-importer-une-timeline-de-resolve.webp">
+                <a
+                  class="fr-only"
+                  href="img/z/36-zone--dialogue-importer-une-timeline-de-resolve.webp"
+                >
                   <img
                     src="img/z/36-zone--dialogue-importer-une-timeline-de-resolve.webp"
-                    alt="Le dialogue d'import : le projet ouvert, sa timeline de 98 plans, « 98 vidéos, 98 déjà dans la bibliothèque », l'analyse automatique."
+                    alt="Le dialogue d'import : le projet ouvert, sa timeline « Sample edit » de 4 plans, « 4 vidéos : 4 déjà dans la bibliothèque », l'analyse automatique."
                     loading="lazy"
                     decoding="async"
-                    width="400"
-                    height="401"
+                    width="576"
+                    height="570"
+                  />
+                </a>
+                <a
+                  class="en-only"
+                  href="img/z/36-zone--dialogue-importer-une-timeline-de-resolve-en.webp"
+                >
+                  <img
+                    src="img/z/36-zone--dialogue-importer-une-timeline-de-resolve-en.webp"
+                    alt="The import dialog: the open project, its “Sample edit” timeline of 4 clips, “4 videos: 4 already in the library”, automatic analysis."
+                    loading="lazy"
+                    decoding="async"
+                    width="576"
+                    height="570"
                   />
                 </a>
                 <figcaption>
                   <span class="fr-only"
-                    ><b>Le dialogue.</b> Le projet ouvert, sa timeline (98 plans), combien de ses
+                    ><b>Le dialogue.</b> Le projet ouvert, sa timeline (4 plans), combien de ses
                     vidéos sont déjà dans la bibliothèque et ce qui sera analysé&nbsp;; rien n'est
                     modifié dans Resolve.</span
                   >
                   <span class="en-only"
-                    ><b>The dialog.</b> The open project, its timeline (98 shots), how many of its
+                    ><b>The dialog.</b> The open project, its timeline (4 clips), how many of its
                     videos are already in the library and what will be analysed; nothing is changed
                     in Resolve.</span
                   >
@@ -4321,12 +3957,30 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               <div class="shots one" style="margin-top: 0">
                 <figure class="shot">
                   <a
-                    class="shot-link"
+                    class="fr-only shot-link"
                     href="img/z/37-page--bibliotheque-timeline-resolve-importee.webp"
                   >
                     <img
                       src="img/t/37-page--bibliotheque-timeline-resolve-importee.webp"
-                      alt="La bibliothèque après l'import : « Timelines Resolve › Timeline 1 », ses vidéos dans l'ordre de la timeline, et le bouton « Mettre à jour depuis Resolve »."
+                      alt="La bibliothèque après l'import : « Sample edit » sous « Timelines Resolve », ses vidéos dans l'ordre de la timeline, et le bouton « Mettre à jour depuis Resolve »."
+                      loading="lazy"
+                      decoding="async"
+                      width="560"
+                      height="350"
+                    />
+                    <span class="shot-badge">
+                      <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                      <span class="fr-only">Page entière</span
+                      ><span class="en-only">Whole page</span>
+                    </span>
+                  </a>
+                  <a
+                    class="en-only shot-link"
+                    href="img/z/37-page--bibliotheque-timeline-resolve-importee-en.webp"
+                  >
+                    <img
+                      src="img/t/37-page--bibliotheque-timeline-resolve-importee-en.webp"
+                      alt="The library after the import: “Sample edit” under “Resolve timelines”, its videos in the timeline's order, and the “Update from Resolve” button."
                       loading="lazy"
                       decoding="async"
                       width="560"
@@ -4394,8 +4048,9 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 ><span class="en-only">CPU</span></span
               >
               <span
-                ><i class="r-gpu"></i><span class="fr-only">Modèle de vision (LM Studio)</span
-                ><span class="en-only">Vision model (LM Studio)</span></span
+                ><i class="r-gpu"></i
+                ><span class="fr-only">Modèle de vision (serveur de modèles)</span
+                ><span class="en-only">Vision model (model server)</span></span
               >
               <span
                 ><i class="r-asr"></i><span class="fr-only">Transcription (Whisper)</span
@@ -4513,8 +4168,8 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 <div class="chain-name">
                   <span class="fr-only">La vision</span><span class="en-only">Vision</span>
                   <small
-                    ><span class="fr-only">le modèle chargé dans LM Studio</span
-                    ><span class="en-only">the model loaded in LM Studio</span></small
+                    ><span class="fr-only">le modèle chargé dans le serveur de modèles</span
+                    ><span class="en-only">the model loaded in the model server</span></small
                   >
                 </div>
                 <div class="steps">
@@ -4561,14 +4216,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
 
             <div class="zones two" style="margin-top: 26px">
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/32-zone--etapes-les-vingt-analyses-cochees.webp">
+                <a class="fr-only" href="img/z/32-zone--etapes-les-vingt-analyses-cochees.webp">
                   <img
                     src="img/z/32-zone--etapes-les-vingt-analyses-cochees.webp"
                     alt="« Étapes à exécuter (20/20) » déplié dans la barre latérale : les vingt étapes, groupées par famille, toutes cochées."
                     loading="lazy"
                     decoding="async"
-                    width="287"
-                    height="1398"
+                    width="207"
+                    height="1011"
+                  />
+                </a>
+                <a class="en-only" href="img/z/32-zone--etapes-les-vingt-analyses-cochees-en.webp">
+                  <img
+                    src="img/z/32-zone--etapes-les-vingt-analyses-cochees-en.webp"
+                    alt="“Stages to run (20/20)” unfolded in the sidebar: the twenty stages, grouped by family, all ticked."
+                    loading="lazy"
+                    decoding="async"
+                    width="207"
+                    height="991"
                   />
                 </a>
                 <figcaption>
@@ -4590,12 +4255,30 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               <div class="shots one" style="margin-top: 0">
                 <figure class="shot">
                   <a
-                    class="shot-link"
+                    class="fr-only shot-link"
                     href="img/z/14-page--video-dialogue-analyser-choix-des-etapes.webp"
                   >
                     <img
                       src="img/t/14-page--video-dialogue-analyser-choix-des-etapes.webp"
                       alt="Le dialogue « Analyser… » d'une vidéo : reprendre certaines étapes seulement."
+                      loading="lazy"
+                      decoding="async"
+                      width="560"
+                      height="350"
+                    />
+                    <span class="shot-badge">
+                      <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                      <span class="fr-only">Page entière</span
+                      ><span class="en-only">Whole page</span>
+                    </span>
+                  </a>
+                  <a
+                    class="en-only shot-link"
+                    href="img/z/14-page--video-dialogue-analyser-choix-des-etapes-en.webp"
+                  >
+                    <img
+                      src="img/t/14-page--video-dialogue-analyser-choix-des-etapes-en.webp"
+                      alt="The “Analyse…” dialog of a video: redo some stages only."
                       loading="lazy"
                       decoding="async"
                       width="560"
@@ -4664,10 +4347,30 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             </div>
             <div class="shots one">
               <figure class="shot">
-                <a class="shot-link" href="img/z/10-page--taches-compteurs-et-historique.webp">
+                <a
+                  class="fr-only shot-link"
+                  href="img/z/10-page--taches-compteurs-et-historique.webp"
+                >
                   <img
                     src="img/t/10-page--taches-compteurs-et-historique.webp"
                     alt="La page Tâches : les compteurs, puis l'historique daté des analyses avec leur durée."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/10-page--taches-compteurs-et-historique-en.webp"
+                >
+                  <img
+                    src="img/t/10-page--taches-compteurs-et-historique-en.webp"
+                    alt="The Jobs page: the counters, then the dated history of the analyses with their duration."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -4722,12 +4425,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
           <div class="shots one" style="margin-top: 0; margin-bottom: 40px">
             <figure class="shot">
               <a
-                class="shot-link"
+                class="fr-only shot-link"
                 href="img/z/11-page--video-apercu-lecteur-frise-synthese-images-cles.webp"
               >
                 <img
                   src="img/t/11-page--video-apercu-lecteur-frise-synthese-images-cles.webp"
                   alt="La page d'une vidéo en entier : lecteur, frise, synthèse, images clés, et le panneau de droite."
+                  loading="lazy"
+                  decoding="async"
+                  width="560"
+                  height="350"
+                />
+                <span class="shot-badge">
+                  <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                  <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                </span>
+              </a>
+              <a
+                class="en-only shot-link"
+                href="img/z/11-page--video-apercu-lecteur-frise-synthese-images-cles-en.webp"
+              >
+                <img
+                  src="img/t/11-page--video-apercu-lecteur-frise-synthese-images-cles-en.webp"
+                  alt="A video's whole page: player, timeline, synthesis, keyframes, and the right-hand panel."
                   loading="lazy"
                   decoding="async"
                   width="560"
@@ -4790,14 +4510,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </p>
             </div>
             <figure class="zone">
-              <a href="img/z/11a-zone--video-frise.webp">
+              <a class="fr-only" href="img/z/11a-zone--video-frise.webp">
                 <img
                   src="img/z/11a-zone--video-frise.webp"
                   alt="La frise : chapitres, plans colorés par mouvement, images clés, moments forts et forme d'onde."
                   loading="lazy"
                   decoding="async"
                   width="800"
-                  height="215"
+                  height="232"
+                />
+              </a>
+              <a class="en-only" href="img/z/11a-zone--video-frise-en.webp">
+                <img
+                  src="img/z/11a-zone--video-frise-en.webp"
+                  alt="The timeline: chapters, shots coloured by motion, keyframes, highlights and waveform."
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="232"
                 />
               </a>
               <figcaption>
@@ -4878,14 +4608,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             </div>
             <div class="zones two">
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/11g-zone--video-panneau-image-cle-decrite.webp">
+                <a class="fr-only" href="img/z/11g-zone--video-panneau-image-cle-decrite.webp">
                   <img
                     src="img/z/11g-zone--video-panneau-image-cle-decrite.webp"
                     alt="Le panneau de droite en entier : image clé avec les cadres des sujets, description, étiquettes, sujets, actions, ambiance, couleurs, usages au montage, mots-clés."
                     loading="lazy"
                     decoding="async"
-                    width="400"
-                    height="1318"
+                    width="428"
+                    height="1411"
+                  />
+                </a>
+                <a class="en-only" href="img/z/11g-zone--video-panneau-image-cle-decrite-en.webp">
+                  <img
+                    src="img/z/11g-zone--video-panneau-image-cle-decrite-en.webp"
+                    alt="The whole right-hand panel: keyframe with the subjects' boxes, description, labels, subjects, actions, mood, colours, editing uses, keywords."
+                    loading="lazy"
+                    decoding="async"
+                    width="428"
+                    height="1338"
                   />
                 </a>
                 <figcaption>
@@ -4934,14 +4674,27 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             </div>
             <div class="zones two">
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/11d-zone--video-panneau-tournage-et-appareil.webp">
+                <a class="fr-only" href="img/z/11d-zone--video-panneau-tournage-et-appareil.webp">
                   <img
                     src="img/z/11d-zone--video-panneau-tournage-et-appareil.webp"
                     alt="Le bloc « Tournage et appareil » : date, fiabilité, fuseau, appareil, position GPS."
                     loading="lazy"
                     decoding="async"
-                    width="400"
-                    height="367"
+                    width="428"
+                    height="394"
+                  />
+                </a>
+                <a
+                  class="en-only"
+                  href="img/z/11d-zone--video-panneau-tournage-et-appareil-en.webp"
+                >
+                  <img
+                    src="img/z/11d-zone--video-panneau-tournage-et-appareil-en.webp"
+                    alt="The “Shooting and camera” block: date, reliability, time zone, camera, GPS position."
+                    loading="lazy"
+                    decoding="async"
+                    width="428"
+                    height="394"
                   />
                 </a>
                 <figcaption>
@@ -4956,14 +4709,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 </figcaption>
               </figure>
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/11e-zone--video-panneau-caracteristiques.webp">
+                <a class="fr-only" href="img/z/11e-zone--video-panneau-caracteristiques.webp">
                   <img
                     src="img/z/11e-zone--video-panneau-caracteristiques.webp"
                     alt="Le bloc « Caractéristiques » : durée, résolution, cadence, codec, couleur, audio, timecode, taille, chemin."
                     loading="lazy"
                     decoding="async"
-                    width="400"
-                    height="423"
+                    width="428"
+                    height="450"
+                  />
+                </a>
+                <a class="en-only" href="img/z/11e-zone--video-panneau-caracteristiques-en.webp">
+                  <img
+                    src="img/z/11e-zone--video-panneau-caracteristiques-en.webp"
+                    alt="The “Characteristics” block: duration, resolution, frame rate, codec, colour, audio, timecode, size, path."
+                    loading="lazy"
+                    decoding="async"
+                    width="428"
+                    height="450"
                   />
                 </a>
                 <figcaption>
@@ -4982,10 +4745,30 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             </div>
             <div class="shots one">
               <figure class="shot">
-                <a class="shot-link" href="img/z/13-page--video-metadonnees-brutes-deployees.webp">
+                <a
+                  class="fr-only shot-link"
+                  href="img/z/13-page--video-metadonnees-brutes-deployees.webp"
+                >
                   <img
                     src="img/t/13-page--video-metadonnees-brutes-deployees.webp"
                     alt="Les dates concurrentes et toutes les métadonnées brutes du fichier, dépliées."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/13-page--video-metadonnees-brutes-deployees-en.webp"
+                >
+                  <img
+                    src="img/t/13-page--video-metadonnees-brutes-deployees-en.webp"
+                    alt="The competing dates and all the file's raw metadata, unfolded."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -5030,14 +4813,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </p>
             </div>
             <figure class="zone">
-              <a href="img/z/11f-zone--video-panneau-etapes-danalyse.webp">
+              <a class="fr-only" href="img/z/11f-zone--video-panneau-etapes-danalyse.webp">
                 <img
                   src="img/z/11f-zone--video-panneau-etapes-danalyse.webp"
                   alt="Les vingt étapes d'analyse d'une vidéo, avec leur durée et leur état."
                   loading="lazy"
                   decoding="async"
-                  width="400"
-                  height="940"
+                  width="428"
+                  height="967"
+                />
+              </a>
+              <a class="en-only" href="img/z/11f-zone--video-panneau-etapes-danalyse-en.webp">
+                <img
+                  src="img/z/11f-zone--video-panneau-etapes-danalyse-en.webp"
+                  alt="The twenty analysis stages of a video, with their duration and state."
+                  loading="lazy"
+                  decoding="async"
+                  width="428"
+                  height="967"
                 />
               </a>
               <figcaption>
@@ -5131,14 +4924,30 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             </div>
             <div class="zones">
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/11b-zone--video-synthese-chapitres-moments-forts.webp">
+                <a
+                  class="fr-only"
+                  href="img/z/11b-zone--video-synthese-chapitres-moments-forts.webp"
+                >
                   <img
                     src="img/z/11b-zone--video-synthese-chapitres-moments-forts.webp"
                     alt="La synthèse : titre trouvé, résumé, mots-clés avec leur origine, et les moments forts suggérés."
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="403"
+                    height="1587"
+                  />
+                </a>
+                <a
+                  class="en-only"
+                  href="img/z/11b-zone--video-synthese-chapitres-moments-forts-en.webp"
+                >
+                  <img
+                    src="img/z/11b-zone--video-synthese-chapitres-moments-forts-en.webp"
+                    alt="The synthesis: title found, summary, keywords with their origin, and the suggested highlights."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="1530"
                   />
                 </a>
                 <figcaption>
@@ -5155,14 +4964,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 </figcaption>
               </figure>
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/11c-zone--video-images-cles.webp">
+                <a class="fr-only" href="img/z/11c-zone--video-images-cles.webp">
                   <img
                     src="img/z/11c-zone--video-images-cles.webp"
                     alt="La grille des images clés, chacune horodatée et décrite."
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="482"
+                    height="697"
+                  />
+                </a>
+                <a class="en-only" href="img/z/11c-zone--video-images-cles-en.webp">
+                  <img
+                    src="img/z/11c-zone--video-images-cles-en.webp"
+                    alt="The grid of keyframes, each one timestamped and described."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="697"
                   />
                 </a>
                 <figcaption>
@@ -5221,12 +5040,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="shots">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/15-page--onglet-plans-mouvement-stabilite-utilisabilite.webp"
                 >
                   <img
                     src="img/t/15-page--onglet-plans-mouvement-stabilite-utilisabilite.webp"
                     alt="L'onglet Plans : le tableau des plans avec mouvement, stabilité, durée, luminosité, température."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/15-page--onglet-plans-mouvement-stabilite-utilisabilite-en.webp"
+                >
+                  <img
+                    src="img/t/15-page--onglet-plans-mouvement-stabilite-utilisabilite-en.webp"
+                    alt="The Shots tab: the table of shots with motion, stability, duration, brightness, temperature."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -5250,12 +5086,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </figure>
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/15b-page--onglet-plans-archive-longue-beaucoup-de-plans.webp"
                 >
                   <img
                     src="img/t/15b-page--onglet-plans-archive-longue-beaucoup-de-plans.webp"
                     alt="Le même tableau sur une archive de huit minutes : beaucoup de plans, mouvements variés."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/15b-page--onglet-plans-archive-longue-beaucoup-de-plans-en.webp"
+                >
+                  <img
+                    src="img/t/15b-page--onglet-plans-archive-longue-beaucoup-de-plans-en.webp"
+                    alt="The same table on an eight-minute archive: many shots, varied motion."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -5315,12 +5168,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="shots one">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/16-page--onglet-transcription-segments-horodates.webp"
                 >
                   <img
                     src="img/t/16-page--onglet-transcription-segments-horodates.webp"
                     alt="L'onglet Transcription : les segments de parole horodatés."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/16-page--onglet-transcription-segments-horodates-en.webp"
+                >
+                  <img
+                    src="img/t/16-page--onglet-transcription-segments-horodates-en.webp"
+                    alt="The Transcript tab: the timestamped segments of speech."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -5398,14 +5268,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             </div>
             <div class="zones">
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/17a-zone--sons-ce-quon-entend.webp">
+                <a class="fr-only" href="img/z/17a-zone--sons-ce-quon-entend.webp">
                   <img
                     src="img/z/17a-zone--sons-ce-quon-entend.webp"
                     alt="Le bloc « Ce qu'on entend » : les catégories et leur part de la durée."
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="136"
+                    height="156"
+                  />
+                </a>
+                <a class="en-only" href="img/z/17a-zone--sons-ce-quon-entend-en.webp">
+                  <img
+                    src="img/z/17a-zone--sons-ce-quon-entend-en.webp"
+                    alt="The “What you hear” block: the categories and their share of the duration."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="156"
                   />
                 </a>
                 <figcaption>
@@ -5418,14 +5298,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 </figcaption>
               </figure>
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/17c-zone--sons-instruments.webp">
+                <a class="fr-only" href="img/z/17c-zone--sons-instruments.webp">
                   <img
                     src="img/z/17c-zone--sons-instruments.webp"
                     alt="Le bloc « Instruments » : guitare et guitare basse, avec leur durée."
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="114"
+                    height="134"
+                  />
+                </a>
+                <a class="en-only" href="img/z/17c-zone--sons-instruments-en.webp">
+                  <img
+                    src="img/z/17c-zone--sons-instruments-en.webp"
+                    alt="The “Instruments” block: guitar and bass guitar, with their duration."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="134"
                   />
                 </a>
                 <figcaption>
@@ -5440,14 +5330,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 </figcaption>
               </figure>
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/17b-zone--sons-sons-entendus.webp">
+                <a class="fr-only" href="img/z/17b-zone--sons-sons-entendus.webp">
                   <img
                     src="img/z/17b-zone--sons-sons-entendus.webp"
                     alt="Le bloc « Sons entendus », vide sur cette vidéo."
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="107"
+                    height="128"
+                  />
+                </a>
+                <a class="en-only" href="img/z/17b-zone--sons-sons-entendus-en.webp">
+                  <img
+                    src="img/z/17b-zone--sons-sons-entendus-en.webp"
+                    alt="The “Sounds heard” block."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="128"
                   />
                 </a>
                 <figcaption>
@@ -5463,14 +5363,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 </figcaption>
               </figure>
               <figure class="zone" style="margin-top: 0">
-                <a href="img/z/17d-zone--sons-par-plan.webp">
+                <a class="fr-only" href="img/z/17d-zone--sons-par-plan.webp">
                   <img
                     src="img/z/17d-zone--sons-par-plan.webp"
                     alt="Le bloc « Par plan » : ce qu'on entend dans chacun des quatre plans."
                     loading="lazy"
                     decoding="async"
                     width="800"
-                    height="231"
+                    height="248"
+                  />
+                </a>
+                <a class="en-only" href="img/z/17d-zone--sons-par-plan-en.webp">
+                  <img
+                    src="img/z/17d-zone--sons-par-plan-en.webp"
+                    alt="The “Per shot” block: what you hear in each shot."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="248"
                   />
                 </a>
                 <figcaption>
@@ -5506,12 +5416,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="shots">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/17-page--onglet-sons-musique-et-instruments-guitare.webp"
                 >
                   <img
                     src="img/t/17-page--onglet-sons-musique-et-instruments-guitare.webp"
                     alt="L'onglet Sons sur une vidéo de musique : guitare et guitare basse."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/17-page--onglet-sons-musique-et-instruments-guitare-en.webp"
+                >
+                  <img
+                    src="img/t/17-page--onglet-sons-musique-et-instruments-guitare-en.webp"
+                    alt="The Sounds tab on a music video: guitar and bass guitar."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -5535,12 +5462,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </figure>
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/17e-page--onglet-sons-nature-grenouilles-sons-entendus.webp"
                 >
                   <img
                     src="img/t/17e-page--onglet-sons-nature-grenouilles-sons-entendus.webp"
                     alt="L'onglet Sons sur une vidéo de nature : grenouilles et coassements reconnus."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/17e-page--onglet-sons-nature-grenouilles-sons-entendus-en.webp"
+                >
+                  <img
+                    src="img/t/17e-page--onglet-sons-nature-grenouilles-sons-entendus-en.webp"
+                    alt="The Sounds tab on a nature video: frogs and croaking recognised."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -5567,12 +5511,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </figure>
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/17f-page--onglet-sons-fanfare-cinq-instruments.webp"
                 >
                   <img
                     src="img/t/17f-page--onglet-sons-fanfare-cinq-instruments.webp"
                     alt="L'onglet Sons sur un concert de fanfare : trompette, trombone, orgue Hammond, saxophone, clarinette."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/17f-page--onglet-sons-fanfare-cinq-instruments-en.webp"
+                >
+                  <img
+                    src="img/t/17f-page--onglet-sons-fanfare-cinq-instruments-en.webp"
+                    alt="The Sounds tab on a brass band concert: trumpet, trombone, Hammond organ, saxophone, clarinet."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -5597,12 +5558,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </figure>
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/17g-page--onglet-sons-ville-trafic-train-avec-parole.webp"
                 >
                   <img
                     src="img/t/17g-page--onglet-sons-ville-trafic-train-avec-parole.webp"
                     alt="L'onglet Sons sur une rue de nuit : trafic, train, voiture, et de la parole."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/17g-page--onglet-sons-ville-trafic-train-avec-parole-en.webp"
+                >
+                  <img
+                    src="img/t/17g-page--onglet-sons-ville-trafic-train-avec-parole-en.webp"
+                    alt="The Sounds tab on a street at night: traffic, train, car, and speech."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -5670,14 +5648,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </p>
             </div>
             <figure class="zone">
-              <a href="img/z/18a-zone--technique-mesures-dans-le-temps.webp">
+              <a class="fr-only" href="img/z/18a-zone--technique-mesures-dans-le-temps.webp">
                 <img
                   src="img/z/18a-zone--technique-mesures-dans-le-temps.webp"
                   alt="Les sept courbes de mesures dans le temps : luminosité, contraste, saturation, température, mouvement, netteté, loudness."
                   loading="lazy"
                   decoding="async"
                   width="800"
-                  height="698"
+                  height="700"
+                />
+              </a>
+              <a class="en-only" href="img/z/18a-zone--technique-mesures-dans-le-temps-en.webp">
+                <img
+                  src="img/z/18a-zone--technique-mesures-dans-le-temps-en.webp"
+                  alt="The seven curves of measurements over time: brightness, contrast, saturation, temperature, motion, sharpness, loudness."
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="700"
                 />
               </a>
               <figcaption>
@@ -5694,14 +5682,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </figcaption>
             </figure>
             <figure class="zone">
-              <a href="img/z/18b-zone--technique-mesures-par-image-cle.webp">
+              <a class="fr-only" href="img/z/18b-zone--technique-mesures-par-image-cle.webp">
                 <img
                   src="img/z/18b-zone--technique-mesures-par-image-cle.webp"
                   alt="Le tableau des mesures par image clé : température, luminosité, noirs et blancs bouchés, netteté, couleurs dominantes."
                   loading="lazy"
                   decoding="async"
                   width="800"
-                  height="437"
+                  height="684"
+                />
+              </a>
+              <a class="en-only" href="img/z/18b-zone--technique-mesures-par-image-cle-en.webp">
+                <img
+                  src="img/z/18b-zone--technique-mesures-par-image-cle-en.webp"
+                  alt="The table of per-keyframe measurements: temperature, brightness, crushed blacks and clipped whites, sharpness, dominant colours."
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="684"
                 />
               </a>
               <figcaption>
@@ -5753,14 +5751,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </p>
             </div>
             <figure class="zone">
-              <a href="img/z/20a-zone--contexte-lieu-et-carte.webp">
+              <a class="fr-only" href="img/z/20a-zone--contexte-lieu-et-carte.webp">
                 <img
                   src="img/z/20a-zone--contexte-lieu-et-carte.webp"
                   alt="Le bloc « Lieu » : la carte, l'adresse, les coordonnées, la source de la position et ce qui a été envoyé."
                   loading="lazy"
                   decoding="async"
                   width="800"
-                  height="593"
+                  height="599"
+                />
+              </a>
+              <a class="en-only" href="img/z/20a-zone--contexte-lieu-et-carte-en.webp">
+                <img
+                  src="img/z/20a-zone--contexte-lieu-et-carte-en.webp"
+                  alt="The “Place” block: the map, the address, the coordinates, the source of the position and what was sent."
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="599"
                 />
               </a>
               <figcaption>
@@ -5820,14 +5828,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </p>
             </div>
             <figure class="zone">
-              <a href="img/z/20b-zone--contexte-soleil-hauteur-et-phases.webp">
+              <a class="fr-only" href="img/z/20b-zone--contexte-soleil-hauteur-et-phases.webp">
                 <img
                   src="img/z/20b-zone--contexte-soleil-hauteur-et-phases.webp"
                   alt="Le bloc « Soleil » : les quatre tuiles, la courbe de hauteur du soleil, la bande des phases, les heures, et la lumière théorique confrontée à la lumière mesurée."
                   loading="lazy"
                   decoding="async"
                   width="800"
-                  height="728"
+                  height="730"
+                />
+              </a>
+              <a class="en-only" href="img/z/20b-zone--contexte-soleil-hauteur-et-phases-en.webp">
+                <img
+                  src="img/z/20b-zone--contexte-soleil-hauteur-et-phases-en.webp"
+                  alt="The “Sun” block: the four tiles, the curve of the sun's height, the band of phases, the times, and the theoretical light set against the measured light."
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="730"
                 />
               </a>
               <figcaption>
@@ -5874,14 +5892,24 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </p>
             </div>
             <figure class="zone">
-              <a href="img/z/20c-zone--contexte-meteo-du-modele.webp">
+              <a class="fr-only" href="img/z/20c-zone--contexte-meteo-du-modele.webp">
                 <img
                   src="img/z/20c-zone--contexte-meteo-du-modele.webp"
                   alt="Le bloc « Météo (modèle) » : conditions, température ressentie, vent, nuages, humidité, visibilité, rayonnement, précipitations, pression."
                   loading="lazy"
                   decoding="async"
                   width="800"
-                  height="370"
+                  height="382"
+                />
+              </a>
+              <a class="en-only" href="img/z/20c-zone--contexte-meteo-du-modele-en.webp">
+                <img
+                  src="img/z/20c-zone--contexte-meteo-du-modele-en.webp"
+                  alt="The “Weather (model)” block: conditions, feels-like temperature, wind, clouds, humidity, visibility, radiation, precipitation, pressure."
+                  loading="lazy"
+                  decoding="async"
+                  width="800"
+                  height="368"
                 />
               </a>
               <figcaption>
@@ -5898,12 +5926,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="shots">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/20-page--onglet-contexte-carte-soleil-meteo-heure-doree.webp"
                 >
                   <img
                     src="img/t/20-page--onglet-contexte-carte-soleil-meteo-heure-doree.webp"
                     alt="L'onglet Contexte en entier, sur une vidéo tournée à l'heure dorée."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/20-page--onglet-contexte-carte-soleil-meteo-heure-doree-en.webp"
+                >
+                  <img
+                    src="img/t/20-page--onglet-contexte-carte-soleil-meteo-heure-doree-en.webp"
+                    alt="The whole Context tab, on a video shot at golden hour."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -5927,12 +5972,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
               </figure>
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/20d-page--onglet-contexte-heure-bleue-autre-phase-du-soleil.webp"
                 >
                   <img
                     src="img/t/20d-page--onglet-contexte-heure-bleue-autre-phase-du-soleil.webp"
                     alt="Le même onglet sur une vidéo tournée à l'heure bleue : la courbe et la bande des phases montrent un autre moment."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/20d-page--onglet-contexte-heure-bleue-autre-phase-du-soleil-en.webp"
+                >
+                  <img
+                    src="img/t/20d-page--onglet-contexte-heure-bleue-autre-phase-du-soleil-en.webp"
+                    alt="The same tab on a video shot at blue hour: the curve and the band of phases show another moment."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -6114,10 +6176,30 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             </div>
             <div class="shots one">
               <figure class="shot">
-                <a class="shot-link" href="img/z/21-page--onglet-exports-les-huit-formats.webp">
+                <a
+                  class="fr-only shot-link"
+                  href="img/z/21-page--onglet-exports-les-huit-formats.webp"
+                >
                   <img
                     src="img/t/21-page--onglet-exports-les-huit-formats.webp"
                     alt="L'onglet Exports : les huit cartes de téléchargement, avec le nom du fichier produit."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/21-page--onglet-exports-les-huit-formats-en.webp"
+                >
+                  <img
+                    src="img/t/21-page--onglet-exports-les-huit-formats-en.webp"
+                    alt="The Exports tab: the eight download cards, with the name of the file produced."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -6219,10 +6301,30 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             </div>
             <div class="shots">
               <figure class="shot">
-                <a class="shot-link" href="img/z/22-page--recherche-resultats-mots-et-sens.webp">
+                <a
+                  class="fr-only shot-link"
+                  href="img/z/22-page--recherche-resultats-mots-et-sens.webp"
+                >
                   <img
                     src="img/t/22-page--recherche-resultats-mots-et-sens.webp"
                     alt="La page Recherche : une requête, les filtres, et les passages trouvés avec leur image et leur horodatage."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/22-page--recherche-resultats-mots-et-sens-en.webp"
+                >
+                  <img
+                    src="img/t/22-page--recherche-resultats-mots-et-sens-en.webp"
+                    alt="The Search page: a query, the filters, and the passages found with their frame and timestamp."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -6247,10 +6349,27 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                 </figcaption>
               </figure>
               <figure class="shot">
-                <a class="shot-link" href="img/z/23-page--recherche-filtres-deroules.webp">
+                <a class="fr-only shot-link" href="img/z/23-page--recherche-filtres-deroules.webp">
                   <img
                     src="img/t/23-page--recherche-filtres-deroules.webp"
                     alt="Les onze filtres de la recherche, l'un d'eux déroulé."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/23-page--recherche-filtres-deroules-en.webp"
+                >
+                  <img
+                    src="img/t/23-page--recherche-filtres-deroules-en.webp"
+                    alt="The search's eleven filters, one of them open."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -6283,15 +6402,16 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="block-body">
               <p>
                 <span class="fr-only">
-                  Quand on ne sait pas quoi chercher, on demande. Le modèle chargé dans
-                  LM&nbsp;Studio lit les passages trouvés et répond
+                  Quand on ne sait pas quoi chercher, on demande. Le modèle chargé dans votre
+                  serveur de modèles (LM&nbsp;Studio, Strata ou vLLM) lit les passages trouvés et
+                  répond
                   <strong>uniquement à partir d'eux</strong>, en citant ses sources&nbsp;:
                   <code>[1]</code>, <code>[2]</code>, chacune cliquable, chacune ouvrant la vidéo au
                   bon moment. Les mêmes onze filtres limitent ce que le modèle a le droit de lire.
                 </span>
                 <span class="en-only">
-                  When you do not know what to look for, you ask. The model loaded in LM&nbsp;Studio
-                  reads the passages found and answers
+                  When you do not know what to look for, you ask. The model loaded in your model
+                  server (LM&nbsp;Studio, Strata or vLLM) reads the passages found and answers
                   <strong>from those alone</strong>, citing its sources: <code>[1]</code>,
                   <code>[2]</code>, each clickable, each opening the video at the right moment. The
                   same eleven filters limit what the model is allowed to read.
@@ -6330,12 +6450,29 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="shots one">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/24-page--questions-reponse-avec-sources-citees.webp"
                 >
                   <img
                     src="img/t/24-page--questions-reponse-avec-sources-citees.webp"
                     alt="La page Questions : une réponse du modèle avec ses appels de note et la liste des sources."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/24-page--questions-reponse-avec-sources-citees-en.webp"
+                >
+                  <img
+                    src="img/t/24-page--questions-reponse-avec-sources-citees-en.webp"
+                    alt="The Questions page: an answer of the model with its references and the list of sources."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -6470,7 +6607,7 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
             <div class="shots one">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/09-page--bibliotheque-dialogue-creer-une-timeline.webp"
                 >
                   <img
@@ -6486,16 +6623,33 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                     <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
                   </span>
                 </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/09-page--bibliotheque-dialogue-creer-une-timeline-en.webp"
+                >
+                  <img
+                    src="img/t/09-page--bibliotheque-dialogue-creer-une-timeline-en.webp"
+                    alt="The “Create a timeline” dialog: name, order, frame rate, picture format, and the four options with their counts."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
                 <figcaption>
                   <span class="fr-only"
-                    ><b>Créer une timeline.</b> Chaque option annonce son compte&nbsp;: 97
-                    sous-titres, 74 marqueurs de durée (18 moments forts, 18 plans d'ensemble, 28
-                    illustrations, 10 plans à éviter), 6 chapitres. En bas, l'état de Resolve.</span
+                    ><b>Créer une timeline.</b> Chaque option annonce son compte&nbsp;: 243
+                    sous-titres, 63 marqueurs de durée (18 moments forts, 9 plans d'ensemble, 28
+                    illustrations, 8 plans à éviter), 12 chapitres. En bas, l'état de Resolve.</span
                   >
                   <span class="en-only"
-                    ><b>Create a timeline.</b> Each option states its count: 97 subtitles, 74
-                    duration markers (18 highlights, 18 establishing shots, 28 illustrations, 10 to
-                    avoid), 6 chapters. At the bottom, the state of Resolve.</span
+                    ><b>Create a timeline.</b> Each option states its count: 243 subtitles, 63
+                    duration markers (18 highlights, 9 establishing shots, 28 cutaways, 8 to avoid),
+                    12 chapters. At the bottom, the state of Resolve.</span
                   >
                 </figcaption>
               </figure>
@@ -6544,8 +6698,8 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                   alt="DaVinci Resolve : la timeline créée par l'application, avec sa piste « Shots » de 19 clips, sa piste « Transcript » de 78 clips, et les marqueurs colorés sur les clips."
                   loading="lazy"
                   decoding="async"
-                  width="1600"
-                  height="866"
+                  width="800"
+                  height="433"
                 />
               </a>
               <figcaption>
@@ -6572,8 +6726,8 @@ just check      <span class="fr-only"># lint, typage strict, contrats d'architec
                   alt="La même timeline, zoomée : les descriptions de plans et la transcription deviennent lisibles, avec les marqueurs sur les clips."
                   loading="lazy"
                   decoding="async"
-                  width="1600"
-                  height="866"
+                  width="800"
+                  height="433"
                 />
               </a>
               <figcaption>
@@ -6680,12 +6834,29 @@ claude mcp add --scope user --transport http vfe-vision http://100.x.y.z:8765/mc
             <div class="shots">
               <figure class="shot">
                 <a
-                  class="shot-link"
+                  class="fr-only shot-link"
                   href="img/z/25-page--connexions-adresses-jeton-clients-mcp.webp"
                 >
                   <img
                     src="img/t/25-page--connexions-adresses-jeton-clients-mcp.webp"
                     alt="La page Connexions : adresses, jeton d'accès, configurations MCP par client, et la section DaVinci Resolve."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/25-page--connexions-adresses-jeton-clients-mcp-en.webp"
+                >
+                  <img
+                    src="img/t/25-page--connexions-adresses-jeton-clients-mcp-en.webp"
+                    alt="The Connections page: addresses, access token, MCP configurations per client, and the DaVinci Resolve section."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -6708,10 +6879,30 @@ claude mcp add --scope user --transport http vfe-vision http://100.x.y.z:8765/mc
                 </figcaption>
               </figure>
               <figure class="shot">
-                <a class="shot-link" href="img/z/26-page--connexions-onglet-claude-desktop.webp">
+                <a
+                  class="fr-only shot-link"
+                  href="img/z/26-page--connexions-onglet-claude-desktop.webp"
+                >
                   <img
                     src="img/t/26-page--connexions-onglet-claude-desktop.webp"
                     alt="La configuration MCP pour Claude Desktop, prête à copier."
+                    loading="lazy"
+                    decoding="async"
+                    width="560"
+                    height="350"
+                  />
+                  <span class="shot-badge">
+                    <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                    <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                  </span>
+                </a>
+                <a
+                  class="en-only shot-link"
+                  href="img/z/26-page--connexions-onglet-claude-desktop-en.webp"
+                >
+                  <img
+                    src="img/t/26-page--connexions-onglet-claude-desktop-en.webp"
+                    alt="The MCP configuration for Claude Desktop, ready to copy."
                     loading="lazy"
                     decoding="async"
                     width="560"
@@ -6820,12 +7011,13 @@ claude mcp add --scope user --transport http vfe-vision http://100.x.y.z:8765/mc
                 <li>
                   <span class="fr-only">
                     Pour un autre format (9:16…), <code>plan_reframe</code> prépare le recadrage en
-                    local, avec le modèle de vision chargé dans LM&nbsp;Studio, et rend des planches
-                    de contrôle&nbsp;: l'assistant ne regarde que celles des plans signalés.
+                    local, avec le modèle de vision de votre serveur de modèles, et rend des
+                    planches de contrôle&nbsp;: l'assistant ne regarde que celles des plans
+                    signalés.
                   </span>
                   <span class="en-only">
                     For another aspect ratio (9:16…), <code>plan_reframe</code> prepares the
-                    reframing locally, with the vision model loaded in LM&nbsp;Studio, and returns
+                    reframing locally, with the vision model of your model server, and returns
                     contact sheets: the assistant only looks at those of the flagged shots.
                   </span>
                 </li>
@@ -7130,10 +7322,20 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
             </p>
           </div>
           <figure class="zone">
-            <a href="img/z/28-zone--connexion-le-jeton-demande.webp">
+            <a class="fr-only" href="img/z/28-zone--connexion-le-jeton-demande.webp">
               <img
                 src="img/z/28-zone--connexion-le-jeton-demande.webp"
                 alt="L'encadré de connexion : le jeton d'accès demandé, et où le trouver."
+                loading="lazy"
+                decoding="async"
+                width="448"
+                height="404"
+              />
+            </a>
+            <a class="en-only" href="img/z/28-zone--connexion-le-jeton-demande-en.webp">
+              <img
+                src="img/z/28-zone--connexion-le-jeton-demande-en.webp"
+                alt="The sign-in box: the access token asked for, and where to find it."
                 loading="lazy"
                 decoding="async"
                 width="448"
@@ -7175,12 +7377,29 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
           <div class="shots phones">
             <figure class="shot">
               <a
-                class="shot-link tall"
+                class="fr-only shot-link tall"
                 href="img/z/29-page--telephone-bibliotheque-mise-en-page-etroite.webp"
               >
                 <img
                   src="img/t/29-page--telephone-bibliotheque-mise-en-page-etroite.webp"
                   alt="La bibliothèque en largeur de téléphone : en-tête, puis une colonne de vignettes."
+                  loading="lazy"
+                  decoding="async"
+                  width="560"
+                  height="747"
+                />
+                <span class="shot-badge">
+                  <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                  <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                </span>
+              </a>
+              <a
+                class="en-only shot-link tall"
+                href="img/z/29-page--telephone-bibliotheque-mise-en-page-etroite-en.webp"
+              >
+                <img
+                  src="img/t/29-page--telephone-bibliotheque-mise-en-page-etroite-en.webp"
+                  alt="The library at phone width: header, then a column of thumbnails."
                   loading="lazy"
                   decoding="async"
                   width="560"
@@ -7203,10 +7422,30 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
               </figcaption>
             </figure>
             <figure class="shot">
-              <a class="shot-link tall" href="img/z/29b-page--telephone-page-dune-video.webp">
+              <a
+                class="fr-only shot-link tall"
+                href="img/z/29b-page--telephone-page-dune-video.webp"
+              >
                 <img
                   src="img/t/29b-page--telephone-page-dune-video.webp"
                   alt="La page d'une vidéo en largeur de téléphone : le lecteur et la frise d'abord."
+                  loading="lazy"
+                  decoding="async"
+                  width="560"
+                  height="747"
+                />
+                <span class="shot-badge">
+                  <svg aria-hidden="true"><use href="#i-agrandir" /></svg>
+                  <span class="fr-only">Page entière</span><span class="en-only">Whole page</span>
+                </span>
+              </a>
+              <a
+                class="en-only shot-link tall"
+                href="img/z/29b-page--telephone-page-dune-video-en.webp"
+              >
+                <img
+                  src="img/t/29b-page--telephone-page-dune-video-en.webp"
+                  alt="A video's page at phone width: the player and the timeline first."
                   loading="lazy"
                   decoding="async"
                   width="560"
@@ -7232,12 +7471,610 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
         </div>
       </section>
 
-      <!-- ══════════════ 11 — Privacy ══════════════ -->
-      <section id="vie-privee">
+      <!-- ══════════════ 11 — Choosing the vision model ══════════════ -->
+      <section id="banc-essai">
         <div class="wrap">
           <div class="section-head">
             <p class="kicker">
               <span class="fr-only">Partie 11</span><span class="en-only">Part 11</span>
+            </p>
+            <h2>
+              <span class="fr-only">Choisir son modèle de vision</span>
+              <span class="en-only">Choosing your vision model</span>
+            </h2>
+          </div>
+
+          <div class="block">
+            <h3>
+              <span class="fr-only">La page Banc d'essai</span>
+              <span class="en-only">The Model bench page</span>
+            </h3>
+            <div class="block-body">
+              <p>
+                <span class="fr-only"
+                  >LM&nbsp;Studio propose des dizaines de modèles de vision, et la mémoire de la
+                  carte graphique n'est pas extensible&nbsp;: un petit modèle suffit-il&nbsp;? La
+                  page compare ceux que LM&nbsp;Studio possède, sur les
+                  <strong>mêmes images de votre bibliothèque</strong>, et les classe.</span
+                >
+                <span class="en-only"
+                  >LM&nbsp;Studio offers dozens of vision models, and the graphics card's memory
+                  does not stretch: is a small model enough? The page compares the ones
+                  LM&nbsp;Studio holds, on the <strong>same frames of your library</strong>, and
+                  ranks them.</span
+                >
+              </p>
+            </div>
+            <div class="cards" style="margin-top: 22px">
+              <div class="card">
+                <span class="num">01</span>
+                <h4>
+                  <span class="fr-only">Choisir</span>
+                  <span class="en-only">Choose</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >À gauche, un arbre suit les dossiers de LM&nbsp;Studio&nbsp;: les
+                    <strong>familles</strong>, leurs modèles, une ligne par quantification.
+                    Choisissez une famille ou un dossier&nbsp;: «&nbsp;Cocher ces modèles&nbsp;» les
+                    coche d'un clic, par exemple pour comparer les quantifications d'un même
+                    modèle.</span
+                  >
+                  <span class="en-only"
+                    >On the left, a tree follows LM&nbsp;Studio's folders: the
+                    <strong>families</strong>, their models, one line per quantization. Choose a
+                    family or a folder: "Tick these models" ticks them in one click, for instance to
+                    compare the quantizations of one model.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <span class="num">02</span>
+                <h4>
+                  <span class="fr-only">Lire les couleurs</span>
+                  <span class="en-only">Read the colours</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >Un point pour la famille, une pastille pour le nombre de paramètres et une pour
+                    la quantification, de la plus claire à la plus foncée. En haut de la page, les
+                    <strong>filtres</strong> reprennent ces couleurs et servent de légende&nbsp;:
+                    ils ne gardent que les modèles choisis, dans la liste comme dans les
+                    résultats.</span
+                  >
+                  <span class="en-only"
+                    >A dot for the family, a chip for the number of parameters and one for the
+                    quantization, from the lightest to the darkest. At the top of the page, the
+                    <strong>filters</strong> use the same colours and serve as the legend: they keep
+                    only the models chosen, in the list as in the results.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <span class="num">03</span>
+                <h4>
+                  <span class="fr-only">Tester</span>
+                  <span class="en-only">Test</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >Chaque modèle est chargé <strong>seul</strong>, interrogé comme le font les
+                    analyses sur 12, 24 ou 48&nbsp;images — toujours les mêmes d'un test à l'autre
+                    —, puis déchargé. Le modèle chargé avant le test revient à la fin, avec ses
+                    réglages.</span
+                  >
+                  <span class="en-only"
+                    >Each model is loaded <strong>alone</strong>, asked what the analyses ask about
+                    12, 24 or 48&nbsp;frames — always the same from one test to the next — then
+                    unloaded. The model loaded before the test comes back at the end, with its
+                    settings.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <span class="num">04</span>
+                <h4>
+                  <span class="fr-only">Juger à l'aveugle</span>
+                  <span class="en-only">Rate blind</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >La justesse des descriptions, aucune machine ne la mesure à votre place.
+                    <strong>«&nbsp;Juger à l'aveugle&nbsp;»</strong> montre chaque image et ce que
+                    chaque modèle en a dit, sous des lettres qui changent à chaque image&nbsp;: vous
+                    notez sans savoir qui a écrit quoi.</span
+                  >
+                  <span class="en-only"
+                    >How right the descriptions are, no machine measures for you.
+                    <strong>"Blind rating"</strong> shows each frame and what each model said of it,
+                    under letters that change with every frame: you rate them without knowing who
+                    wrote what.</span
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="note cold" style="margin-top: 16px">
+              <p>
+                <span class="fr-only"
+                  >Pendant un test, les analyses attendent, et
+                  <strong>rien n'est modifié dans la bibliothèque</strong>.</span
+                >
+                <span class="en-only"
+                  >During a test, the analyses wait, and
+                  <strong>nothing changes in the library</strong>.</span
+                >
+              </p>
+              <p>
+                <span class="fr-only"
+                  >Le banc d'essai a besoin de LM&nbsp;Studio, car il charge et décharge les modèles
+                  un par un&nbsp;: avec un serveur compatible OpenAI (vLLM, Strata…), la page le dit
+                  et ne lance pas de test.</span
+                >
+                <span class="en-only"
+                  >The model bench needs LM&nbsp;Studio, since it loads and unloads the models one
+                  by one: with an OpenAI-compatible server (vLLM, Strata…), the page says so and
+                  starts no test.</span
+                >
+              </p>
+            </div>
+            <div class="zones">
+              <figure class="zone fr-only">
+                <a href="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs.webp">
+                  <img
+                    src="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs.webp"
+                    alt="La carte Faire un test : l'arbre des dossiers de LM Studio, la famille Qwen3-VL choisie, ses modèles en couleurs, puis le panneau de lancement."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="408"
+                  />
+                </a>
+                <figcaption>
+                  <b>Faire un test.</b> La famille Qwen3-VL choisie dans l'arbre&nbsp;: ses
+                  dossiers, une ligne par quantification, avec les couleurs de la famille, des
+                  paramètres et de la quantification. Dessous, le panneau de lancement.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs-en.webp">
+                  <img
+                    src="img/z/40e-zone--banc-faire-un-test-arbre-et-couleurs-en.webp"
+                    alt="The Run a test card: the tree of LM Studio's folders, the Qwen3-VL family chosen, its models in colours, then the launch panel."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="408"
+                  />
+                </a>
+                <figcaption>
+                  <b>Run a test.</b> The Qwen3-VL family chosen in the tree: its folders, one line
+                  per quantization, with the colours of the family, the parameters and the
+                  quantization. Below, the launch panel.
+                </figcaption>
+              </figure>
+              <figure class="zone fr-only">
+                <a href="img/z/40d-zone--banc-filtres.webp">
+                  <img
+                    src="img/z/40d-zone--banc-filtres.webp"
+                    alt="Les filtres du Banc d'essai : familles, paramètres et quantifications, dans leurs couleurs."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="130"
+                  />
+                </a>
+                <figcaption>
+                  <b>Les filtres.</b> En haut de la page, dans les mêmes couleurs, avec le nombre de
+                  modèles de chacun&nbsp;: ils servent aussi de légende.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40d-zone--banc-filtres-en.webp">
+                  <img
+                    src="img/z/40d-zone--banc-filtres-en.webp"
+                    alt="The Model bench's filters: families, parameters and quantizations, in their colours."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="130"
+                  />
+                </a>
+                <figcaption>
+                  <b>The filters.</b> At the top of the page, in the same colours, with the number
+                  of models of each: they serve as the legend too.
+                </figcaption>
+              </figure>
+            </div>
+            <div class="block-body" style="margin-top: 34px">
+              <h4>
+                <span class="fr-only">Ce qui est mesuré</span>
+                <span class="en-only">What is measured</span>
+              </h4>
+              <p>
+                <span class="fr-only"
+                  >Le tableau des résultats donne sept mesures par modèle, la meilleure de chaque
+                  colonne mise en valeur. Le classement en compte six, chacune ramenée à des points
+                  sur 100&nbsp;:</span
+                >
+                <span class="en-only"
+                  >The results table gives seven measures per model, the best of each column
+                  standing out. The ranking counts six of them, each brought to points out of
+                  100:</span
+                >
+              </p>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th><span class="fr-only">Mesure</span><span class="en-only">Measure</span></th>
+                    <th>
+                      <span class="fr-only">Ce qu'elle dit</span
+                      ><span class="en-only">What it tells</span>
+                    </th>
+                    <th>
+                      <span class="fr-only">Points sur 100</span
+                      ><span class="en-only">Points out of 100</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Mémoire</strong></span>
+                      <span class="en-only"><strong>Memory</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Ce que le modèle occupe sur la carte graphique, et ce qu'il en reste pour
+                        DaVinci Resolve et la transcription.</span
+                      >
+                      <span class="en-only"
+                        >What the model takes on the graphics card, and what is left for DaVinci
+                        Resolve and transcription.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >La part de la carte laissée libre&nbsp;: 75 pour un modèle qui en occupe le
+                        quart.</span
+                      >
+                      <span class="en-only"
+                        >The share of the card left free: 75 for a model that takes a quarter of
+                        it.</span
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Vitesse</strong></span>
+                      <span class="en-only"><strong>Speed</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only">Le temps par image.</span>
+                      <span class="en-only">The time per frame.</span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >100 pour le plus rapide, 50 pour un modèle deux fois plus lent.</span
+                      >
+                      <span class="en-only"
+                        >100 for the fastest, 50 for a model twice as slow.</span
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Réponses valides</strong></span>
+                      <span class="en-only"><strong>Valid answers</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Les réponses que l'application a pu lire, sans erreur.</span
+                      >
+                      <span class="en-only"
+                        >The answers the application could read, with no error.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only">Aucun&nbsp;: le tableau seulement.</span>
+                      <span class="en-only">None: the table only.</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Langue respectée</strong></span>
+                      <span class="en-only"><strong>Language kept</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only">Les descriptions écrites dans la langue demandée.</span>
+                      <span class="en-only"
+                        >The descriptions written in the language asked for.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only">Le pourcentage mesuré.</span>
+                      <span class="en-only">The share measured.</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Texte lu</strong></span>
+                      <span class="en-only"><strong>Text read</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Le texte à l'écran, comparé à la lecture optique de l'application.</span
+                      >
+                      <span class="en-only"
+                        >The on-screen text, compared with the application's own text reading.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only">Le pourcentage mesuré.</span>
+                      <span class="en-only">The share measured.</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Positions</strong></span>
+                      <span class="en-only"><strong>Positions</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Les personnes et les animaux, comparés à ceux que trouve le détecteur de
+                        l'application.</span
+                      >
+                      <span class="en-only"
+                        >People and animals, compared with those the application's detector
+                        finds.</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Le pourcentage retrouvé&nbsp;; 0 quand elles sont désactivées.</span
+                      >
+                      <span class="en-only">The share found; 0 when they are disabled.</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="fr-only"><strong>Qualité</strong></span>
+                      <span class="en-only"><strong>Quality</strong></span>
+                    </td>
+                    <td>
+                      <span class="fr-only"
+                        >Vos notes à l'aveugle, de 0 («&nbsp;faux&nbsp;») à 3
+                        («&nbsp;juste&nbsp;»).</span
+                      >
+                      <span class="en-only"
+                        >Your blind ratings, from 0 ("wrong") to 3 ("right").</span
+                      >
+                    </td>
+                    <td>
+                      <span class="fr-only">Leur moyenne, ramenée sur 100.</span>
+                      <span class="en-only">Their mean, brought to 100.</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="zones">
+              <figure class="zone fr-only">
+                <a href="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures.webp">
+                  <img
+                    src="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures.webp"
+                    alt="Les graphiques du Banc d'essai : mémoire et vitesse de chaque modèle, puis six mesures comparées."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="675"
+                  />
+                </a>
+                <figcaption>
+                  <b>Les graphiques.</b> En haut, «&nbsp;Mémoire et vitesse&nbsp;»&nbsp;: le
+                  meilleur coin est en bas à gauche. Dessous, six graphiques en barres, une mesure
+                  chacun, la meilleure valeur mise en valeur.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures-en.webp">
+                  <img
+                    src="img/z/40b-zone--banc-graphiques-memoire-vitesse-et-mesures-en.webp"
+                    alt="The Model bench's charts: memory and speed of each model, then six measures compared."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="675"
+                  />
+                </a>
+                <figcaption>
+                  <b>The charts.</b> At the top, "Memory and speed": the best corner is the bottom
+                  left one. Below, six bar charts, one measure each, the best value standing out.
+                </figcaption>
+              </figure>
+            </div>
+            <div class="block-body" style="margin-top: 34px">
+              <h4>
+                <span class="fr-only">Le classement</span>
+                <span class="en-only">The ranking</span>
+              </h4>
+              <p>
+                <span class="fr-only"
+                  >Chaque test commence par un classement, vu de trois façons, et le classement
+                  général fait de même pour tous les tests réunis.</span
+                >
+                <span class="en-only"
+                  >Each test opens with a ranking, seen in three ways, and the general ranking does
+                  the same for all the tests together.</span
+                >
+              </p>
+            </div>
+            <div class="cards" style="margin-top: 18px">
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Classement total</span>
+                  <span class="en-only">Overall ranking</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >La moyenne des points, sur les seules mesures que tous les modèles ont. Le
+                    réglage <strong>«&nbsp;Ce qui compte le plus&nbsp;»</strong> fait compter triple
+                    la mémoire, la vitesse ou la qualité.</span
+                  >
+                  <span class="en-only"
+                    >The mean of the points, on the measures every model has. The
+                    <strong>"What matters most"</strong> setting makes memory, speed or quality
+                    count three times.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Par mesure</span>
+                  <span class="en-only">By measure</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >La place de chaque modèle dans chacune des six mesures, pour voir où il gagne
+                    et où il perd.</span
+                  >
+                  <span class="en-only"
+                    >Each model's place in each of the six measures, to see where it wins and where
+                    it loses.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Profils</span>
+                  <span class="en-only">Profiles</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >Chaque modèle dessiné en étoile, une branche par mesure&nbsp;: plus la surface
+                    est grande, meilleur est le modèle. Un modèle testé seul n'a que son profil,
+                    sans la vitesse, qui se compte par rapport au plus rapide.</span
+                  >
+                  <span class="en-only"
+                    >Each model drawn as a star, one branch per measure: the larger the surface, the
+                    better the model. A model tested alone has its profile only, without the speed,
+                    which counts against the fastest.</span
+                  >
+                </p>
+              </div>
+              <div class="card">
+                <h4>
+                  <span class="fr-only">Tous les tests</span>
+                  <span class="en-only">Every test</span>
+                </h4>
+                <p>
+                  <span class="fr-only"
+                    >L'<strong>historique</strong> garde chaque test&nbsp;: un clic le réaffiche, et
+                    une note de votre main aide à le retrouver.
+                    <strong>«&nbsp;Classement général&nbsp;»</strong> met côte à côte le dernier
+                    résultat de chaque modèle&nbsp;: un modèle téléchargé aujourd'hui se compare à
+                    ceux du mois dernier sans les tester à nouveau.</span
+                  >
+                  <span class="en-only"
+                    >The <strong>history</strong> keeps every test: one click shows it again, and a
+                    note of your own helps you find it. <strong>"General ranking"</strong> puts the
+                    latest result of every model side by side: a model downloaded today compares
+                    with last month's without testing them again.</span
+                  >
+                </p>
+              </div>
+            </div>
+            <div class="note" style="margin-top: 16px">
+              <p>
+                <span class="fr-only"
+                  >Quand les tests réunis par le classement général n'ont pas porté sur les mêmes
+                  images, la page le dit&nbsp;: seules la mémoire et la vitesse se comparent alors
+                  exactement.</span
+                >
+                <span class="en-only"
+                  >When the tests brought together by the general ranking did not use the same
+                  frames, the page says so: only memory and speed then compare exactly.</span
+                >
+              </p>
+            </div>
+            <div class="zones">
+              <figure class="zone fr-only">
+                <a href="img/z/40a-zone--banc-classement-general.webp">
+                  <img
+                    src="img/z/40a-zone--banc-classement-general.webp"
+                    alt="Le classement général du Banc d'essai : treize modèles de vision classés sur 100 points."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="352"
+                  />
+                </a>
+                <figcaption>
+                  <b>Classement général.</b> Le dernier résultat de treize modèles, tous tests
+                  confondus&nbsp;: le classement total, sur 100&nbsp;points.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40a-zone--banc-classement-general-en.webp">
+                  <img
+                    src="img/z/40a-zone--banc-classement-general-en.webp"
+                    alt="The Model bench's general ranking: thirteen vision models ranked out of 100 points."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="352"
+                  />
+                </a>
+                <figcaption>
+                  <b>General ranking.</b> The latest result of thirteen models, all tests together:
+                  the overall ranking, out of 100&nbsp;points.
+                </figcaption>
+              </figure>
+              <figure class="zone fr-only">
+                <a href="img/z/40c-zone--banc-profils-des-modeles.webp">
+                  <img
+                    src="img/z/40c-zone--banc-profils-des-modeles.webp"
+                    alt="Les profils du Banc d'essai : une étoile à six branches par modèle."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="770"
+                  />
+                </a>
+                <figcaption>
+                  <b>Les profils.</b> Une étoile par modèle&nbsp;: plus la surface est grande,
+                  meilleur est le modèle. «&nbsp;Qualité&nbsp;» est barrée quand le modèle n'a pas
+                  été noté à l'aveugle.
+                </figcaption>
+              </figure>
+              <figure class="zone en-only">
+                <a href="img/z/40c-zone--banc-profils-des-modeles-en.webp">
+                  <img
+                    src="img/z/40c-zone--banc-profils-des-modeles-en.webp"
+                    alt="The Model bench's profiles: one six-pointed star per model."
+                    loading="lazy"
+                    decoding="async"
+                    width="800"
+                    height="770"
+                  />
+                </a>
+                <figcaption>
+                  <b>Profiles.</b> One star per model: the larger the surface, the better the model.
+                  "Quality" is struck through when the model was not rated blind.
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ 12 — Privacy ══════════════ -->
+      <section id="vie-privee">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="kicker">
+              <span class="fr-only">Partie 12</span><span class="en-only">Part 12</span>
             </p>
             <h2>
               <span class="fr-only">Ce qui reste chez vous, et le peu qui sort</span>
@@ -7245,7 +8082,7 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
             </h2>
           </div>
 
-          <div class="cards" style="margin-bottom: 26px">
+          <div class="cards three" style="margin-bottom: 26px">
             <div class="card">
               <h3>
                 <span class="fr-only">Vos images ne partent pas</span>
@@ -7344,12 +8181,12 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
         </div>
       </section>
 
-      <!-- ══════════════ 12 — Frequently asked questions ══════════════ -->
+      <!-- ══════════════ 13 — Frequently asked questions ══════════════ -->
       <section id="faq">
         <div class="wrap">
           <div class="section-head">
             <p class="kicker">
-              <span class="fr-only">Partie 12</span><span class="en-only">Part 12</span>
+              <span class="fr-only">Partie 13</span><span class="en-only">Part 13</span>
             </p>
             <h2>
               <span class="fr-only">Quand quelque chose ne va pas</span>
@@ -7366,17 +8203,17 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
               <div>
                 <p>
                   <span class="fr-only">
-                    C'est presque toujours un modèle absent ou LM&nbsp;Studio qui ne répond pas.
-                    Ouvrez la page Système&nbsp;: elle dit ligne par ligne ce qui manque. Une
+                    C'est presque toujours un modèle absent ou le serveur de modèles qui ne répond
+                    pas. Ouvrez la page Système&nbsp;: elle dit ligne par ligne ce qui manque. Une
                     analyse partielle se relance depuis la page Tâches, et ne refait que ce qui
-                    avait échoué. Quand c'était LM&nbsp;Studio, rien à relancer&nbsp;: ce qu'il
-                    manquait se complète tout seul dès qu'un modèle de vision répond. Le panneau «
-                    Étapes d'analyse » d'une vidéo dit précisément quelle étape a manqué.
+                    avait échoué. Quand c'était le serveur de modèles, rien à relancer&nbsp;: ce
+                    qu'il manquait se complète tout seul dès qu'un modèle de vision répond. Le
+                    panneau « Étapes d'analyse » d'une vidéo dit précisément quelle étape a manqué.
                   </span>
                   <span class="en-only">
-                    It is almost always a missing model, or LM&nbsp;Studio not answering. Open the
+                    It is almost always a missing model, or the model server not answering. Open the
                     System page: it says line by line what is missing. A partial analysis restarts
-                    from the Jobs page, and redoes only what failed. When it was LM&nbsp;Studio,
+                    from the Jobs page, and redoes only what failed. When it was the model server,
                     there is nothing to restart: what was missing is completed on its own as soon as
                     a vision model answers. A video's "Analysis stages" panel says exactly which
                     stage fell over.
@@ -7393,21 +8230,21 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
               <div>
                 <p>
                   <span class="fr-only">
-                    LM&nbsp;Studio doit tourner, son serveur local être activé, et un modèle
-                    <em>de vision</em> être chargé — par exemple <code>qwen/qwen3-vl-4b</code> ou
-                    <code>qwen/qwen3-vl-8b</code>. Pendant les analyses, l'application ne charge
-                    jamais de modèle elle-même&nbsp;: c'est vous qui décidez ce qui occupe la carte.
-                    Avec un serveur compatible OpenAI, il doit servir un modèle de vision, et la
-                    case «&nbsp;Ce serveur voit les images&nbsp;» de la carte «&nbsp;Serveur de
-                    modèles&nbsp;» doit être cochée.
+                    Le serveur de modèles doit tourner et servir un modèle <em>de vision</em> — par
+                    exemple <code>qwen/qwen3-vl-4b</code> ou <code>qwen/qwen3-vl-8b</code>. Avec
+                    LM&nbsp;Studio, son serveur local doit être activé et le modèle chargé&nbsp;;
+                    avec un serveur compatible OpenAI (Strata, vLLM…), la case «&nbsp;Ce serveur
+                    voit les images&nbsp;» de la carte «&nbsp;Serveur de modèles&nbsp;» doit être
+                    cochée. Pendant les analyses, l'application ne charge jamais de modèle
+                    elle-même&nbsp;: c'est vous qui décidez ce qui occupe la carte.
                   </span>
                   <span class="en-only">
-                    LM&nbsp;Studio must be running, its local server on, and a
-                    <em>vision</em> model loaded — for instance <code>qwen/qwen3-vl-4b</code> or
-                    <code>qwen/qwen3-vl-8b</code>. During the analyses, the application never loads
-                    a model itself: what occupies the card is your call. With an OpenAI-compatible
-                    server, it must serve a vision model, and the "This server sees images" box of
-                    the "Model server" card must be ticked.
+                    The model server must be running and serving a <em>vision</em> model — for
+                    instance <code>qwen/qwen3-vl-4b</code> or <code>qwen/qwen3-vl-8b</code>. With
+                    LM&nbsp;Studio, its local server must be on and the model loaded; with an
+                    OpenAI-compatible server (Strata, vLLM…), the "This server sees images" box of
+                    the "Model server" card must be ticked. During the analyses, the application
+                    never loads a model itself: what occupies the card is your call.
                   </span>
                 </p>
               </div>
@@ -7444,23 +8281,26 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
 
             <details id="faq-vllm">
               <summary>
-                <span class="fr-only">Puis-je utiliser vLLM plutôt que LM&nbsp;Studio&nbsp;?</span>
-                <span class="en-only">Can I use vLLM instead of LM&nbsp;Studio?</span>
+                <span class="fr-only"
+                  >Puis-je utiliser vLLM ou Strata plutôt que LM&nbsp;Studio&nbsp;?</span
+                >
+                <span class="en-only">Can I use vLLM or Strata instead of LM&nbsp;Studio?</span>
               </summary>
               <div>
                 <p>
                   <span class="fr-only">
                     Oui, ou tout autre serveur compatible avec l'API d'OpenAI (le serveur de
-                    llama.cpp…). LM&nbsp;Studio reste le choix le plus simple&nbsp;; vLLM sert si
-                    vous en faites déjà tourner un, par exemple avec un modèle de vision de
-                    30&nbsp;milliards de paramètres sur une machine. Côté serveur, servez un modèle
-                    de vision <em>Instruct</em>&nbsp;:
+                    llama.cpp…). LM&nbsp;Studio, le serveur par défaut, reste le plus simple&nbsp;;
+                    Strata ou vLLM servent si vous en faites déjà tourner un, par exemple avec un
+                    modèle de vision de 30&nbsp;milliards de paramètres sur une machine. Côté
+                    serveur, avec vLLM, servez un modèle de vision <em>Instruct</em>&nbsp;:
                   </span>
                   <span class="en-only">
                     Yes, or any other server compatible with OpenAI's API (llama.cpp's server…).
-                    LM&nbsp;Studio remains the simplest choice; vLLM is for when you already run
-                    one, for instance with a 30-billion-parameter vision model on one machine. On
-                    the server side, serve an <em>Instruct</em> vision model:
+                    LM&nbsp;Studio, the default server, remains the simplest; Strata or vLLM is for
+                    when you already run one, for instance with a 30-billion-parameter vision model
+                    on one machine. On the server side, with vLLM, serve an <em>Instruct</em>
+                    vision model:
                   </span>
                 </p>
                 <pre><code>vllm serve Qwen/Qwen3-VL-8B-Instruct --max-model-len 32768 --limit-mm-per-prompt '{"image": 4}' --api-key <span class="fr-only">&lt;jeton&gt;</span><span class="en-only">&lt;token&gt;</span></code></pre>
@@ -7496,7 +8336,7 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
                     jamais de modèle, et coupe la réflexion des modèles qui raisonnent. Quand un
                     modèle refuse les images, ou qu'une requête porte plus d'images que le serveur
                     n'en accepte, elle le dit en clair. Le <a href="#banc-essai">Banc d'essai</a>,
-                    lui, a besoin de LM&nbsp;Studio. Comme pour un LM&nbsp;Studio sur un autre
+                    lui, a besoin de LM&nbsp;Studio. Comme pour tout serveur de modèles sur un autre
                     ordinateur, les images partent alors vers ce serveur.
                   </span>
                   <span class="en-only">
@@ -7509,7 +8349,7 @@ claude plugin uninstall video-frame-expedition@video-frame-expedition</code></pr
                     models that reason. When a model refuses images, or a request holds more images
                     than the server allows, it says so in plain words. The
                     <a href="#banc-essai">Model bench</a>, for its part, needs LM&nbsp;Studio. As
-                    with an LM&nbsp;Studio on another computer, the frames then go to that server.
+                    with any model server on another computer, the frames then go to that server.
                   </span>
                 </p>
               </div>
