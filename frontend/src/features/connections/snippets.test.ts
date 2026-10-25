@@ -67,6 +67,10 @@ describe("MCP client snippets", () => {
   it("quotes command lines for Windows", () => {
     expect(shellArg("plain")).toBe("plain");
     expect(shellArg("C:\\Program Files\\x.exe")).toBe('"C:\\Program Files\\x.exe"');
+    // Backslashes before a quote are doubled, as Windows reads them back.
+    expect(shellArg("C:\\Program Files\\x\\")).toBe('"C:\\Program Files\\x\\\\"');
+    expect(shellArg('say "hi"')).toBe('"say \\"hi\\""');
+    expect(shellArg('a\\"b c')).toBe('"a\\\\\\"b c"');
     expect(stdioCommandLine(STDIO, REMOTE)).toBe(
       `"${PYTHON}" -m vfe_vision mcp-stdio --url http://100.64.12.34:8765/mcp --token abc123`,
     );

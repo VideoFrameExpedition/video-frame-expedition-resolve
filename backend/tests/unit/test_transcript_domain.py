@@ -211,6 +211,10 @@ class TestCleanUntrusted:
     def test_nested_tags_cannot_rebuild_a_fence(self) -> None:
         assert not _TAG.search(clean_untrusted("<untr<untrusted>usted>x</untr</untrusted>usted>"))
 
+    def test_a_long_run_of_spaces_is_cleaned_in_linear_time(self) -> None:
+        # A crafted subtitle: a quadratic pattern would take minutes here, past the test timeout.
+        assert clean_untrusted("<" + " " * 200_000 + "x") == "< x"
+
     @given(st.text())
     def test_properties(self, raw: str) -> None:
         cleaned = clean_untrusted(raw)
@@ -384,6 +388,13 @@ class TestSubtitleFiles:
         srt = to_srt([Cue(0.2, 1.0, ("x",))], offset_s=3600.0)
         assert "01:00:00,200 --> 01:00:01,000" in srt
         assert "00:00:00,000 --> 00:00:00,500" in to_srt([Cue(0.2, 1.0, ("x",))], offset_s=-0.5)
+
+    def test_a_long_run_of_dashes_is_handled_in_linear_time(self) -> None:
+        dashes = "-" * 200_000
+        cues = [Cue(0.0, 1.0, (dashes + ">",)), Cue(1.0, 2.0, (dashes,))]
+        assert to_srt(cues) == (
+            f"1\n00:00:00,000 --> 00:00:01,000\n->\n\n2\n00:00:01,000 --> 00:00:02,000\n{dashes}\n"
+        )
 
     def test_timing_arrows_and_blank_lines_are_neutralised(self) -> None:
         cues = [

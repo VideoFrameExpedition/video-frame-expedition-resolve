@@ -17,12 +17,16 @@ export interface Target {
 const json = (value: unknown): string => JSON.stringify(value, null, 2);
 
 /** A command line argument, quoted when it needs to be: double quotes for Windows (cmd,
- * PowerShell), single quotes for the shells of macOS and Linux (`posix`). */
+ * PowerShell), single quotes for the shells of macOS and Linux (`posix`). On Windows, the
+ * backslashes just before a quote are doubled, the closing one included, so that a folder
+ * ending in `\` does not swallow it. */
 export function shellArg(value: string, posix = false): string {
   if (posix) {
     return /^[\w./:=@%+,-]+$/.test(value) ? value : `'${value.replace(/'/g, "'\\''")}'`;
   }
-  return /[\s"&|<>^]/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value;
+  if (!/[\s"&|<>^]/.test(value)) return value;
+  const escaped = value.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/, "$1$1");
+  return `"${escaped}"`;
 }
 
 /** TOML string: a literal one (no escapes) unless it holds a single quote. */

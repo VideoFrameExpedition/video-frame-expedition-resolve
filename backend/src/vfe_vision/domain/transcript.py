@@ -78,8 +78,11 @@ _CREDIT_MARKERS = (
     "sous-titrage société radio-canada",
 )
 
-_UNTRUSTED_TAG = re.compile(r"<\s*/?\s*untrusted\b[^>]*>", re.IGNORECASE)
-_ARROW = re.compile(r"-{2,}>")
+# Both run in linear time on untrusted text: a single run of spaces before the optional slash
+# (two ``\s*`` side by side were quadratic on "<" followed by many spaces), and an arrow only
+# from the first dash of its run (otherwise every dash of a long run is tried again).
+_UNTRUSTED_TAG = re.compile(r"<\s*(?:/\s*)?untrusted\b[^>]*>", re.IGNORECASE)
+_ARROW = re.compile(r"(?<!-)-{2,}>")
 
 
 class WordLike(Protocol):
